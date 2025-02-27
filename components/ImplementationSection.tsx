@@ -124,12 +124,26 @@ export function ImplementationSection({
     
     const selected = packages.find(pkg => pkg.id === packageId)
     if (selected) {
-      // Set default values from the selected package
-      handleInputChange("onboardingFee", selected.onboarding_fee)
+      // Set default values from the selected package, but calculate onboarding fee
       handleInputChange("virtualTrainingHours", selected.virtual_training_hours)
       handleInputChange("onsiteSupportDays", selected.onsite_support_days)
       handleInputChange("onsiteSupportFee", selected.onsite_support_fee)
       handleInputChange("optionalProfServicesRate", selected.optional_prof_services_rate)
+      
+      // Calculate onboarding fee based on the formula
+      const virtualHours = selected.virtual_training_hours || 0;
+      const onsiteDays = selected.onsite_support_days || 0;
+      const onsiteFee = selected.onsite_support_fee || 0;
+      const calculatedFee = (250 * virtualHours) + (onsiteDays * onsiteFee);
+      
+      console.log('Package selected, calculated fee:', {
+        virtualHours,
+        onsiteDays,
+        onsiteFee,
+        calculatedFee
+      });
+      
+      handleInputChange("onboardingFee", calculatedFee)
       setIsCustomized(false)
     }
   }
