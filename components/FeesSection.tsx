@@ -536,18 +536,6 @@ export function FeesSection({
               </div>
             </div>
           </div>
-          
-          <div className="text-sm text-gray-500">
-            {formData.freeStoreConnections > 0 && (
-              <div>Free connections: {formatNumber(formData.freeStoreConnections)}</div>
-            )}
-            {formData.storeConnections > 0 && formData.storeConnectionPrice > 0 && (
-              <div>Monthly cost: ${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}</div>
-            )}
-            <div className="font-medium mt-1">
-              Annual cost: ${formatNumber((formData.storeConnections * formData.storeConnectionPrice) * 12)}
-            </div>
-          </div>
         </div>
 
         <div className="p-4 border rounded-lg flex flex-col space-y-2">
