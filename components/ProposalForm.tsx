@@ -12,7 +12,14 @@ import { ImplementationSection } from "./ImplementationSection"
 import { ReviewSection } from "./ReviewSection"
 import { toast } from "@/components/ui/use-toast"
 
-const STEPS = ["Business Info", "Payment Details", "Fees", "Proposal Options", "Implementation", "Review"]
+const STEPS = [
+  "Business Info",
+  "Payment Details",
+  "SaaS Fee",
+  "Proposal Options",
+  "Implementation",
+  "Review"
+]
 
 export default function ProposalForm() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -110,9 +117,11 @@ export default function ProposalForm() {
         if (!formData.friendlyBusinessName) invalidFields.push("friendlyBusinessName")
         break
       case 1:
-        if (!formData.term) invalidFields.push("term")
-        if (!formData.paymentTerms) invalidFields.push("paymentTerms")
-        if (!formData.paymentType) invalidFields.push("paymentType")
+        if (!formData.contractTerm) invalidFields.push("contractTerm")
+        if (!formData.billingFrequency) invalidFields.push("billingFrequency")
+        if (!formData.paymentMethods || formData.paymentMethods.length === 0) {
+          invalidFields.push("paymentMethods")
+        }
         break
       case 2:
         if (
@@ -125,14 +134,7 @@ export default function ProposalForm() {
         if (!formData.storeConnections) invalidFields.push("storeConnections")
         break
       case 3:
-        if (!formData.contractTerm) invalidFields.push("contractTerm")
-        if (formData.contractTerm === "custom" && (!formData.customContractTerm || formData.customContractTerm <= 0)) {
-          invalidFields.push("customContractTerm")
-        }
-        if (!formData.billingFrequency) invalidFields.push("billingFrequency")
-        if (!formData.paymentMethods || formData.paymentMethods.length === 0) {
-          invalidFields.push("paymentMethods")
-        }
+        // All options are optional
         break
       case 4:
         if (!formData.implementationPackage) invalidFields.push("implementationPackage")
