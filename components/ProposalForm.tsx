@@ -12,14 +12,7 @@ import { ImplementationSection } from "./ImplementationSection"
 import { ReviewSection } from "./ReviewSection"
 import { toast } from "@/components/ui/use-toast"
 
-const STEPS = [
-  "Business Info",
-  "Payment Details",
-  "SaaS Fee & Connections",
-  "Proposal Options",
-  "Implementation",
-  "Review",
-]
+const STEPS = ["Business Info", "Payment Details", "Fees", "Proposal Options", "Implementation", "Review"]
 
 export default function ProposalForm() {
   const [currentStep, setCurrentStep] = useState(0)
