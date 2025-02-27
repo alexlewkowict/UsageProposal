@@ -581,7 +581,9 @@ export function FeesSection({
               type="checkbox"
               id="applyToStoreConnections"
               checked={formData.applyDiscountToStoreConnections}
-              onChange={(e) => handleInputChange("applyDiscountToStoreConnections", e.target.checked)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => 
+                handleInputChange("applyDiscountToStoreConnections", e.target.checked)
+              }
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <label htmlFor="applyToStoreConnections" className="text-sm text-gray-700">
