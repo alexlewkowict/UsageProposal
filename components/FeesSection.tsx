@@ -137,14 +137,49 @@ export function FeesSection({
     console.log("Calculating tier for annual grand total:", annualGrandTotal)
     console.log("Available pricing tiers:", pricingTiers)
     
+    if (pricingTiers.length === 0) {
+      console.warn("No pricing tiers available to match against")
+      setCurrentTier(null)
+      return
+    }
+    
+    const numericAnnualTotal = Number(annualGrandTotal)
+    
     const tier = pricingTiers.find((tier: PricingTier) => {
-      const isInRange = annualGrandTotal >= tier.lower_limit && annualGrandTotal <= tier.upper_limit
-      console.log(`Checking tier ${tier.tier}: ${tier.lower_limit}-${tier.upper_limit}, matches: ${isInRange}`)
+      const lowerLimit = Number(tier.lower_limit)
+      const upperLimit = Number(tier.upper_limit)
+      
+      const isInRange = numericAnnualTotal >= lowerLimit && numericAnnualTotal <= upperLimit
+      console.log(`Checking tier ${tier.tier}: ${lowerLimit}-${upperLimit}, annual total: ${numericAnnualTotal}, matches: ${isInRange}`)
       return isInRange
     })
     
     console.log("Selected tier:", tier)
-    setCurrentTier(tier || null)
+    
+    if (!tier && pricingTiers.length > 0) {
+      console.log("No tier matched the annual total. Finding closest tier...")
+      
+      // Find the closest tier if no exact match
+      let closestTier = pricingTiers[0];
+      let minDistance = Math.abs(Number(closestTier.upper_limit) - numericAnnualTotal);
+      
+      pricingTiers.forEach((t: PricingTier) => {
+        const distance = Math.min(
+          Math.abs(Number(t.lower_limit) - numericAnnualTotal),
+          Math.abs(Number(t.upper_limit) - numericAnnualTotal)
+        );
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestTier = t;
+        }
+      });
+      
+      console.log("Using closest tier:", closestTier);
+      setCurrentTier(closestTier);
+    } else {
+      setCurrentTier(tier || null);
+    }
   }, [annualGrandTotal, pricingTiers])
 
   const getFrequencyMultiplier = () => {
