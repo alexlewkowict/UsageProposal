@@ -441,30 +441,71 @@ export function FeesSection({
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="storeConnections">Store Connections</Label>
-        <Input
-          id="storeConnections"
-          type="number"
-          value={formData.storeConnections}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => 
-            handleInputChange("storeConnections", Number.parseInt(e.target.value) || 0)
-          }
-          className={invalidFields.includes("storeConnections") ? "border-red-500" : ""}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="saasFeeDiscount">SaaS Fee Discount</Label>
-        <div className="relative">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div className={`p-4 border rounded-lg flex flex-col space-y-2 ${invalidFields.includes("storeConnections") ? "border-red-500" : ""}`}>
+          <div className="flex items-center space-x-2">
+            <div className="text-primary">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <div className="font-medium">Store Connections</div>
+          </div>
           <Input
-            id="saasFeeDiscount"
-            type="number"
-            value={formData.saasFeeDiscount}
-            onChange={(e) => handleInputChange("saasFeeDiscount", e.target.value)}
-            className="pr-8"
+            value={formatNumber(formData.storeConnections)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => 
+              handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
+            }
+            className="text-right"
           />
-          <span className="absolute right-3 top-1/2 transform -translate-y-1/2">%</span>
+          <div className="text-sm text-gray-500">
+            {formatNumber(formData.storeConnections)} x $30 = ${formatNumber(formData.storeConnections * 30)}
+          </div>
+        </div>
+
+        <div className="p-4 border rounded-lg flex flex-col space-y-2">
+          <div className="flex items-center space-x-2">
+            <div className="text-primary">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6"
+              >
+                <line x1="19" y1="5" x2="5" y2="19"></line>
+                <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                <circle cx="17.5" cy="17.5" r="2.5"></circle>
+              </svg>
+            </div>
+            <div className="font-medium">SaaS Fee Discount</div>
+          </div>
+          <div className="relative">
+            <Input
+              value={formData.saasFeeDiscount}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => 
+                handleInputChange("saasFeeDiscount", Number.parseInt(e.target.value) || 0)
+              }
+              className="text-right pr-8"
+            />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2">%</span>
+          </div>
+          <div className="text-sm text-gray-500">
+            Applies to all pricing tiers
+          </div>
         </div>
       </div>
     </div>
