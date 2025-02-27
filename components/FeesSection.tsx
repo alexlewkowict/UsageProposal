@@ -200,6 +200,9 @@ export function FeesSection({
   const calculateAnnualFee = () => {
     if (!currentTier || pricingTiers.length === 0) return 0;
     
+    // Calculate discount multiplier (e.g., 10% discount = multiply by 0.9)
+    const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
+    
     let totalFee = 0;
     let remainingUnits = annualGrandTotal;
     
@@ -215,24 +218,28 @@ export function FeesSection({
       if (i === 0 && remainingUnits > 0) {
         // First tier - use platform fee for all units up to upper limit
         const unitsInTier = Math.min(remainingUnits, Number(tier.upper_limit));
-        totalFee += Number(tier.platform_fee_sales_price);
+        // Apply discount to platform fee list price
+        const discountedPlatformFee = Number(tier.platform_fee_list_price) * discountMultiplier;
+        totalFee += discountedPlatformFee;
         remainingUnits -= unitsInTier;
-        console.log(`Tier ${tier.tier}: ${unitsInTier} units at platform fee $${tier.platform_fee_sales_price}, remaining: ${remainingUnits}`);
+        console.log(`Tier ${tier.tier}: ${unitsInTier} units at platform fee $${tier.platform_fee_list_price} with ${formData.saasFeeDiscount}% discount = $${discountedPlatformFee.toFixed(2)}, remaining: ${remainingUnits}`);
       } 
       
       if (i > 0 && remainingUnits > 0) {
-        // Subsequent tiers - use shipped_unit_sales_price for units in this tier's range
+        // Subsequent tiers - use shipped_unit_list_price for units in this tier's range
         const tierLimit = nextTier 
           ? Number(nextTier.lower_limit) - Number(tier.lower_limit)
           : Number.MAX_SAFE_INTEGER;
         
         const unitsInTier = Math.min(remainingUnits, tierLimit);
-        const tierUnitPrice = Number(tier.shipped_unit_sales_price) || 0;
+        // Apply discount to unit list price
+        const tierUnitPrice = Number(tier.shipped_unit_list_price) || 0;
+        const discountedUnitPrice = tierUnitPrice * discountMultiplier;
         
-        totalFee += unitsInTier * tierUnitPrice;
+        totalFee += unitsInTier * discountedUnitPrice;
         remainingUnits -= unitsInTier;
         
-        console.log(`Tier ${tier.tier}: ${unitsInTier} units at $${tierUnitPrice} per unit = $${unitsInTier * tierUnitPrice}, remaining: ${remainingUnits}`);
+        console.log(`Tier ${tier.tier}: ${unitsInTier} units at $${tierUnitPrice} with ${formData.saasFeeDiscount}% discount = $${discountedUnitPrice.toFixed(3)} per unit = $${(unitsInTier * discountedUnitPrice).toFixed(2)}, remaining: ${remainingUnits}`);
       }
       
       if (remainingUnits <= 0) break;
@@ -365,11 +372,25 @@ export function FeesSection({
               
               <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
                 <div className="font-semibold mb-1">Fee Calculation Breakdown:</div>
+                
+                {formData.saasFeeDiscount > 0 && (
+                  <div className="mb-2 text-blue-600">
+                    Applying {formData.saasFeeDiscount}% discount to all prices
+                  </div>
+                )}
+                
                 {pricingTiers.map((tier, index) => {
+                  // Calculate discount multiplier
+                  const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
+                  
                   if (index === 0) {
+                    const discountedPlatformFee = Number(tier.platform_fee_list_price) * discountMultiplier;
                     return (
                       <div key={tier.tier}>
-                        Base fee (up to {formatNumber(tier.upper_limit)} units): ${formatNumber(tier.platform_fee_sales_price)}
+                        Base fee (up to {formatNumber(tier.upper_limit)} units): ${formatNumber(tier.platform_fee_list_price)}
+                        {formData.saasFeeDiscount > 0 && (
+                          <span className="text-blue-600"> → ${formatNumber(discountedPlatformFee)} after discount</span>
+                        )}
                       </div>
                     );
                   } else if (annualGrandTotal > Number(tier.lower_limit)) {
@@ -384,10 +405,15 @@ export function FeesSection({
                     );
                     
                     if (unitsInTier > 0) {
+                      const listPrice = Number(tier.shipped_unit_list_price) || 0;
+                      const discountedPrice = listPrice * discountMultiplier;
                       return (
                         <div key={tier.tier}>
-                          {formatNumber(unitsInTier)} units at ${tier.shipped_unit_sales_price} each: 
-                          ${formatNumber(unitsInTier * Number(tier.shipped_unit_sales_price || 0))}
+                          {formatNumber(unitsInTier)} units at ${listPrice.toFixed(3)}
+                          {formData.saasFeeDiscount > 0 && (
+                            <span className="text-blue-600"> → ${discountedPrice.toFixed(3)} after discount</span>
+                          )}
+                          : ${formatNumber(unitsInTier * discountedPrice)}
                         </div>
                       );
                     }
