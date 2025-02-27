@@ -31,6 +31,7 @@ export default function ProposalForm() {
     },
     saasFeeDiscount: 20,
     storeConnections: 0,
+    storeConnectionPrice: 30,
     selectedOptions: {
       cover: true,
       whatsAUnit: true,
@@ -87,6 +88,13 @@ export default function ProposalForm() {
       },
     }))
   }
+
+  const handleStoreConnectionPriceChange = (value: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      storeConnectionPrice: value,
+    }));
+  };
 
   const validateStep = () => {
     const invalidFields: string[] = []
@@ -187,6 +195,7 @@ export default function ProposalForm() {
               handleInputChange={handleInputChange}
               handleSaasFeeChange={handleSaasFeeChange}
               handleFrequencyChange={handleFrequencyChange}
+              handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
               invalidFields={invalidFields}
             />
           )}

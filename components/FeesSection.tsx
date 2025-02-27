@@ -20,10 +20,12 @@ interface FeesSectionProps {
     };
     storeConnections: number;
     saasFeeDiscount: number;
+    storeConnectionPrice: number;
   };
   handleInputChange: (field: string, value: string | number) => void;
   handleSaasFeeChange: (type: "pallets" | "cases" | "eaches", value: number) => void;
   handleFrequencyChange: (frequency: string) => void;
+  handleStoreConnectionPriceChange: (value: number) => void;
   invalidFields: string[];
 }
 
@@ -43,6 +45,7 @@ export function FeesSection({
   handleInputChange,
   handleSaasFeeChange,
   handleFrequencyChange,
+  handleStoreConnectionPriceChange,
   invalidFields,
 }: FeesSectionProps) {
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([])
@@ -463,26 +466,31 @@ export function FeesSection({
           </div>
           
           <div className="flex items-center space-x-2">
-            <Input
-              value={formatNumber(formData.storeConnections)}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => 
-                handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
-              }
-              className="text-right"
-            />
-            <span className="text-gray-500 font-medium">×</span>
-            <div className="relative flex-1">
+            <div className="w-1/2">
               <Input
-                value="30"
+                value={formatNumber(formData.storeConnections)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => 
+                  handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
+                }
+                className="text-right"
+              />
+            </div>
+            <span className="text-gray-500 font-medium">×</span>
+            <div className="relative w-1/2">
+              <Input
+                value={formData.storeConnectionPrice}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, "");
+                  handleStoreConnectionPriceChange(Number(value) || 0);
+                }}
                 className="text-right pl-6"
-                readOnly
               />
               <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
             </div>
           </div>
           
           <div className="text-sm text-gray-500">
-            Total: ${formatNumber(formData.storeConnections * 30)}
+            Total: ${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}
           </div>
         </div>
 
