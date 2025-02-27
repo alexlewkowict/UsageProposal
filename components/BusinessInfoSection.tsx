@@ -9,9 +9,17 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import React from 'react'
+
+// Define proper types for the form data
+interface FormData {
+  accountExec: string
+  opportunityName: string
+  friendlyBusinessName: string
+}
 
 interface BusinessInfoSectionProps {
-  formData: any
+  formData: FormData
   handleInputChange: (field: string, value: string) => void
   invalidFields: string[]
 }
@@ -127,6 +135,10 @@ export function BusinessInfoSection({ formData, handleInputChange, invalidFields
 
     fetchOpportunities()
   }, [formData.accountExec])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange("friendlyBusinessName", e.target.value)
+  }
 
   return (
     <div className="space-y-4">
@@ -244,7 +256,7 @@ export function BusinessInfoSection({ formData, handleInputChange, invalidFields
           <Input
             id="friendlyBusinessName"
             value={formData.friendlyBusinessName}
-            onChange={(e) => handleInputChange("friendlyBusinessName", e.target.value)}
+            onChange={handleChange}
             className={invalidFields.includes("friendlyBusinessName") ? "border-red-500" : ""}
           />
         </div>
