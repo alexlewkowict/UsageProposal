@@ -199,25 +199,31 @@ export function ImplementationSection({
     
     // Update the form data
     handleInputChange(field, numericValue);
-    setIsCustomized(true);
     
-    // Auto-calculate onboarding fee when related fields change
-    if (field === "virtualTrainingHours" || field === "onsiteSupportDays" || field === "onsiteSupportFee") {
-      setTimeout(() => {
-        const newFee = calculateOnboardingFee();
-        console.log('New calculated fee:', newFee);
-        handleInputChange("onboardingFee", newFee);
-      }, 0);
+    // Mark as customized, but don't recalculate onboarding fee if that's what's being edited
+    if (field !== "onboardingFee") {
+      setIsCustomized(true);
+    } else {
+      // Only mark as customized if the onboarding fee differs from the calculated value
+      const calculatedValue = calculateOnboardingFee();
+      setIsCustomized(numericValue !== calculatedValue);
     }
+    
+    // Don't auto-calculate onboarding fee here, let the useEffect handle it
   };
 
-  // Add a useEffect to recalculate the fee whenever relevant values change
+  // Update the useEffect to always update the onboarding fee when related fields change
   useEffect(() => {
-    // Only recalculate if we're in a customized state or if we need to initialize the value
-    if (isCustomized || (formData.implementationPackage && formData.onboardingFee === 0)) {
-      const newFee = calculateOnboardingFee();
-      console.log('Recalculating fee due to dependency changes:', newFee);
-      handleInputChange("onboardingFee", newFee);
+    // Always recalculate when virtual hours, onsite days, or onsite fee changes
+    const newFee = calculateOnboardingFee();
+    console.log('Recalculating fee due to dependency changes:', newFee);
+    
+    // Update the onboarding fee to match the calculated value
+    handleInputChange("onboardingFee", newFee);
+    
+    // If this is due to a package selection, don't mark as customized
+    if (!isCustomized && formData.implementationPackage) {
+      setIsCustomized(false);
     }
   }, [formData.virtualTrainingHours, formData.onsiteSupportDays, formData.onsiteSupportFee]);
 
