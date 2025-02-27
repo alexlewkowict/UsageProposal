@@ -21,6 +21,7 @@ interface FeesSectionProps {
     storeConnections: number;
     saasFeeDiscount: number;
     storeConnectionPrice: number;
+    freeStoreConnections: number;
   };
   handleInputChange: (field: string, value: string | number) => void;
   handleSaasFeeChange: (type: "pallets" | "cases" | "eaches", value: number) => void;
@@ -445,7 +446,7 @@ export function FeesSection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div className={`p-4 border rounded-lg flex flex-col space-y-2 ${invalidFields.includes("storeConnections") ? "border-red-500" : ""}`}>
+        <div className={`p-4 border rounded-lg flex flex-col space-y-3 ${invalidFields.includes("storeConnections") ? "border-red-500" : ""}`}>
           <div className="flex items-center space-x-2">
             <div className="text-primary">
               <svg
@@ -465,58 +466,56 @@ export function FeesSection({
             <div className="font-medium">Store Connections</div>
           </div>
           
-          <div className="flex space-x-2 mb-1">
-            <button
-              className={`px-3 py-1 rounded-md text-sm ${
-                formData.storeConnectionPrice > 0
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
-              }`}
-              onClick={() => handleStoreConnectionPriceChange(30)}
-            >
-              Paid
-            </button>
-            <button
-              className={`px-3 py-1 rounded-md text-sm ${
-                formData.storeConnectionPrice === 0
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
-              }`}
-              onClick={() => handleStoreConnectionPriceChange(0)}
-            >
-              Free
-            </button>
+          {/* Free Store Connections */}
+          <div>
+            <div className="text-sm font-medium mb-1">Free Connections</div>
+            <Input
+              value={formatNumber(formData.freeStoreConnections || 0)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => 
+                handleInputChange("freeStoreConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
+              }
+              className="text-right"
+            />
           </div>
           
-          <div className="flex items-center space-x-2">
-            <div className="w-1/2">
-              <Input
-                value={formatNumber(formData.storeConnections)}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => 
-                  handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
-                }
-                className="text-right"
-              />
-            </div>
-            <span className="text-gray-500 font-medium">×</span>
-            <div className="relative w-1/2">
-              <Input
-                value={formData.storeConnectionPrice}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const value = e.target.value.replace(/[^0-9.]/g, "");
-                  handleStoreConnectionPriceChange(Number(value) || 0);
-                }}
-                className="text-right pl-6"
-                disabled={formData.storeConnectionPrice === 0}
-              />
-              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
+          {/* Paid Store Connections */}
+          <div>
+            <div className="text-sm font-medium mb-1">Paid Connections</div>
+            <div className="flex items-center space-x-2">
+              <div className="w-1/2">
+                <Input
+                  value={formatNumber(formData.storeConnections)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => 
+                    handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
+                  }
+                  className="text-right"
+                />
+              </div>
+              <span className="text-gray-500 font-medium">×</span>
+              <div className="relative w-1/2">
+                <Input
+                  value={formData.storeConnectionPrice}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    const value = e.target.value.replace(/[^0-9.]/g, "");
+                    handleStoreConnectionPriceChange(Number(value) || 0);
+                  }}
+                  className="text-right pl-6"
+                />
+                <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
+              </div>
             </div>
           </div>
           
           <div className="text-sm text-gray-500">
-            {formData.storeConnectionPrice === 0 
-              ? "Free store connections" 
-              : `Total: $${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}`}
+            {formData.freeStoreConnections > 0 && (
+              <div>Free connections: {formatNumber(formData.freeStoreConnections)}</div>
+            )}
+            {formData.storeConnections > 0 && formData.storeConnectionPrice > 0 && (
+              <div>Paid connections: ${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}</div>
+            )}
+            <div className="font-medium mt-1">
+              Total connections: {formatNumber((formData.freeStoreConnections || 0) + formData.storeConnections)}
+            </div>
           </div>
         </div>
 
