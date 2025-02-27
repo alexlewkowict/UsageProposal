@@ -120,33 +120,39 @@ export function ImplementationSection({
   }, [formData.implementationPackage, packages, formData])
 
   const handlePackageSelect = (packageId: string) => {
-    handleInputChange("implementationPackage", packageId)
+    handleInputChange("implementationPackage", packageId);
     
-    const selected = packages.find(pkg => pkg.id === packageId)
+    const selected = packages.find(pkg => pkg.id === packageId);
     if (selected) {
-      // Set default values from the selected package, but calculate onboarding fee
-      handleInputChange("virtualTrainingHours", selected.virtual_training_hours)
-      handleInputChange("onsiteSupportDays", selected.onsite_support_days)
-      handleInputChange("onsiteSupportFee", selected.onsite_support_fee)
-      handleInputChange("optionalProfServicesRate", selected.optional_prof_services_rate)
+      // Set default values from the selected package
+      handleInputChange("virtualTrainingHours", selected.virtual_training_hours);
+      handleInputChange("onsiteSupportDays", selected.onsite_support_days);
+      handleInputChange("onsiteSupportFee", selected.onsite_support_fee);
+      handleInputChange("optionalProfServicesRate", selected.optional_prof_services_rate);
       
-      // Calculate onboarding fee based on the formula
+      // Calculate onboarding fee using the same logic as calculateOnboardingFee
       const virtualHours = selected.virtual_training_hours || 0;
       const onsiteDays = selected.onsite_support_days || 0;
       const onsiteFee = selected.onsite_support_fee || 0;
-      const calculatedFee = (250 * virtualHours) + (onsiteDays * onsiteFee);
+      
+      const virtualTrainingCost = 250 * virtualHours;
+      const onsiteSupportCost = onsiteFee * onsiteDays;
+      const totalFee = virtualTrainingCost + onsiteSupportCost;
       
       console.log('Package selected, calculated fee:', {
         virtualHours,
         onsiteDays,
         onsiteFee,
-        calculatedFee
+        virtualTrainingCost,
+        onsiteSupportCost,
+        totalFee
       });
       
-      handleInputChange("onboardingFee", calculatedFee)
-      setIsCustomized(false)
+      // Update the onboarding fee
+      handleInputChange("onboardingFee", totalFee);
+      setIsCustomized(false);
     }
-  }
+  };
 
   const calculateOnboardingFee = () => {
     // Get values from form data, ensuring they're numbers
@@ -205,6 +211,25 @@ export function ImplementationSection({
     }
   };
 
+  // Add a useEffect to recalculate the fee whenever relevant values change
+  useEffect(() => {
+    // Only recalculate if we're in a customized state or if we need to initialize the value
+    if (isCustomized || (formData.implementationPackage && formData.onboardingFee === 0)) {
+      const newFee = calculateOnboardingFee();
+      console.log('Recalculating fee due to dependency changes:', newFee);
+      handleInputChange("onboardingFee", newFee);
+    }
+  }, [formData.virtualTrainingHours, formData.onsiteSupportDays, formData.onsiteSupportFee]);
+
+  // In the component's render function, add a calculated fee variable
+  const calculatedFee = (() => {
+    const virtualHours = Number(formData.virtualTrainingHours) || 0;
+    const onsiteDays = Number(formData.onsiteSupportDays) || 0;
+    const onsiteFee = Number(formData.onsiteSupportFee) || 0;
+    
+    return (250 * virtualHours) + (onsiteDays * onsiteFee);
+  })();
+
   return (
     <div className="space-y-6">
       <div>
@@ -235,6 +260,9 @@ export function ImplementationSection({
                             className="pl-6"
                           />
                           <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Calculated: ${calculatedFee} (Virtual: ${250 * (Number(formData.virtualTrainingHours) || 0)} + Onsite: ${(Number(formData.onsiteSupportDays) || 0) * (Number(formData.onsiteSupportFee) || 0)})
                         </div>
                       </div>
                       
