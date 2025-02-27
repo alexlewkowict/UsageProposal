@@ -43,25 +43,51 @@ export function ImplementationSection({
   const [isCustomized, setIsCustomized] = useState(false)
 
   useEffect(() => {
-    async function fetchImplementationPackages() {
-      try {
-        const response = await fetch("/api/implementation-packages")
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
-        setPackages(data)
-      } catch (error) {
-        console.error("Failed to fetch implementation packages:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load implementation packages. Please try again later.",
-          variant: "destructive",
-        })
+    // Mock implementation packages data instead of fetching from API
+    const mockPackages = [
+      {
+        id: "standard",
+        name: "Standard Implementation",
+        description: "Basic implementation package suitable for most customers",
+        onboarding_fee: 5000,
+        virtual_training_hours: 10,
+        onsite_support_days: 2,
+        onsite_support_fee: 1500,
+        optional_prof_services_rate: 250
+      },
+      {
+        id: "premium",
+        name: "Premium Implementation",
+        description: "Enhanced implementation with additional training and support",
+        onboarding_fee: 10000,
+        virtual_training_hours: 20,
+        onsite_support_days: 5,
+        onsite_support_fee: 1500,
+        optional_prof_services_rate: 250
+      },
+      {
+        id: "enterprise",
+        name: "Enterprise Implementation",
+        description: "Comprehensive implementation for large organizations",
+        onboarding_fee: 20000,
+        virtual_training_hours: 40,
+        onsite_support_days: 10,
+        onsite_support_fee: 1500,
+        optional_prof_services_rate: 250
+      },
+      {
+        id: "custom",
+        name: "Custom Implementation",
+        description: "Tailored implementation package based on specific requirements",
+        onboarding_fee: 0,
+        virtual_training_hours: 0,
+        onsite_support_days: 0,
+        onsite_support_fee: 1500,
+        optional_prof_services_rate: 250
       }
-    }
-
-    fetchImplementationPackages()
+    ];
+    
+    setPackages(mockPackages);
   }, [])
 
   useEffect(() => {
