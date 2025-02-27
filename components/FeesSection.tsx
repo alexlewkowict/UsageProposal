@@ -58,15 +58,27 @@ export function FeesSection({
   useEffect(() => {
     async function fetchPricingTiers() {
       try {
+        console.log("Fetching pricing tiers...")
         const response = await fetch("/api/pricing-tiers")
+        console.log("API Response status:", response.status)
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
+        
         const data = await response.json()
         console.log("Raw pricing tiers data:", data)
+        
         if (!Array.isArray(data)) {
+          console.error("Invalid data format:", data)
           throw new Error("Expected array of pricing tiers")
         }
+        
+        if (data.length === 0) {
+          console.warn("Received empty pricing tiers array")
+        }
+        
+        console.log("Setting pricing tiers:", data)
         setPricingTiers(data)
       } catch (error) {
         console.error("Failed to fetch pricing tiers:", error)
@@ -122,15 +134,16 @@ export function FeesSection({
   const annualGrandTotal = calculateAnnualUnits(grandTotal)
 
   useEffect(() => {
-    const tier = pricingTiers.find(
-      (tier: PricingTier) => annualGrandTotal >= tier.lower_limit && annualGrandTotal <= tier.upper_limit,
-    )
-    console.log("Debug values:", {
-      annualGrandTotal,
-      pricingTiersCount: pricingTiers.length,
-      foundTier: tier?.tier,
-      tierLimits: pricingTiers.map(t => `${t.tier}: ${t.lower_limit}-${t.upper_limit}`),
+    console.log("Calculating tier for annual grand total:", annualGrandTotal)
+    console.log("Available pricing tiers:", pricingTiers)
+    
+    const tier = pricingTiers.find((tier: PricingTier) => {
+      const isInRange = annualGrandTotal >= tier.lower_limit && annualGrandTotal <= tier.upper_limit
+      console.log(`Checking tier ${tier.tier}: ${tier.lower_limit}-${tier.upper_limit}, matches: ${isInRange}`)
+      return isInRange
     })
+    
+    console.log("Selected tier:", tier)
     setCurrentTier(tier || null)
   }, [annualGrandTotal, pricingTiers])
 
