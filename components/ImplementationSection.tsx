@@ -135,24 +135,37 @@ export function ImplementationSection({
   }
 
   const calculateOnboardingFee = () => {
-    const virtualHours = Number(formData.virtualTrainingHours) || 0
-    const onsiteDays = Number(formData.onsiteSupportDays) || 0
-    const onsiteFee = Number(formData.onsiteSupportFee) || 0
+    const virtualHours = Number(formData.virtualTrainingHours) || 0;
+    const onsiteDays = Number(formData.onsiteSupportDays) || 0;
+    const onsiteFee = Number(formData.onsiteSupportFee) || 0;
     
-    return (250 * virtualHours) + (onsiteDays * onsiteFee)
-  }
+    console.log('Calculating fee:', {
+      virtualHours,
+      onsiteDays,
+      onsiteFee,
+      virtualCost: 250 * virtualHours,
+      onsiteCost: onsiteDays * onsiteFee,
+      total: (250 * virtualHours) + (onsiteDays * onsiteFee)
+    });
+    
+    return (250 * virtualHours) + (onsiteDays * onsiteFee);
+  };
 
   const handleCustomValueChange = (field: string, value: string) => {
-    const numericValue = value === "" ? "" : Number(value)
-    handleInputChange(field, numericValue)
-    setIsCustomized(true)
+    // Parse the value as a number, defaulting to 0 if it's not a valid number
+    const numericValue = value === "" ? 0 : Number(value);
+    console.log(`Field ${field} changed to:`, { rawValue: value, parsedValue: numericValue });
+    
+    handleInputChange(field, numericValue);
+    setIsCustomized(true);
     
     // Auto-calculate onboarding fee when related fields change
     if (field === "virtualTrainingHours" || field === "onsiteSupportDays" || field === "onsiteSupportFee") {
-      const newFee = calculateOnboardingFee()
-      handleInputChange("onboardingFee", newFee)
+      const newFee = calculateOnboardingFee();
+      console.log('New calculated fee:', newFee);
+      handleInputChange("onboardingFee", newFee);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
