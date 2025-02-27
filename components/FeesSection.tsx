@@ -249,6 +249,10 @@ export function FeesSection({
       if (remainingUnits <= 0) break;
     }
     
+    // Add store connection costs (monthly * 12 for annual)
+    const annualStoreConnectionCost = (formData.storeConnections * formData.storeConnectionPrice) * 12;
+    totalFee += annualStoreConnectionCost;
+    
     // Round to nearest dollar
     return Math.round(totalFee);
   };
@@ -380,7 +384,7 @@ export function FeesSection({
                 
                 {formData.saasFeeDiscount > 0 && (
                   <div className="mb-2 text-blue-600">
-                    Applying {formData.saasFeeDiscount}% discount to all prices
+                    Applying {formData.saasFeeDiscount}% discount to all SaaS fees
                   </div>
                 )}
                 
@@ -432,6 +436,14 @@ export function FeesSection({
                   }
                   return null;
                 })}
+                
+                {/* Add store connection costs to the breakdown */}
+                {formData.storeConnections > 0 && formData.storeConnectionPrice > 0 && (
+                  <div className="mt-2">
+                    Store connections: {formatNumber(formData.storeConnections)} × ${formData.storeConnectionPrice} × 12 months = ${formatNumber((formData.storeConnections * formData.storeConnectionPrice) * 12)}
+                  </div>
+                )}
+                
                 <div className="mt-1 font-semibold">
                   Total Annual Fee: ${formatNumber(calculateAnnualFee())}
                 </div>
@@ -511,10 +523,10 @@ export function FeesSection({
               <div>Free connections: {formatNumber(formData.freeStoreConnections)}</div>
             )}
             {formData.storeConnections > 0 && formData.storeConnectionPrice > 0 && (
-              <div>Paid connections: ${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}</div>
+              <div>Monthly cost: ${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}</div>
             )}
             <div className="font-medium mt-1">
-              Total connections: {formatNumber((formData.freeStoreConnections || 0) + formData.storeConnections)}
+              Annual cost: ${formatNumber((formData.storeConnections * formData.storeConnectionPrice) * 12)}
             </div>
           </div>
         </div>
