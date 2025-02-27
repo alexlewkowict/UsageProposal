@@ -461,15 +461,28 @@ export function FeesSection({
             </div>
             <div className="font-medium">Store Connections</div>
           </div>
-          <Input
-            value={formatNumber(formData.storeConnections)}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => 
-              handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
-            }
-            className="text-right"
-          />
+          
+          <div className="flex items-center space-x-2">
+            <Input
+              value={formatNumber(formData.storeConnections)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => 
+                handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
+              }
+              className="text-right"
+            />
+            <span className="text-gray-500 font-medium">×</span>
+            <div className="relative flex-1">
+              <Input
+                value="30"
+                className="text-right pl-6"
+                readOnly
+              />
+              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
+            </div>
+          </div>
+          
           <div className="text-sm text-gray-500">
-            {formatNumber(formData.storeConnections)} x $30 = ${formatNumber(formData.storeConnections * 30)}
+            Total: ${formatNumber(formData.storeConnections * 30)}
           </div>
         </div>
 
