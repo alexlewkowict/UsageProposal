@@ -197,6 +197,50 @@ export function FeesSection({
     }
   }
 
+  const calculateAnnualFee = () => {
+    if (!currentTier || pricingTiers.length === 0) return 0;
+    
+    let totalFee = 0;
+    let remainingUnits = annualGrandTotal;
+    
+    // Sort tiers by lower_limit to ensure proper progression
+    const sortedTiers = [...pricingTiers].sort((a, b) => 
+      Number(a.lower_limit) - Number(b.lower_limit)
+    );
+    
+    for (let i = 0; i < sortedTiers.length; i++) {
+      const tier = sortedTiers[i];
+      const nextTier = sortedTiers[i + 1];
+      
+      if (i === 0 && remainingUnits > 0) {
+        // First tier - use platform fee for all units up to upper limit
+        const unitsInTier = Math.min(remainingUnits, Number(tier.upper_limit));
+        totalFee += Number(tier.platform_fee_sales_price);
+        remainingUnits -= unitsInTier;
+        console.log(`Tier ${tier.tier}: ${unitsInTier} units at platform fee $${tier.platform_fee_sales_price}, remaining: ${remainingUnits}`);
+      } 
+      
+      if (i > 0 && remainingUnits > 0) {
+        // Subsequent tiers - use shipped_unit_sales_price for units in this tier's range
+        const tierLimit = nextTier 
+          ? Number(nextTier.lower_limit) - Number(tier.lower_limit)
+          : Number.MAX_SAFE_INTEGER;
+        
+        const unitsInTier = Math.min(remainingUnits, tierLimit);
+        const tierUnitPrice = Number(tier.shipped_unit_sales_price) || 0;
+        
+        totalFee += unitsInTier * tierUnitPrice;
+        remainingUnits -= unitsInTier;
+        
+        console.log(`Tier ${tier.tier}: ${unitsInTier} units at $${tierUnitPrice} per unit = $${unitsInTier * tierUnitPrice}, remaining: ${remainingUnits}`);
+      }
+      
+      if (remainingUnits <= 0) break;
+    }
+    
+    return totalFee;
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -298,12 +342,12 @@ export function FeesSection({
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Platform Fee</Label>
-                  <div className="text-2xl font-bold">${formatNumber(currentTier.platform_fee_sales_price)}</div>
+                  <Label>Annual Fee</Label>
+                  <div className="text-2xl font-bold">${formatNumber(calculateAnnualFee())}</div>
                 </div>
                 {currentTier.shipped_unit_sales_price && (
                   <div>
-                    <Label>Shipped Unit Price</Label>
+                    <Label>Current Tier Unit Price</Label>
                     <div className="text-2xl font-bold">${currentTier.shipped_unit_sales_price.toFixed(3)}</div>
                   </div>
                 )}
@@ -316,6 +360,42 @@ export function FeesSection({
                   <div className="text-lg">
                     {formatNumber(currentTier.lower_limit)} - {formatNumber(currentTier.upper_limit)}
                   </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
+                <div className="font-semibold mb-1">Fee Calculation Breakdown:</div>
+                {pricingTiers.map((tier, index) => {
+                  if (index === 0) {
+                    return (
+                      <div key={tier.tier}>
+                        Base fee (up to {formatNumber(tier.upper_limit)} units): ${formatNumber(tier.platform_fee_sales_price)}
+                      </div>
+                    );
+                  } else if (annualGrandTotal > Number(tier.lower_limit)) {
+                    const prevTier = pricingTiers[index - 1];
+                    const tierLimit = index < pricingTiers.length - 1 
+                      ? Number(pricingTiers[index + 1].lower_limit) - Number(tier.lower_limit)
+                      : annualGrandTotal - Number(tier.lower_limit);
+                    
+                    const unitsInTier = Math.min(
+                      annualGrandTotal - Number(tier.lower_limit),
+                      tierLimit
+                    );
+                    
+                    if (unitsInTier > 0) {
+                      return (
+                        <div key={tier.tier}>
+                          {formatNumber(unitsInTier)} units at ${tier.shipped_unit_sales_price} each: 
+                          ${formatNumber(unitsInTier * Number(tier.shipped_unit_sales_price || 0))}
+                        </div>
+                      );
+                    }
+                  }
+                  return null;
+                })}
+                <div className="mt-1 font-semibold">
+                  Total Annual Fee: ${formatNumber(calculateAnnualFee())}
                 </div>
               </div>
             </CardContent>
