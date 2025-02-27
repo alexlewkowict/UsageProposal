@@ -255,13 +255,6 @@ export function FeesSection({
           </div>
         </div>
 
-        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-bold">Debug Info:</h3>
-          <p>Annual Grand Total: {annualGrandTotal}</p>
-          <p>Pricing Tiers Loaded: {pricingTiers.length}</p>
-          <p>Current Tier: {currentTier ? currentTier.tier : "None"}</p>
-        </div>
-
         {currentTier ? (
           <Card className="mt-4">
             <CardHeader>
