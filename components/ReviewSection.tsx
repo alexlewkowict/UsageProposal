@@ -33,38 +33,24 @@ export function ReviewSection({ formData }: ReviewSectionProps) {
           <CardTitle>Payment Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4 mt-2">
-            <div>
-              <h4 className="font-medium">Contract Term</h4>
-              <p>
-                {formData.contractTerm === "custom"
-                  ? `${formData.customContractTerm} Months`
-                  : `${formData.contractTerm} Months`}
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium">Billing Frequency</h4>
-              <p>
-                {formData.billingFrequency.charAt(0).toUpperCase() +
-                  formData.billingFrequency.slice(1)}
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium">Payment Method</h4>
-              <p>
-                {formData.paymentMethods?.map((method, index) => {
-                  let displayMethod = "";
-                  if (method === "ach") displayMethod = "ACH";
-                  if (method === "creditCard") displayMethod = "Credit Card";
-                  if (method === "check") displayMethod = "Check";
-                  
-                  return index === 0 
-                    ? displayMethod 
-                    : ` or ${displayMethod}`;
-                })}
-              </p>
-            </div>
-          </div>
+          <p>
+            <strong>Contract Term:</strong> {formData.contractTerm} months
+          </p>
+          <p>
+            <strong>Billing Frequency:</strong> {formData.billingFrequency.charAt(0).toUpperCase() + formData.billingFrequency.slice(1)}
+          </p>
+          <p>
+            <strong>Payment Method:</strong> {formData.paymentMethods?.map((method, index) => {
+              let displayMethod = "";
+              if (method === "ach") displayMethod = "ACH";
+              if (method === "creditCard") displayMethod = "Credit Card";
+              if (method === "check") displayMethod = "Check";
+              
+              return index === 0 
+                ? displayMethod 
+                : ` or ${displayMethod}`;
+            })}
+          </p>
         </CardContent>
       </Card>
 
