@@ -149,35 +149,59 @@ export function ImplementationSection({
   }
 
   const calculateOnboardingFee = () => {
+    // Get values from form data, ensuring they're numbers
     const virtualHours = Number(formData.virtualTrainingHours) || 0;
     const onsiteDays = Number(formData.onsiteSupportDays) || 0;
     const onsiteFee = Number(formData.onsiteSupportFee) || 0;
+    
+    // Calculate virtual training cost: $250 per hour
+    const virtualTrainingCost = 250 * virtualHours;
+    
+    // Calculate onsite support cost: onsite fee per day
+    const onsiteSupportCost = onsiteFee * onsiteDays;
+    
+    // Total fee is the sum of both costs
+    const totalFee = virtualTrainingCost + onsiteSupportCost;
     
     console.log('Calculating fee:', {
       virtualHours,
       onsiteDays,
       onsiteFee,
-      virtualCost: 250 * virtualHours,
-      onsiteCost: onsiteDays * onsiteFee,
-      total: (250 * virtualHours) + (onsiteDays * onsiteFee)
+      virtualTrainingCost,
+      onsiteSupportCost,
+      totalFee
     });
     
-    return (250 * virtualHours) + (onsiteDays * onsiteFee);
+    return totalFee;
   };
 
   const handleCustomValueChange = (field: string, value: string) => {
-    // Parse the value as a number, defaulting to 0 if it's not a valid number
-    const numericValue = value === "" ? 0 : Number(value);
-    console.log(`Field ${field} changed to:`, { rawValue: value, parsedValue: numericValue });
+    // Convert empty string to 0, otherwise parse as number
+    let numericValue;
+    if (value === "") {
+      numericValue = 0;
+    } else {
+      // Remove any non-numeric characters except decimal point
+      const cleanedValue = value.replace(/[^\d.]/g, '');
+      numericValue = parseFloat(cleanedValue) || 0;
+    }
     
+    console.log(`Field ${field} changed to:`, { 
+      rawValue: value, 
+      cleanedValue: numericValue 
+    });
+    
+    // Update the form data
     handleInputChange(field, numericValue);
     setIsCustomized(true);
     
     // Auto-calculate onboarding fee when related fields change
     if (field === "virtualTrainingHours" || field === "onsiteSupportDays" || field === "onsiteSupportFee") {
-      const newFee = calculateOnboardingFee();
-      console.log('New calculated fee:', newFee);
-      handleInputChange("onboardingFee", newFee);
+      setTimeout(() => {
+        const newFee = calculateOnboardingFee();
+        console.log('New calculated fee:', newFee);
+        handleInputChange("onboardingFee", newFee);
+      }, 0);
     }
   };
 
