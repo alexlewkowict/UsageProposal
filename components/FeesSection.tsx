@@ -22,6 +22,7 @@ interface FeesSectionProps {
     saasFeeDiscount: number;
     storeConnectionPrice: number;
     freeStoreConnections: number;
+    applyDiscountToStoreConnections: boolean;
   };
   handleInputChange: (field: string, value: string | number) => void;
   handleSaasFeeChange: (type: "pallets" | "cases" | "eaches", value: number) => void;
@@ -250,8 +251,14 @@ export function FeesSection({
     }
     
     // Add store connection costs (monthly * 12 for annual)
-    const annualStoreConnectionCost = (formData.storeConnections * formData.storeConnectionPrice) * 12;
-    totalFee += annualStoreConnectionCost;
+    let storeConnectionCost = formData.storeConnections * formData.storeConnectionPrice * 12;
+    
+    // Apply discount to store connections if enabled
+    if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
+      storeConnectionCost *= discountMultiplier;
+    }
+    
+    totalFee += storeConnectionCost;
     
     // Round to nearest dollar
     return Math.round(totalFee);
@@ -440,7 +447,15 @@ export function FeesSection({
                 {/* Add store connection costs to the breakdown */}
                 {formData.storeConnections > 0 && formData.storeConnectionPrice > 0 && (
                   <div className="mt-2">
-                    Store connections: {formatNumber(formData.storeConnections)} × ${formData.storeConnectionPrice} × 12 months = ${formatNumber((formData.storeConnections * formData.storeConnectionPrice) * 12)}
+                    Store connections: {formatNumber(formData.storeConnections)} × ${formData.storeConnectionPrice} × 12 months
+                    {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 ? (
+                      <span>
+                        = ${formatNumber(formData.storeConnections * formData.storeConnectionPrice * 12)}
+                        <span className="text-blue-600"> → ${formatNumber(Math.round(formData.storeConnections * formData.storeConnectionPrice * 12 * discountMultiplier))} after discount</span>
+                      </span>
+                    ) : (
+                      <span>= ${formatNumber(formData.storeConnections * formData.storeConnectionPrice * 12)}</span>
+                    )}
                   </div>
                 )}
                 
@@ -561,8 +576,17 @@ export function FeesSection({
             />
             <span className="absolute right-3 top-1/2 transform -translate-y-1/2">%</span>
           </div>
-          <div className="text-sm text-gray-500">
-            Applies to all pricing tiers
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="applyToStoreConnections"
+              checked={formData.applyDiscountToStoreConnections}
+              onChange={(e) => handleInputChange("applyDiscountToStoreConnections", e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="applyToStoreConnections" className="text-sm text-gray-700">
+              Apply discount to store connections
+            </label>
           </div>
         </div>
       </div>

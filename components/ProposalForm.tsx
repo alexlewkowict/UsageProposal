@@ -30,6 +30,7 @@ export default function ProposalForm() {
       eaches: { value: 150000 },
     },
     saasFeeDiscount: 20,
+    applyDiscountToStoreConnections: true,
     freeStoreConnections: 0,
     storeConnections: 0,
     storeConnectionPrice: 30,
