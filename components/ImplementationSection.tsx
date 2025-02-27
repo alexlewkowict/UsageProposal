@@ -1,148 +1,212 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Package, Zap, Users, Briefcase, Building, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { toast } from "@/components/ui/use-toast"
 
-interface ImplementationSectionProps {
-  formData: any
-  handleInputChange: (field: string, value: string | number) => void
-  invalidFields: string[]
+interface ImplementationPackage {
+  id: string;
+  name: string;
+  description: string;
+  onboarding_fee: number;
+  virtual_training_hours: number;
+  onsite_support_days: number;
+  onsite_support_fee: number;
+  optional_prof_services_rate: number;
 }
 
-export function ImplementationSection({ formData, handleInputChange, invalidFields }: ImplementationSectionProps) {
-  const [editingCustom, setEditingCustom] = useState(false)
+interface ImplementationSectionProps {
+  formData: {
+    implementationPackage: string;
+    onboardingFee: string | number;
+    virtualTrainingHours: string | number;
+    onsiteSupportDays: string | number;
+    onsiteSupportFee: string | number;
+    optionalProfServicesRate: string | number;
+  };
+  handleInputChange: (field: string, value: string | number) => void;
+  invalidFields: string[];
+}
 
-  const implementationPackages = [
-    { id: "quickStartBrand", name: "QuickStart Brand", icon: Briefcase },
-    { id: "quickStart3PL", name: "QuickStart 3PL", icon: Building },
-    { id: "standard", name: "Standard", icon: Package },
-    { id: "advanced", name: "Advanced", icon: Zap },
-    { id: "custom", name: "Custom", icon: Users },
-  ]
+export function ImplementationSection({
+  formData,
+  handleInputChange,
+  invalidFields,
+}: ImplementationSectionProps) {
+  const [packages, setPackages] = useState<ImplementationPackage[]>([])
+  const [selectedPackage, setSelectedPackage] = useState<ImplementationPackage | null>(null)
+  const [isCustomized, setIsCustomized] = useState(false)
 
-  const packageDetails = {
-    quickStartBrand: {
-      onboardingFee: 3000,
-      virtualTrainingHours: 12,
-      onsiteSupportDays: 0,
-      onsiteSupportFee: 2000,
-      optionalProfServicesRate: 300,
-    },
-    quickStart3PL: {
-      onboardingFee: 3700,
-      virtualTrainingHours: 15,
-      onsiteSupportDays: 0,
-      onsiteSupportFee: 2000,
-      optionalProfServicesRate: 300,
-    },
-    standard: {
-      onboardingFee: 5000,
-      virtualTrainingHours: 20,
-      onsiteSupportDays: 0,
-      onsiteSupportFee: 2000,
-      optionalProfServicesRate: 300,
-    },
-    advanced: {
-      onboardingFee: 7500,
-      virtualTrainingHours: 30,
-      onsiteSupportDays: 2,
-      onsiteSupportFee: 2000,
-      optionalProfServicesRate: 300,
-    },
-    custom: {
-      onboardingFee: 0,
-      virtualTrainingHours: 0,
-      onsiteSupportDays: 0,
-      onsiteSupportFee: 2000,
-      optionalProfServicesRate: 300,
-    },
+  useEffect(() => {
+    async function fetchImplementationPackages() {
+      try {
+        const response = await fetch("/api/implementation-packages")
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        setPackages(data)
+      } catch (error) {
+        console.error("Failed to fetch implementation packages:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load implementation packages. Please try again later.",
+          variant: "destructive",
+        })
+      }
+    }
+
+    fetchImplementationPackages()
+  }, [])
+
+  useEffect(() => {
+    if (formData.implementationPackage && packages.length > 0) {
+      const selected = packages.find(pkg => pkg.id === formData.implementationPackage)
+      setSelectedPackage(selected || null)
+      
+      // If values differ from the package defaults, mark as customized
+      if (selected) {
+        const isModified = 
+          Number(formData.onboardingFee) !== selected.onboarding_fee ||
+          Number(formData.virtualTrainingHours) !== selected.virtual_training_hours ||
+          Number(formData.onsiteSupportDays) !== selected.onsite_support_days ||
+          Number(formData.onsiteSupportFee) !== selected.onsite_support_fee ||
+          Number(formData.optionalProfServicesRate) !== selected.optional_prof_services_rate
+        
+        setIsCustomized(isModified)
+      }
+    }
+  }, [formData.implementationPackage, packages, formData])
+
+  const handlePackageSelect = (packageId: string) => {
+    handleInputChange("implementationPackage", packageId)
+    
+    const selected = packages.find(pkg => pkg.id === packageId)
+    if (selected) {
+      // Set default values from the selected package
+      handleInputChange("onboardingFee", selected.onboarding_fee)
+      handleInputChange("virtualTrainingHours", selected.virtual_training_hours)
+      handleInputChange("onsiteSupportDays", selected.onsite_support_days)
+      handleInputChange("onsiteSupportFee", selected.onsite_support_fee)
+      handleInputChange("optionalProfServicesRate", selected.optional_prof_services_rate)
+      setIsCustomized(false)
+    }
   }
 
-  const formatCurrency = (value: number) => {
-    return isNaN(value) ? "$0.00" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value)
+  const calculateOnboardingFee = () => {
+    const virtualHours = Number(formData.virtualTrainingHours) || 0
+    const onsiteDays = Number(formData.onsiteSupportDays) || 0
+    const onsiteFee = Number(formData.onsiteSupportFee) || 0
+    
+    return (250 * virtualHours) + (onsiteDays * onsiteFee)
   }
 
-  const handleCustomEdit = (field: string, value: string) => {
-    handleInputChange(field, value)
+  const handleCustomValueChange = (field: string, value: string) => {
+    const numericValue = value === "" ? "" : Number(value)
+    handleInputChange(field, numericValue)
+    setIsCustomized(true)
+    
+    // Auto-calculate onboarding fee when related fields change
+    if (field === "virtualTrainingHours" || field === "onsiteSupportDays" || field === "onsiteSupportFee") {
+      const newFee = calculateOnboardingFee()
+      handleInputChange("onboardingFee", newFee)
+    }
   }
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Label>Implementation Package</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {implementationPackages.map((pkg) => (
-            <PackageTile
-              key={pkg.id}
-              package={pkg}
-              selected={formData.implementationPackage === pkg.id}
-              onClick={() => {
-                const selectedPackage = packageDetails[pkg.id]
-                handleInputChange("implementationPackage", pkg.id)
-                Object.entries(selectedPackage).forEach(([key, value]) => {
-                  handleInputChange(key, value)
-                })
-                setEditingCustom(false)
-              }}
-              isInvalid={invalidFields.includes("implementationPackage")}
-            />
-          ))}
+      <div>
+        <Label className="text-lg font-semibold">Implementation Package</Label>
+        <div className="mt-2">
+          <RadioGroup
+            value={formData.implementationPackage}
+            onValueChange={handlePackageSelect}
+            className={`space-y-4 ${invalidFields.includes("implementationPackage") ? "border-red-500 p-2 rounded-md border" : ""}`}
+          >
+            {packages.map((pkg) => (
+              <div key={pkg.id} className="flex items-start space-x-2 p-3 border rounded-md">
+                <RadioGroupItem value={pkg.id} id={pkg.id} className="mt-1" />
+                <div className="flex-1">
+                  <Label htmlFor={pkg.id} className="font-medium text-base cursor-pointer">
+                    {pkg.name}
+                  </Label>
+                  <p className="text-sm text-gray-500 mt-1">{pkg.description}</p>
+                  
+                  {formData.implementationPackage === pkg.id && (
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm">Onboarding Fee</Label>
+                        <div className="relative mt-1">
+                          <Input
+                            value={formData.onboardingFee}
+                            onChange={(e) => handleCustomValueChange("onboardingFee", e.target.value)}
+                            className="pl-6"
+                          />
+                          <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm">Virtual Training Hours</Label>
+                        <Input
+                          value={formData.virtualTrainingHours}
+                          onChange={(e) => handleCustomValueChange("virtualTrainingHours", e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm">Onsite Support Days</Label>
+                        <Input
+                          value={formData.onsiteSupportDays}
+                          onChange={(e) => handleCustomValueChange("onsiteSupportDays", e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm">Onsite Support Fee</Label>
+                        <div className="relative mt-1">
+                          <Input
+                            value={formData.onsiteSupportFee}
+                            onChange={(e) => handleCustomValueChange("onsiteSupportFee", e.target.value)}
+                            className="pl-6"
+                          />
+                          <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm">Optional Prof. Services Rate</Label>
+                        <div className="relative mt-1">
+                          <Input
+                            value={formData.optionalProfServicesRate}
+                            onChange={(e) => handleCustomValueChange("optionalProfServicesRate", e.target.value)}
+                            className="pl-6"
+                          />
+                          <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
+                        </div>
+                      </div>
+                      
+                      {isCustomized && (
+                        <div className="col-span-2 p-2 bg-blue-50 text-blue-700 rounded-md text-sm">
+                          <p>This package has been customized from the default values.</p>
+                          <p className="mt-1">Onboarding Fee = $250 × {formData.virtualTrainingHours} Virtual Hours + {formData.onsiteSupportDays} Onsite Days × ${formData.onsiteSupportFee}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </RadioGroup>
         </div>
       </div>
-
-      {formData.implementationPackage && (
-        <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex justify-between items-center">
-            <h3 className="font-semibold text-lg">Package Details</h3>
-            {formData.implementationPackage === "custom" && (
-              <Button variant="ghost" size="sm" onClick={() => setEditingCustom(!editingCustom)}>
-                <Pencil className="h-4 w-4 mr-2" />
-                {editingCustom ? "Save" : "Edit"}
-              </Button>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <PackageDetailItem
-              label="Onboarding Fee"
-              value={formData.onboardingFee}
-              editable={formData.implementationPackage === "custom" && editingCustom}
-              onChange={(value) => handleCustomEdit("onboardingFee", value)}
-              format={(value) => formatCurrency(Number(value))}
-            />
-            <PackageDetailItem
-              label="Virtual Training / Implementation Meetings"
-              value={formData.virtualTrainingHours}
-              suffix="(30-60 min Sessions)"
-              editable={formData.implementationPackage === "custom" && editingCustom}
-              onChange={(value) => handleCustomEdit("virtualTrainingHours", value)}
-            />
-            <PackageDetailItem
-              label="Onsite Support Days Included"
-              value={formData.onsiteSupportDays}
-              editable={formData.implementationPackage === "custom" && editingCustom}
-              onChange={(value) => handleCustomEdit("onsiteSupportDays", value)}
-            />
-            <PackageDetailItem
-              label="Onsite Support Fee"
-              value={formData.onsiteSupportFee}
-              editable={formData.implementationPackage === "custom" && editingCustom}
-              onChange={(value) => handleCustomEdit("onsiteSupportFee", value)}
-              format={(value) => formatCurrency(Number(value))}
-            />
-            <PackageDetailItem
-              label="Optional Professional Services Hourly Rate"
-              value={formData.optionalProfServicesRate}
-              editable={formData.implementationPackage === "custom" && editingCustom}
-              onChange={(value) => handleCustomEdit("optionalProfServicesRate", value)}
-              format={(value) => formatCurrency(Number(value))}
-            />
-          </div>
-        </div>
-      )}
     </div>
   )
 }
