@@ -43,47 +43,57 @@ export function ImplementationSection({
   const [isCustomized, setIsCustomized] = useState(false)
 
   useEffect(() => {
-    // Mock implementation packages data instead of fetching from API
+    // Mock implementation packages data based on Supabase table structure
     const mockPackages = [
       {
-        id: "standard",
-        name: "Standard Implementation",
-        description: "Basic implementation package suitable for most customers",
+        id: "1",
+        name: "QuickStart Brand",
+        description: "Basic implementation for brand owners",
+        onboarding_fee: 3000,
+        virtual_training_hours: 12,
+        onsite_support_days: 0,
+        onsite_support_fee: 2000,
+        optional_prof_services_rate: 300
+      },
+      {
+        id: "2",
+        name: "QuickStart 3PL",
+        description: "Basic implementation for 3PL providers",
+        onboarding_fee: 3700,
+        virtual_training_hours: 15,
+        onsite_support_days: 0,
+        onsite_support_fee: 2000,
+        optional_prof_services_rate: 300
+      },
+      {
+        id: "3",
+        name: "Standard",
+        description: "Standard implementation package suitable for most customers",
         onboarding_fee: 5000,
-        virtual_training_hours: 10,
-        onsite_support_days: 2,
-        onsite_support_fee: 1500,
-        optional_prof_services_rate: 250
-      },
-      {
-        id: "premium",
-        name: "Premium Implementation",
-        description: "Enhanced implementation with additional training and support",
-        onboarding_fee: 10000,
         virtual_training_hours: 20,
-        onsite_support_days: 5,
-        onsite_support_fee: 1500,
-        optional_prof_services_rate: 250
+        onsite_support_days: 0,
+        onsite_support_fee: 2000,
+        optional_prof_services_rate: 300
       },
       {
-        id: "enterprise",
-        name: "Enterprise Implementation",
-        description: "Comprehensive implementation for large organizations",
-        onboarding_fee: 20000,
-        virtual_training_hours: 40,
-        onsite_support_days: 10,
-        onsite_support_fee: 1500,
-        optional_prof_services_rate: 250
+        id: "4",
+        name: "Advanced",
+        description: "Enhanced implementation with additional training and support",
+        onboarding_fee: 7500,
+        virtual_training_hours: 30,
+        onsite_support_days: 2,
+        onsite_support_fee: 2000,
+        optional_prof_services_rate: 300
       },
       {
-        id: "custom",
-        name: "Custom Implementation",
+        id: "5",
+        name: "Custom",
         description: "Tailored implementation package based on specific requirements",
         onboarding_fee: 0,
         virtual_training_hours: 0,
         onsite_support_days: 0,
-        onsite_support_fee: 1500,
-        optional_prof_services_rate: 250
+        onsite_support_fee: 2000,
+        optional_prof_services_rate: 300
       }
     ];
     
