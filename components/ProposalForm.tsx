@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BusinessInfoSection } from "./BusinessInfoSection"
 import { PaymentDetailsSection } from "./PaymentDetailsSection"
-import { SaasFeeConnectionsSection } from "./SaasFeeConnectionsSection"
+import { FeesSection } from "./FeesSection"
 import { ProposalOptionsSection } from "./ProposalOptionsSection"
 import { ImplementationSection } from "./ImplementationSection"
 import { ReviewSection } from "./ReviewSection"
@@ -182,7 +182,7 @@ export default function ProposalForm() {
             />
           )}
           {currentStep === 2 && (
-            <SaasFeeConnectionsSection
+            <FeesSection
               formData={formData}
               handleInputChange={handleInputChange}
               handleSaasFeeChange={handleSaasFeeChange}
