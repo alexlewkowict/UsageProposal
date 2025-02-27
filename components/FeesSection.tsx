@@ -200,7 +200,7 @@ export function FeesSection({
   const calculateAnnualFee = () => {
     if (!currentTier || pricingTiers.length === 0) return 0;
     
-    // Calculate discount multiplier (e.g., 10% discount = multiply by 0.9)
+    // Calculate discount multiplier (e.g., 20% discount = multiply by 0.8)
     const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
     
     let totalFee = 0;
@@ -245,7 +245,8 @@ export function FeesSection({
       if (remainingUnits <= 0) break;
     }
     
-    return totalFee;
+    // Round to nearest dollar
+    return Math.round(totalFee);
   };
 
   return (
@@ -389,7 +390,7 @@ export function FeesSection({
                       <div key={tier.tier}>
                         Base fee (up to {formatNumber(tier.upper_limit)} units): ${formatNumber(tier.platform_fee_list_price)}
                         {formData.saasFeeDiscount > 0 && (
-                          <span className="text-blue-600"> → ${formatNumber(discountedPlatformFee)} after discount</span>
+                          <span className="text-blue-600"> → ${formatNumber(Math.round(discountedPlatformFee * 100) / 100)} after discount</span>
                         )}
                       </div>
                     );
@@ -413,7 +414,7 @@ export function FeesSection({
                           {formData.saasFeeDiscount > 0 && (
                             <span className="text-blue-600"> → ${discountedPrice.toFixed(3)} after discount</span>
                           )}
-                          : ${formatNumber(unitsInTier * discountedPrice)}
+                          : ${formatNumber(Math.round(unitsInTier * discountedPrice * 100) / 100)}
                         </div>
                       );
                     }
