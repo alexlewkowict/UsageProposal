@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { ChangeEvent } from "react"
 
 import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
@@ -10,11 +11,20 @@ import { toast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface FeesSectionProps {
-  formData: any
-  handleInputChange: (field: string, value: string | number) => void
-  handleSaasFeeChange: (type: "pallets" | "cases" | "eaches", value: number) => void
-  handleFrequencyChange: (frequency: string) => void
-  invalidFields: string[]
+  formData: {
+    saasFee: {
+      frequency: string;
+      pallets: { value: number };
+      cases: { value: number };
+      eaches: { value: number };
+    };
+    storeConnections: number;
+    saasFeeDiscount: number;
+  };
+  handleInputChange: (field: string, value: string | number) => void;
+  handleSaasFeeChange: (type: "pallets" | "cases" | "eaches", value: number) => void;
+  handleFrequencyChange: (frequency: string) => void;
+  invalidFields: string[];
 }
 
 interface PricingTier {
@@ -49,13 +59,14 @@ export function FeesSection({
     async function fetchPricingTiers() {
       try {
         const response = await fetch("/api/pricing-tiers")
-        const data = await response.json()
-
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}, message: ${data.error || "Unknown error"}`)
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
-
-        console.log("Fetched pricing tiers:", data)
+        const data = await response.json()
+        console.log("Raw pricing tiers data:", data)
+        if (!Array.isArray(data)) {
+          throw new Error("Expected array of pricing tiers")
+        }
         setPricingTiers(data)
       } catch (error) {
         console.error("Failed to fetch pricing tiers:", error)
@@ -69,6 +80,13 @@ export function FeesSection({
 
     fetchPricingTiers()
   }, [])
+
+  useEffect(() => {
+    console.log("Current pricing tiers state:", pricingTiers)
+    if (pricingTiers.length === 0) {
+      console.warn("No pricing tiers loaded yet")
+    }
+  }, [pricingTiers])
 
   const formatNumber = (value: number) => {
     return value.toLocaleString("en-US")
@@ -105,10 +123,14 @@ export function FeesSection({
 
   useEffect(() => {
     const tier = pricingTiers.find(
-      (tier) => annualGrandTotal >= tier.lower_limit && annualGrandTotal <= tier.upper_limit,
+      (tier: PricingTier) => annualGrandTotal >= tier.lower_limit && annualGrandTotal <= tier.upper_limit,
     )
-    console.log("Current annual grand total:", annualGrandTotal)
-    console.log("Selected tier:", tier)
+    console.log("Debug values:", {
+      annualGrandTotal,
+      pricingTiersCount: pricingTiers.length,
+      foundTier: tier?.tier,
+      tierLimits: pricingTiers.map(t => `${t.tier}: ${t.lower_limit}-${t.upper_limit}`),
+    })
     setCurrentTier(tier || null)
   }, [annualGrandTotal, pricingTiers])
 
@@ -270,7 +292,9 @@ export function FeesSection({
           id="storeConnections"
           type="number"
           value={formData.storeConnections}
-          onChange={(e) => handleInputChange("storeConnections", Number.parseInt(e.target.value) || 0)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => 
+            handleInputChange("storeConnections", Number.parseInt(e.target.value) || 0)
+          }
           className={invalidFields.includes("storeConnections") ? "border-red-500" : ""}
         />
       </div>
@@ -300,9 +324,10 @@ interface TotalUnitTileProps {
   total: number
   onChange: (value: string) => void
   isInvalid: boolean
+  key?: string
 }
 
-function TotalUnitTile({ icon, label, quantity, equivalentUnits, total, onChange, isInvalid }: TotalUnitTileProps) {
+function TotalUnitTile({ icon, label, quantity, equivalentUnits, total, onChange, isInvalid, key }: TotalUnitTileProps) {
   const formatNumber = (value: number) => {
     return value.toLocaleString("en-US")
   }
@@ -313,7 +338,11 @@ function TotalUnitTile({ icon, label, quantity, equivalentUnits, total, onChange
         <div className="text-primary">{icon}</div>
         <div className="font-medium">{label}</div>
       </div>
-      <Input value={formatNumber(quantity)} onChange={(e) => onChange(e.target.value)} className="text-right" />
+      <Input
+        value={formatNumber(quantity)}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+        className="text-right"
+      />
       <div className="text-sm text-gray-500">
         {formatNumber(quantity)} x {equivalentUnits} = {formatNumber(total)}
       </div>
