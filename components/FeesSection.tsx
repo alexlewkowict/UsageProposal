@@ -251,7 +251,9 @@ export function FeesSection({
     }
     
     // Add store connection costs (monthly * 12 for annual)
-    let storeConnectionCost = formData.storeConnections * formData.storeConnectionPrice * 12;
+    const storeConnectionsQty = Number(formData.storeConnections) || 0;
+    const storeConnectionPrice = Number(formData.storeConnectionPrice) || 0;
+    let storeConnectionCost = storeConnectionsQty * storeConnectionPrice * 12;
     
     // Apply discount to store connections if enabled
     if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
@@ -451,7 +453,7 @@ export function FeesSection({
                     {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 ? (
                       <span>
                         = ${formatNumber(formData.storeConnections * formData.storeConnectionPrice * 12)}
-                        <span className="text-blue-600"> → ${formatNumber(Math.round(formData.storeConnections * formData.storeConnectionPrice * 12 * discountMultiplier))} after discount</span>
+                        <span className="text-blue-600"> → ${formatNumber(Math.round((formData.storeConnections * formData.storeConnectionPrice * 12) * (1 - (Number(formData.saasFeeDiscount) / 100))))} after discount</span>
                       </span>
                     ) : (
                       <span>= ${formatNumber(formData.storeConnections * formData.storeConnectionPrice * 12)}</span>
@@ -512,9 +514,11 @@ export function FeesSection({
               <div className="w-1/2">
                 <Input
                   value={formatNumber(formData.storeConnections)}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => 
-                    handleInputChange("storeConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
-                  }
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    const value = e.target.value.replace(/,/g, "");
+                    const numericValue = Number.parseInt(value) || 0;
+                    handleInputChange("storeConnections", numericValue);
+                  }}
                   className="text-right"
                 />
               </div>
