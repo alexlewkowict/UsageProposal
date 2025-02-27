@@ -25,12 +25,12 @@ export default function ProposalForm() {
     paymentType: "",
     saasFee: {
       frequency: "weekly",
-      pallets: { value: 0 },
-      cases: { value: 0 },
-      eaches: { value: 0 },
+      pallets: { value: 1500 },
+      cases: { value: 1500 },
+      eaches: { value: 600 },
     },
-    saasFeeDiscount: "10",
-    storeConnections: "5",
+    saasFeeDiscount: 20,
+    storeConnections: 10,
     selectedOptions: {
       cover: true,
       whatsAUnit: true,

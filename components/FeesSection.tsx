@@ -386,11 +386,15 @@ export function FeesSection({
                   
                   if (index === 0) {
                     const discountedPlatformFee = Number(tier.platform_fee_list_price) * discountMultiplier;
+                    // Round to 2 decimal places
+                    const roundedListPrice = Math.round(tier.platform_fee_list_price * 100) / 100;
+                    const roundedDiscountedPrice = Math.round(discountedPlatformFee * 100) / 100;
+                    
                     return (
                       <div key={tier.tier}>
-                        Base fee (up to {formatNumber(tier.upper_limit)} units): ${formatNumber(tier.platform_fee_list_price)}
+                        Base fee (up to {formatNumber(tier.upper_limit)} units): ${formatNumber(roundedListPrice)}
                         {formData.saasFeeDiscount > 0 && (
-                          <span className="text-blue-600"> → ${formatNumber(Math.round(discountedPlatformFee * 100) / 100)} after discount</span>
+                          <span className="text-blue-600"> → ${formatNumber(roundedDiscountedPrice)} after discount</span>
                         )}
                       </div>
                     );
@@ -408,13 +412,16 @@ export function FeesSection({
                     if (unitsInTier > 0) {
                       const listPrice = Number(tier.shipped_unit_list_price) || 0;
                       const discountedPrice = listPrice * discountMultiplier;
+                      // Round the total cost to 2 decimal places
+                      const totalCost = Math.round(unitsInTier * discountedPrice * 100) / 100;
+                      
                       return (
                         <div key={tier.tier}>
                           {formatNumber(unitsInTier)} units at ${listPrice.toFixed(3)}
                           {formData.saasFeeDiscount > 0 && (
                             <span className="text-blue-600"> → ${discountedPrice.toFixed(3)} after discount</span>
                           )}
-                          : ${formatNumber(Math.round(unitsInTier * discountedPrice * 100) / 100)}
+                          : ${formatNumber(totalCost)}
                         </div>
                       );
                     }
