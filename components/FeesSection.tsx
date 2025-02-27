@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Package } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
 
 interface FeesSectionProps {
   formData: {
@@ -568,19 +569,17 @@ export function FeesSection({
             />
             <span className="absolute right-3 top-1/2 transform -translate-y-1/2">%</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
+          <div className="flex items-center justify-between">
+            <Label htmlFor="applyToStoreConnections" className="text-sm text-gray-700">
+              Apply discount to store connections
+            </Label>
+            <Switch
               id="applyToStoreConnections"
               checked={formData.applyDiscountToStoreConnections}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => 
-                handleInputChange("applyDiscountToStoreConnections", e.target.checked)
+              onCheckedChange={(checked) => 
+                handleInputChange("applyDiscountToStoreConnections", checked)
               }
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
-            <label htmlFor="applyToStoreConnections" className="text-sm text-gray-700">
-              Apply discount to store connections
-            </label>
           </div>
         </div>
       </div>
