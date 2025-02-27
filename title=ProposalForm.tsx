@@ -6,9 +6,9 @@ function ProposalForm() {
   const [formData, setFormData] = useState({
     saasFee: {
       frequency: "weekly",  // default frequency
-      pallets: { value: 100 }, // adjust as needed
-      cases: { value: 100 },
-      eaches: { value: 100 },
+      pallets: { value: 1500 },
+      cases: { value: 1500 },
+      eaches: { value: 600 },
     },
     storeConnections: 10,
     saasFeeDiscount: 0,
