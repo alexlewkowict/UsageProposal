@@ -48,6 +48,9 @@ export default function ProposalForm() {
     onsiteSupportDays: "",
     onsiteSupportFee: "",
     optionalProfServicesRate: "",
+    contractTerm: "24",
+    billingFrequency: "quarterly",
+    paymentMethods: ["creditCard"],
   })
   const [invalidFields, setInvalidFields] = useState<string[]>([])
 
@@ -122,7 +125,14 @@ export default function ProposalForm() {
         if (!formData.storeConnections) invalidFields.push("storeConnections")
         break
       case 3:
-        // All options are optional
+        if (!formData.contractTerm) invalidFields.push("contractTerm")
+        if (formData.contractTerm === "custom" && (!formData.customContractTerm || formData.customContractTerm <= 0)) {
+          invalidFields.push("customContractTerm")
+        }
+        if (!formData.billingFrequency) invalidFields.push("billingFrequency")
+        if (!formData.paymentMethods || formData.paymentMethods.length === 0) {
+          invalidFields.push("paymentMethods")
+        }
         break
       case 4:
         if (!formData.implementationPackage) invalidFields.push("implementationPackage")
