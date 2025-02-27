@@ -465,6 +465,29 @@ export function FeesSection({
             <div className="font-medium">Store Connections</div>
           </div>
           
+          <div className="flex space-x-2 mb-1">
+            <button
+              className={`px-3 py-1 rounded-md text-sm ${
+                formData.storeConnectionPrice > 0
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
+              }`}
+              onClick={() => handleStoreConnectionPriceChange(30)}
+            >
+              Paid
+            </button>
+            <button
+              className={`px-3 py-1 rounded-md text-sm ${
+                formData.storeConnectionPrice === 0
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
+              }`}
+              onClick={() => handleStoreConnectionPriceChange(0)}
+            >
+              Free
+            </button>
+          </div>
+          
           <div className="flex items-center space-x-2">
             <div className="w-1/2">
               <Input
@@ -484,13 +507,16 @@ export function FeesSection({
                   handleStoreConnectionPriceChange(Number(value) || 0);
                 }}
                 className="text-right pl-6"
+                disabled={formData.storeConnectionPrice === 0}
               />
               <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
             </div>
           </div>
           
           <div className="text-sm text-gray-500">
-            Total: ${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}
+            {formData.storeConnectionPrice === 0 
+              ? "Free store connections" 
+              : `Total: $${formatNumber(formData.storeConnections * formData.storeConnectionPrice)}`}
           </div>
         </div>
 
