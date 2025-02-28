@@ -307,6 +307,8 @@ export function FeesSection({
     // For each store (1-based counting), find which tier it belongs to and add its cost
     for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
       // Find the tier this store belongs to
+      // For a tier with fromQty=0, toQty=5, it should include stores 1-5
+      // For a tier with fromQty=6, toQty=50, it should include stores 6-50
       const tier = sortedTiers.find(t => storeNum >= t.fromQty + 1 && storeNum <= t.toQty + 1);
       
       if (tier) {
@@ -329,8 +331,11 @@ export function FeesSection({
       return [];
     }
     
+    console.log("Total store connections:", formData.storeConnections);
+    
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
+    console.log("Sorted tiers:", sortedTiers);
     
     // Create a map to count stores in each tier
     const tierCounts = new Map();
@@ -338,14 +343,23 @@ export function FeesSection({
     // For each store (1-based counting), find which tier it belongs to and count it
     for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
       // Find the tier this store belongs to
-      const tier = sortedTiers.find(t => storeNum >= t.fromQty + 1 && storeNum <= t.toQty + 1);
+      const tier = sortedTiers.find(t => {
+        const matches = storeNum >= t.fromQty + 1 && storeNum <= t.toQty + 1;
+        console.log(`Store ${storeNum}: checking tier ${t.name} (${t.fromQty+1}-${t.toQty+1}): ${matches}`);
+        return matches;
+      });
       
       if (tier) {
         // Increment the count for this tier
         const currentCount = tierCounts.get(tier.id) || 0;
         tierCounts.set(tier.id, currentCount + 1);
+        console.log(`Store ${storeNum} belongs to tier ${tier.name}, count now ${currentCount + 1}`);
+      } else {
+        console.log(`Store ${storeNum} doesn't belong to any tier!`);
       }
     }
+    
+    console.log("Tier counts:", Array.from(tierCounts.entries()));
     
     // Convert the map to the breakdown format
     const breakdown = [];
@@ -372,9 +386,12 @@ export function FeesSection({
           discountedCost: discountedCost,
           hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
         });
+        
+        console.log(`Added to breakdown: ${tier.name}, ${storesInTier} stores, $${tierCost}`);
       }
     }
     
+    console.log("Final breakdown:", breakdown);
     return breakdown;
   };
 
