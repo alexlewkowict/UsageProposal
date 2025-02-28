@@ -383,12 +383,12 @@ export function FeesSection({
   };
 
   // Add the handleStoreConnectionsChange function
-
   const handleStoreConnectionsChange = (value: string) => {
     const parsedValue = parseInt(value.replace(/,/g, ""), 10);
     handleInputChange("storeConnections", isNaN(parsedValue) ? 0 : parsedValue);
   };
 
+  // Add the handleFormSubmit function to prevent form submission on ENTER
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission
   };
