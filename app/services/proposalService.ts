@@ -22,22 +22,11 @@ export class ProposalService {
    */
   async generateProposal(formData: any): Promise<string> {
     try {
-      // 1. Create a new presentation
-      const presentation = await this.createPresentation(formData.businessName || 'Proposal');
+      console.log('Generating proposal with form data:', formData);
       
-      // 2. Determine which slides to include based on form data
-      const slidesToInclude = this.getSlidesToInclude(formData);
-      
-      // 3. Copy slides from templates to the new presentation
-      await this.copySlides(presentation.id, slidesToInclude);
-      
-      // 4. Replace variables in the presentation
-      await this.replaceVariables(presentation.id, formData);
-      
-      // 5. Export as PDF
-      const pdfUrl = await this.exportAsPdf(presentation.id);
-      
-      return pdfUrl;
+      // For now, return a mock URL
+      // In production, this would use the Google Slides API
+      return this.getMockProposalUrl(formData);
     } catch (error) {
       console.error('Error generating proposal:', error);
       throw new Error('Failed to generate proposal');
@@ -205,5 +194,14 @@ export class ProposalService {
     
     // Placeholder return
     return `https://example.com/proposals/${presentationId}.pdf`;
+  }
+
+  private getMockProposalUrl(formData: any): string {
+    // Generate a unique ID for the proposal
+    const proposalId = Math.random().toString(36).substring(2, 15);
+    
+    // In a real implementation, this would be the URL to the generated PDF
+    // For now, we'll return a mock URL
+    return `https://example.com/proposals/${proposalId}.pdf`;
   }
 } 
