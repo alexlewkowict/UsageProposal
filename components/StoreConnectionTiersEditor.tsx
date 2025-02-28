@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,6 +21,13 @@ interface StoreConnectionTiersEditorProps {
 
 export function StoreConnectionTiersEditor({ tiers, onChange }: StoreConnectionTiersEditorProps) {
   const [localTiers, setLocalTiers] = useState<StoreConnectionTier[]>(tiers);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Reset local state when props change
+  useEffect(() => {
+    setLocalTiers(tiers);
+    setHasChanges(false);
+  }, [tiers]);
 
   const handleTierChange = (id: string, field: keyof StoreConnectionTier, value: any) => {
     const updatedTiers = localTiers.map(tier => {
@@ -35,6 +42,7 @@ export function StoreConnectionTiersEditor({ tiers, onChange }: StoreConnectionT
     
     // Update local state
     setLocalTiers(sortedTiers);
+    setHasChanges(true);
     
     // Notify parent
     onChange(sortedTiers);
@@ -137,6 +145,7 @@ export function StoreConnectionTiersEditor({ tiers, onChange }: StoreConnectionT
         <Plus className="h-4 w-4 mr-2" />
         Add Tier
       </Button>
+      <input type="hidden" data-has-changes={hasChanges} />
     </div>
   );
 } 

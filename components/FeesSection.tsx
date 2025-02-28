@@ -300,35 +300,32 @@ export function FeesSection({
     }
     
     let totalCost = 0;
-    let storesProcessed = 0;
     
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
+    // For each tier, calculate how many stores fall within its range
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       
-      // For each tier, calculate how many stores fall within its range
-      let storesInTier = 0;
+      // Calculate the range for this tier (inclusive)
+      const lowerBound = tier.fromQty;
+      const upperBound = tier.toQty;
       
-      if (storesProcessed < formData.storeConnections) {
-        // Calculate the range for this tier
-        const tierStart = tier.fromQty;
-        const tierEnd = tier.toQty;
-        
-        // Calculate how many stores we can allocate to this tier
-        if (storesProcessed < tierStart) {
-          // We haven't reached this tier yet
-          storesInTier = Math.min(formData.storeConnections - storesProcessed, tierEnd - tierStart + 1);
-          storesProcessed = tierStart + storesInTier;
-        } else if (storesProcessed <= tierEnd) {
-          // We're already in this tier
-          storesInTier = Math.min(formData.storeConnections - storesProcessed, tierEnd - storesProcessed + 1);
-          storesProcessed += storesInTier;
-        }
-        
+      // If total stores is less than the lower bound of this tier, skip it
+      if (formData.storeConnections < lowerBound) continue;
+      
+      // Calculate how many stores fall within this tier (inclusive bounds)
+      const storesInTier = Math.min(formData.storeConnections, upperBound) - lowerBound + 1;
+      
+      // Adjust for overlap with previous tier
+      const adjustedStores = i > 0 && lowerBound === sortedTiers[i-1].toQty + 1 
+        ? storesInTier 
+        : storesInTier - 1;
+      
+      if (adjustedStores > 0) {
         // Calculate cost for this tier
-        const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+        const tierCost = adjustedStores * tier.pricePerStore * 12; // Annual cost
         totalCost += tierCost;
       }
     }
@@ -348,19 +345,23 @@ export function FeesSection({
     }
     
     const breakdown = [];
-    let remainingStores = formData.storeConnections;
     
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
-    for (const tier of sortedTiers) {
-      // Calculate how many stores are in this tier's range
-      const tierStart = tier.fromQty;
-      const tierEnd = tier.toQty;
-      const tierCapacity = tierEnd - tierStart + 1;
+    // For each tier, calculate how many stores fall within its range
+    for (let i = 0; i < sortedTiers.length; i++) {
+      const tier = sortedTiers[i];
       
-      // How many stores can we allocate to this tier
-      const storesInTier = Math.min(remainingStores, tierCapacity);
+      // Calculate the range for this tier
+      const lowerBound = tier.fromQty;
+      const upperBound = tier.toQty;
+      
+      // If total stores is less than the lower bound of this tier, skip it
+      if (formData.storeConnections <= lowerBound) continue;
+      
+      // Calculate how many stores fall within this tier
+      const storesInTier = Math.min(formData.storeConnections, upperBound) - lowerBound;
       
       if (storesInTier > 0) {
         // Calculate cost for this tier
@@ -381,13 +382,7 @@ export function FeesSection({
           discountedCost: discountedCost,
           hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
         });
-        
-        // Subtract processed stores
-        remainingStores -= storesInTier;
       }
-      
-      // If we've processed all stores, break out of the loop
-      if (remainingStores <= 0) break;
     }
     
     return breakdown;
@@ -691,8 +686,18 @@ export function FeesSection({
               </div>
               
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => {}}>
-                  Close
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    // Close the dialog
+                    const closeButton = document.querySelector('[data-state="open"] button[data-state="closed"]');
+                    if (closeButton instanceof HTMLElement) {
+                      closeButton.click();
+                    }
+                  }}
+                >
+                  {document.querySelector('[data-has-changes="true"]') ? 'Save' : 'Close'}
                 </Button>
               </DialogFooter>
             </DialogContent>
