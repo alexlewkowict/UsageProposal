@@ -305,25 +305,26 @@ export function FeesSection({
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
-    for (const tier of sortedTiers) {
+    for (let i = 0; i < sortedTiers.length; i++) {
+      const tier = sortedTiers[i];
+      
       if (remainingStores <= 0) break;
       
-      // Check if this tier applies to our remaining stores
-      if (remainingStores > tier.fromQty) {
-        // Calculate how many stores fall within this tier
-        const maxStoresInTier = tier.toQty === Number.MAX_SAFE_INTEGER 
-          ? remainingStores 
-          : Math.min(tier.toQty, remainingStores);
-        
-        const storesInTier = Math.max(0, maxStoresInTier - tier.fromQty);
-        
-        // Calculate cost for this tier
-        const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
-        totalCost += tierCost;
-        
-        // Subtract processed stores
-        remainingStores -= storesInTier;
-      }
+      // Calculate the range of this tier
+      const tierMin = tier.fromQty;
+      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores + tierMin : tier.toQty;
+      
+      // Calculate how many stores fall within this tier
+      const storesInTier = Math.min(remainingStores, Math.max(0, tierMax - tierMin + 1));
+      
+      if (storesInTier <= 0) continue;
+      
+      // Calculate cost for this tier
+      const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+      totalCost += tierCost;
+      
+      // Subtract processed stores
+      remainingStores -= storesInTier;
     }
     
     // Apply discount if enabled
@@ -333,6 +334,58 @@ export function FeesSection({
     }
     
     return totalCost;
+  };
+
+  // Add a function to generate a detailed breakdown of store connection costs
+  const getStoreConnectionsBreakdown = () => {
+    if (!formData.storeConnections || formData.storeConnections <= 0) {
+      return [];
+    }
+    
+    const breakdown = [];
+    let remainingStores = formData.storeConnections;
+    
+    // Sort tiers by fromQty to ensure proper calculation
+    const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
+    
+    for (let i = 0; i < sortedTiers.length; i++) {
+      const tier = sortedTiers[i];
+      
+      if (remainingStores <= 0) break;
+      
+      // Calculate the range of this tier
+      const tierMin = tier.fromQty;
+      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores + tierMin : tier.toQty;
+      
+      // Calculate how many stores fall within this tier
+      const storesInTier = Math.min(remainingStores, Math.max(0, tierMax - tierMin + 1));
+      
+      if (storesInTier <= 0) continue;
+      
+      // Calculate cost for this tier
+      const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+      
+      // Apply discount if enabled
+      let discountedCost = tierCost;
+      if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
+        const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
+        discountedCost = tierCost * discountMultiplier;
+      }
+      
+      breakdown.push({
+        tier: tier.name,
+        storesInTier,
+        pricePerStore: tier.pricePerStore,
+        annualCost: tierCost,
+        discountedCost: discountedCost,
+        hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
+      });
+      
+      // Subtract processed stores
+      remainingStores -= storesInTier;
+    }
+    
+    return breakdown;
   };
 
   // Add a function to handle store connections input if it doesn't exist
@@ -522,22 +575,27 @@ export function FeesSection({
                   return null;
                 })}
                 
-                {/* Add store connection costs to the breakdown */}
-                {formData.storeConnections > 0 && formData.storeConnectionPrice > 0 && (
-                  <div className="mt-2">
-                    Store connections: {formatNumber(formData.storeConnections)} × ${formData.storeConnectionPrice} × 12 months
-                    {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 ? (
-                      <span>
-                        = ${formatNumber(formData.storeConnections * formData.storeConnectionPrice * 12)}
-                        <span className="text-blue-600"> → ${formatNumber(Math.round((formData.storeConnections * formData.storeConnectionPrice * 12) * (1 - (Number(formData.saasFeeDiscount) / 100))))} after discount</span>
-                      </span>
-                    ) : (
-                      <span>= ${formatNumber(formData.storeConnections * formData.storeConnectionPrice * 12)}</span>
-                    )}
+                {/* Store connections breakdown */}
+                {formData.storeConnections > 0 && (
+                  <div className="mt-2 border-t pt-2">
+                    <div className="font-semibold mb-1">Store Connections Breakdown:</div>
+                    
+                    {getStoreConnectionsBreakdown().map((item, index) => (
+                      <div key={index} className="mb-1">
+                        {item.tier}: {formatNumber(item.storesInTier)} stores × ${item.pricePerStore.toFixed(2)} × 12 months = ${formatNumber(item.annualCost)}
+                        {item.hasDiscount && (
+                          <span className="text-blue-600"> → ${formatNumber(item.discountedCost)} after {formData.saasFeeDiscount}% discount</span>
+                        )}
+                      </div>
+                    ))}
+                    
+                    <div className="font-semibold mt-1">
+                      Total Store Connections Cost: ${formatNumber(calculateStoreConnectionsCost())}
+                    </div>
                   </div>
                 )}
                 
-                <div className="mt-1 font-semibold">
+                <div className="mt-2 pt-2 border-t font-semibold">
                   Total Annual Fee: ${formatNumber(calculateAnnualFee())}
                 </div>
               </div>
