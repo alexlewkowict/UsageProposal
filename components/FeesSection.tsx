@@ -300,7 +300,7 @@ export function FeesSection({
     }
     
     let totalCost = 0;
-    let remainingStores = formData.storeConnections;
+    let processedStores = 0;
     
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
@@ -308,24 +308,25 @@ export function FeesSection({
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       
-      // Calculate the applicable stores for this tier
-      let storesInTier = 0;
+      // Skip if we've already processed all stores
+      if (processedStores >= formData.storeConnections) break;
       
-      if (remainingStores > tier.fromQty) {
-        // Calculate upper bound for this tier
-        const upperBound = tier.toQty === Number.MAX_SAFE_INTEGER 
-          ? remainingStores 
-          : Math.min(tier.toQty, remainingStores);
+      // Calculate the range for this tier
+      const tierStart = tier.fromQty;
+      const tierEnd = tier.toQty === Number.MAX_SAFE_INTEGER ? 
+        formData.storeConnections : 
+        Math.min(tier.toQty, formData.storeConnections);
+      
+      // Calculate how many stores fall within this tier
+      const storesInTier = Math.max(0, Math.min(tierEnd - tierStart + 1, formData.storeConnections - processedStores));
+      
+      if (storesInTier > 0) {
+        // Calculate cost for this tier
+        const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+        totalCost += tierCost;
         
-        // Calculate stores that fall in this tier
-        storesInTier = upperBound - Math.max(tier.fromQty, 
-          i > 0 ? sortedTiers[i-1].toQty + 1 : 0);
-        
-        if (storesInTier > 0) {
-          // Calculate cost for this tier
-          const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
-          totalCost += tierCost;
-        }
+        // Update processed stores
+        processedStores += storesInTier;
       }
     }
     
@@ -338,14 +339,14 @@ export function FeesSection({
     return totalCost;
   };
 
-  // Add a function to generate a detailed breakdown of store connection costs
+  // Fix the getStoreConnectionsBreakdown function
   const getStoreConnectionsBreakdown = () => {
     if (!formData.storeConnections || formData.storeConnections <= 0) {
       return [];
     }
     
     const breakdown = [];
-    let remainingStores = formData.storeConnections;
+    let processedStores = 0;
     
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
@@ -353,39 +354,40 @@ export function FeesSection({
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       
-      // Calculate the applicable stores for this tier
-      let storesInTier = 0;
+      // Skip if we've already processed all stores
+      if (processedStores >= formData.storeConnections) break;
       
-      if (remainingStores > tier.fromQty) {
-        // Calculate upper bound for this tier
-        const upperBound = tier.toQty === Number.MAX_SAFE_INTEGER 
-          ? remainingStores 
-          : Math.min(tier.toQty, remainingStores);
+      // Calculate the range for this tier
+      const tierStart = tier.fromQty;
+      const tierEnd = tier.toQty === Number.MAX_SAFE_INTEGER ? 
+        formData.storeConnections : 
+        Math.min(tier.toQty, formData.storeConnections);
+      
+      // Calculate how many stores fall within this tier
+      const storesInTier = Math.max(0, Math.min(tierEnd - tierStart + 1, formData.storeConnections - processedStores));
+      
+      if (storesInTier > 0) {
+        // Calculate cost for this tier
+        const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
         
-        // Calculate stores that fall in this tier
-        storesInTier = upperBound - Math.max(tier.fromQty, 
-          i > 0 ? sortedTiers[i-1].toQty + 1 : 0);
-        
-        if (storesInTier > 0) {
-          // Calculate cost for this tier
-          const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
-          
-          // Apply discount if enabled
-          let discountedCost = tierCost;
-          if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
-            const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
-            discountedCost = tierCost * discountMultiplier;
-          }
-          
-          breakdown.push({
-            tier: tier.name,
-            storesInTier,
-            pricePerStore: tier.pricePerStore,
-            annualCost: tierCost,
-            discountedCost: discountedCost,
-            hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
-          });
+        // Apply discount if enabled
+        let discountedCost = tierCost;
+        if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
+          const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
+          discountedCost = tierCost * discountMultiplier;
         }
+        
+        breakdown.push({
+          tier: tier.name,
+          storesInTier,
+          pricePerStore: tier.pricePerStore,
+          annualCost: tierCost,
+          discountedCost: discountedCost,
+          hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
+        });
+        
+        // Update processed stores
+        processedStores += storesInTier;
       }
     }
     
