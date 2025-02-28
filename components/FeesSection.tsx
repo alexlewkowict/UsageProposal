@@ -10,6 +10,17 @@ import { Package } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Edit, Plus, Trash } from "lucide-react"
 
 interface FeesSectionProps {
   formData: {
@@ -24,11 +35,13 @@ interface FeesSectionProps {
     storeConnectionPrice: number;
     freeStoreConnections: number;
     applyDiscountToStoreConnections: boolean;
+    storeConnectionTiers: StoreConnectionTier[];
   };
   handleInputChange: (field: string, value: string | number) => void;
   handleSaasFeeChange: (type: "pallets" | "cases" | "eaches", value: number) => void;
   handleFrequencyChange: (frequency: string) => void;
   handleStoreConnectionPriceChange: (value: number) => void;
+  handleStoreConnectionTiersChange: (tiers: StoreConnectionTier[]) => void;
   invalidFields: string[];
 }
 
@@ -43,12 +56,21 @@ interface PricingTier {
   shipped_unit_overage_rate: number
 }
 
+interface StoreConnectionTier {
+  id: string;
+  name: string;
+  fromQty: number;
+  toQty: number;
+  pricePerStore: number;
+}
+
 export function FeesSection({
   formData,
   handleInputChange,
   handleSaasFeeChange,
   handleFrequencyChange,
   handleStoreConnectionPriceChange,
+  handleStoreConnectionTiersChange,
   invalidFields,
 }: FeesSectionProps) {
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([])
@@ -267,6 +289,50 @@ export function FeesSection({
     return Math.round(totalFee);
   };
 
+  const calculateTotalStores = () => {
+    // Sum up all store connections
+    return formData.storeConnectionTiers.reduce((total, tier) => {
+      // For each tier, calculate how many stores fall within its range
+      const storesInTier = Math.min(
+        formData.storeConnections, 
+        tier.toQty
+      ) - tier.fromQty + 1;
+      
+      return total + Math.max(0, storesInTier);
+    }, 0);
+  };
+
+  const calculateStoreConnectionsCost = () => {
+    let totalCost = 0;
+    let remainingStores = formData.storeConnections;
+    
+    // Sort tiers by fromQty to ensure proper calculation
+    const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
+    
+    for (const tier of sortedTiers) {
+      if (remainingStores <= 0) break;
+      
+      // Calculate how many stores fall within this tier
+      const tierRange = tier.toQty - tier.fromQty + 1;
+      const storesInTier = Math.min(remainingStores, tierRange);
+      
+      // Calculate cost for this tier
+      const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+      totalCost += tierCost;
+      
+      // Subtract processed stores
+      remainingStores -= storesInTier;
+    }
+    
+    // Apply discount if enabled
+    if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
+      const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
+      totalCost *= discountMultiplier;
+    }
+    
+    return totalCost;
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -475,8 +541,8 @@ export function FeesSection({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div className={`p-4 border rounded-lg flex flex-col space-y-3 ${invalidFields.includes("storeConnections") ? "border-red-500" : ""}`}>
+      <div className={`p-4 border rounded-lg flex flex-col space-y-3 ${invalidFields.includes("storeConnections") ? "border-red-500" : ""}`}>
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="text-primary">
               <svg
@@ -496,80 +562,78 @@ export function FeesSection({
             <div className="font-medium">Store Connections</div>
           </div>
           
-          {/* Free Store Connections */}
-          <div>
-            <div className="text-sm font-medium mb-1">Free Connections</div>
-            <Input
-              value={formatNumber(formData.freeStoreConnections || 0)}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => 
-                handleInputChange("freeStoreConnections", Number.parseInt(e.target.value.replace(/,/g, "")) || 0)
-              }
-              className="text-right"
-            />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Configure Tiers
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Store Connection Tiers</DialogTitle>
+                <DialogDescription>
+                  Configure pricing tiers for store connections.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="py-4">
+                <StoreConnectionTiersEditor 
+                  tiers={formData.storeConnectionTiers} 
+                  onChange={handleStoreConnectionTiersChange}
+                />
+              </div>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => {}}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+        
+        {/* Summary of store connection tiers */}
+        <div className="mt-2 space-y-2">
+          <div className="text-sm font-medium">Pricing Tiers Summary</div>
+          
+          <div className="bg-gray-50 p-3 rounded-md">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left pb-2">Tier</th>
+                  <th className="text-right pb-2">Range</th>
+                  <th className="text-right pb-2">Price/Store</th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.storeConnectionTiers.map((tier) => (
+                  <tr key={tier.id} className="border-b border-gray-200 last:border-0">
+                    <td className="py-2">{tier.name}</td>
+                    <td className="text-right py-2">
+                      {tier.fromQty} - {tier.toQty === Number.MAX_SAFE_INTEGER ? "∞" : tier.toQty}
+                    </td>
+                    <td className="text-right py-2">${tier.pricePerStore.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
           
-          {/* Paid Store Connections */}
-          <div>
-            <div className="text-sm font-medium mb-1">Paid Connections</div>
-            <div className="flex items-center space-x-2">
-              <div className="w-1/2">
-                <Input
-                  value={formatNumber(formData.storeConnections)}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    const value = e.target.value.replace(/,/g, "");
-                    const numericValue = Number.parseInt(value) || 0;
-                    handleInputChange("storeConnections", numericValue);
-                  }}
-                  className="text-right"
-                />
-              </div>
-              <span className="text-gray-500 font-medium">×</span>
-              <div className="relative w-1/2">
-                <Input
-                  value={formData.storeConnectionPrice}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, "");
-                    handleStoreConnectionPriceChange(Number(value) || 0);
-                  }}
-                  className="text-right pl-6"
-                />
-                <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
-              </div>
-            </div>
+          {/* Total store connections */}
+          <div className="flex justify-between items-center mt-3 font-medium">
+            <span>Total Stores:</span>
+            <span>{calculateTotalStores()}</span>
           </div>
-        </div>
-
-        <div className="p-4 border rounded-lg flex flex-col space-y-2">
-          <div className="flex items-center space-x-2">
-            <div className="text-primary">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6"
-              >
-                <line x1="19" y1="5" x2="5" y2="19"></line>
-                <circle cx="6.5" cy="6.5" r="2.5"></circle>
-                <circle cx="17.5" cy="17.5" r="2.5"></circle>
-              </svg>
-            </div>
-            <div className="font-medium">SaaS Fee Discount</div>
+          
+          {/* Total annual cost */}
+          <div className="flex justify-between items-center font-medium">
+            <span>Annual Cost:</span>
+            <span>${calculateStoreConnectionsCost().toFixed(2)}</span>
           </div>
-          <div className="relative">
-            <Input
-              value={formData.saasFeeDiscount}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => 
-                handleInputChange("saasFeeDiscount", Number.parseInt(e.target.value) || 0)
-              }
-              className="text-right pr-8"
-            />
-            <span className="absolute right-3 top-1/2 transform -translate-y-1/2">%</span>
-          </div>
-          <div className="flex items-center justify-between">
+          
+          {/* Apply discount toggle */}
+          <div className="flex items-center justify-between mt-2">
             <Label htmlFor="applyToStoreConnections" className="text-sm text-gray-700">
               Apply discount to store connections
             </Label>

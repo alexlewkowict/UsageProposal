@@ -11,6 +11,7 @@ import { ProposalOptionsSection } from "./ProposalOptionsSection"
 import { ImplementationSection } from "./ImplementationSection"
 import { ReviewSection } from "./ReviewSection"
 import { toast } from "@/components/ui/use-toast"
+import { v4 as uuidv4 } from "uuid"
 
 const STEPS = [
   "Business Info",
@@ -41,6 +42,36 @@ export default function ProposalForm() {
     freeStoreConnections: 0,
     storeConnections: 0,
     storeConnectionPrice: 30,
+    storeConnectionTiers: [
+      {
+        id: uuidv4(),
+        name: "Included",
+        fromQty: 0,
+        toQty: 5,
+        pricePerStore: 0,
+      },
+      {
+        id: uuidv4(),
+        name: "Additional Stores",
+        fromQty: 6,
+        toQty: 50,
+        pricePerStore: 30,
+      },
+      {
+        id: uuidv4(),
+        name: "Discount Tier 1",
+        fromQty: 51,
+        toQty: 100,
+        pricePerStore: 25,
+      },
+      {
+        id: uuidv4(),
+        name: "Discount Tier 2",
+        fromQty: 101,
+        toQty: Number.MAX_SAFE_INTEGER,
+        pricePerStore: 20,
+      },
+    ],
     selectedOptions: {
       cover: true,
       whatsAUnit: true,
@@ -107,6 +138,13 @@ export default function ProposalForm() {
       storeConnectionPrice: value,
     }));
   };
+
+  const handleStoreConnectionTiersChange = (tiers: any[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      storeConnectionTiers: tiers,
+    }))
+  }
 
   const validateStep = () => {
     const invalidFields: string[] = []
@@ -210,6 +248,7 @@ export default function ProposalForm() {
               handleSaasFeeChange={handleSaasFeeChange}
               handleFrequencyChange={handleFrequencyChange}
               handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
+              handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
               invalidFields={invalidFields}
             />
           )}
