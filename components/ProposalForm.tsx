@@ -95,6 +95,8 @@ export default function ProposalForm() {
     paymentMethods: ["creditCard"],
   })
   const [invalidFields, setInvalidFields] = useState<string[]>([])
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [proposalUrl, setProposalUrl] = useState<string | null>(null)
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData((prev) => ({
@@ -211,6 +213,42 @@ export default function ProposalForm() {
     // Here you would typically send the data to your backend or perform any final actions
   }
 
+  const handleGenerateProposal = async () => {
+    try {
+      setIsGenerating(true)
+      
+      const response = await fetch('/api/generate-proposal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to generate proposal')
+      }
+      
+      const data = await response.json()
+      setProposalUrl(data.pdfUrl)
+      
+      toast({
+        title: 'Proposal Generated',
+        description: 'Your proposal has been successfully generated.',
+      })
+    } catch (error) {
+      console.error('Error generating proposal:', error)
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to generate proposal',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   useEffect(() => {
     if (formData.opportunityName) {
       setFormData((prev) => ({
@@ -283,12 +321,30 @@ export default function ProposalForm() {
                 {currentStep === STEPS.length - 2 ? "Review Proposal" : "Continue"}
               </Button>
             ) : (
-              <Button type="submit" className="ml-auto">
-                Generate Proposal
+              <Button 
+                type="button" 
+                onClick={handleGenerateProposal} 
+                disabled={isGenerating || !validateStep().isValid}
+                className="ml-auto"
+              >
+                {isGenerating ? 'Generating...' : 'Generate Proposal'}
               </Button>
             )}
           </div>
         </form>
+
+        {proposalUrl && (
+          <div className="mt-4">
+            <a 
+              href={proposalUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              View Generated Proposal
+            </a>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
