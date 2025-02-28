@@ -308,14 +308,12 @@ export function FeesSection({
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       
-      if (remainingStores <= 0) break;
-      
-      // Calculate the range of this tier
-      const tierMin = tier.fromQty;
-      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores + tierMin : tier.toQty;
+      // Skip tiers that don't apply to our remaining stores
+      if (remainingStores <= tier.fromQty) continue;
       
       // Calculate how many stores fall within this tier
-      const storesInTier = Math.min(remainingStores, Math.max(0, tierMax - tierMin + 1));
+      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : tier.toQty;
+      const storesInTier = Math.min(remainingStores, tierMax) - tier.fromQty;
       
       if (storesInTier <= 0) continue;
       
@@ -325,6 +323,9 @@ export function FeesSection({
       
       // Subtract processed stores
       remainingStores -= storesInTier;
+      
+      // If we've processed all stores, break out of the loop
+      if (remainingStores <= 0) break;
     }
     
     // Apply discount if enabled
@@ -351,14 +352,12 @@ export function FeesSection({
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       
-      if (remainingStores <= 0) break;
-      
-      // Calculate the range of this tier
-      const tierMin = tier.fromQty;
-      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores + tierMin : tier.toQty;
+      // Skip tiers that don't apply to our remaining stores
+      if (remainingStores <= tier.fromQty) continue;
       
       // Calculate how many stores fall within this tier
-      const storesInTier = Math.min(remainingStores, Math.max(0, tierMax - tierMin + 1));
+      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : tier.toQty;
+      const storesInTier = Math.min(remainingStores, tierMax) - tier.fromQty;
       
       if (storesInTier <= 0) continue;
       
@@ -383,6 +382,9 @@ export function FeesSection({
       
       // Subtract processed stores
       remainingStores -= storesInTier;
+      
+      // If we've processed all stores, break out of the loop
+      if (remainingStores <= 0) break;
     }
     
     return breakdown;
@@ -737,7 +739,7 @@ export function FeesSection({
           
           <div className="flex justify-between items-center font-medium">
             <span>Annual Cost:</span>
-            <span>${calculateStoreConnectionsCost().toFixed(2)}</span>
+            <span>${formatNumber(calculateStoreConnectionsCost())}</span>
           </div>
           
           <div className="flex items-center justify-between mt-2">
