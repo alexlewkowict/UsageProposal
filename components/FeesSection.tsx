@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Edit, Plus, Trash } from "lucide-react"
+import { StoreConnectionTiersEditor } from "./StoreConnectionTiersEditor"
 
 interface FeesSectionProps {
   formData: {
@@ -290,14 +291,13 @@ export function FeesSection({
   };
 
   const calculateTotalStores = () => {
-    // If no store connections are specified, return 0
-    if (!formData.storeConnections) return 0;
-    
-    return formData.storeConnections;
+    return formData.storeConnections || 0;
   };
 
   const calculateStoreConnectionsCost = () => {
-    if (!formData.storeConnections) return 0;
+    if (!formData.storeConnections || formData.storeConnections <= 0) {
+      return 0;
+    }
     
     let totalCost = 0;
     let remainingStores = formData.storeConnections;
@@ -308,32 +308,34 @@ export function FeesSection({
     for (const tier of sortedTiers) {
       if (remainingStores <= 0) break;
       
-      // Calculate how many stores fall within this tier
-      const storesInTier = Math.min(
-        remainingStores, 
-        tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores : tier.toQty - tier.fromQty + 1
-      );
-      
-      if (storesInTier <= 0) continue;
-      
-      // Calculate cost for this tier
-      const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
-      totalCost += tierCost;
-      
-      // Subtract processed stores
-      remainingStores -= storesInTier;
+      // Check if this tier applies to our remaining stores
+      if (remainingStores > tier.fromQty) {
+        // Calculate how many stores fall within this tier
+        const maxStoresInTier = tier.toQty === Number.MAX_SAFE_INTEGER 
+          ? remainingStores 
+          : Math.min(tier.toQty, remainingStores);
+        
+        const storesInTier = Math.max(0, maxStoresInTier - tier.fromQty);
+        
+        // Calculate cost for this tier
+        const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+        totalCost += tierCost;
+        
+        // Subtract processed stores
+        remainingStores -= storesInTier;
+      }
     }
     
     // Apply discount if enabled
     if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
       const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
-      totalCost *= discountMultiplier;
+      totalCost = totalCost * discountMultiplier;
     }
     
     return totalCost;
   };
 
-  // Add a function to handle store connections input
+  // Add a function to handle store connections input if it doesn't exist
   const handleStoreConnectionsChange = (value: string) => {
     const numValue = value.replace(/,/g, '');
     const parsedValue = parseInt(numValue, 10);
