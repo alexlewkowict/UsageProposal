@@ -295,39 +295,24 @@ export function FeesSection({
   };
 
   const calculateStoreConnectionsCost = () => {
-    if (!formData.storeConnections || formData.storeConnections <= 0) {
+    if (!formData.storeConnections <= 0) {
       return 0;
     }
     
     let totalCost = 0;
-    let remainingStores = formData.storeConnections;
     
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
-    // For each tier, calculate how many stores fall within its range
-    for (let i = 0; i < sortedTiers.length; i++) {
-      const tier = sortedTiers[i];
+    // For each store, find which tier it belongs to and add its cost
+    for (let storeNum = 0; storeNum < formData.storeConnections; storeNum++) {
+      // Find the tier this store belongs to
+      const tier = sortedTiers.find(t => storeNum >= t.fromQty && storeNum <= t.toQty);
       
-      // Calculate the range for this tier
-      const lowerBound = tier.fromQty;
-      const upperBound = tier.toQty;
-      
-      // Calculate how many stores fall within this tier (corrected calculation)
-      const maxStoresInTier = upperBound - lowerBound + 1;
-      const storesInTier = Math.min(remainingStores, maxStoresInTier);
-      
-      if (storesInTier > 0) {
-        // Calculate cost for this tier
-        const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
-        totalCost += tierCost;
-        
-        // Subtract processed stores
-        remainingStores -= storesInTier;
+      if (tier) {
+        // Add the cost for this store
+        totalCost += tier.pricePerStore * 12; // Annual cost
       }
-      
-      // If we've processed all stores, break out of the loop
-      if (remainingStores <= 0) break;
     }
     
     // Apply discount if enabled
@@ -344,31 +329,29 @@ export function FeesSection({
       return [];
     }
     
-    const breakdown = [];
-    
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
-    console.log("Store connections:", formData.storeConnections);
-    console.log("Sorted tiers:", sortedTiers);
+    // Create a map to count stores in each tier
+    const tierCounts = new Map();
     
-    let remainingStores = formData.storeConnections;
+    // For each store, find which tier it belongs to and count it
+    for (let storeNum = 0; storeNum < formData.storeConnections; storeNum++) {
+      // Find the tier this store belongs to
+      const tier = sortedTiers.find(t => storeNum >= t.fromQty && storeNum <= t.toQty);
+      
+      if (tier) {
+        // Increment the count for this tier
+        const currentCount = tierCounts.get(tier.id) || 0;
+        tierCounts.set(tier.id, currentCount + 1);
+      }
+    }
     
-    // For each tier, calculate how many stores fall within its range
-    for (let i = 0; i < sortedTiers.length; i++) {
-      const tier = sortedTiers[i];
-      
-      // Calculate the range for this tier
-      const lowerBound = tier.fromQty;
-      const upperBound = tier.toQty;
-      
-      console.log(`Tier ${tier.name}: lowerBound=${lowerBound}, upperBound=${upperBound}`);
-      
-      // Calculate how many stores fall within this tier (corrected calculation)
-      const maxStoresInTier = upperBound - lowerBound + 1;
-      const storesInTier = Math.min(remainingStores, maxStoresInTier);
-      
-      console.log(`Tier ${tier.name}: maxStoresInTier=${maxStoresInTier}, storesInTier=${storesInTier}`);
+    // Convert the map to the breakdown format
+    const breakdown = [];
+    
+    for (const tier of sortedTiers) {
+      const storesInTier = tierCounts.get(tier.id) || 0;
       
       if (storesInTier > 0) {
         // Calculate cost for this tier
@@ -389,18 +372,9 @@ export function FeesSection({
           discountedCost: discountedCost,
           hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
         });
-        
-        console.log(`Added to breakdown: ${tier.name}, ${storesInTier} stores, $${tierCost}`);
-        
-        // Subtract processed stores
-        remainingStores -= storesInTier;
       }
-      
-      // If we've processed all stores, break out of the loop
-      if (remainingStores <= 0) break;
     }
     
-    console.log("Final breakdown:", breakdown);
     return breakdown;
   };
 
