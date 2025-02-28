@@ -309,7 +309,7 @@ export function FeesSection({
       // Find the tier this store belongs to
       // For a tier with fromQty=0, toQty=5, it should include stores 1-5
       // For a tier with fromQty=6, toQty=50, it should include stores 6-50
-      const tier = sortedTiers.find(t => storeNum >= t.fromQty + 1 && storeNum <= t.toQty + 1);
+      const tier = sortedTiers.find(t => storeNum > t.fromQty && storeNum <= t.toQty + 1);
       
       if (tier) {
         // Add the cost for this store
@@ -344,7 +344,9 @@ export function FeesSection({
     for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
       // Find the tier this store belongs to
       const tier = sortedTiers.find(t => {
-        const matches = storeNum >= t.fromQty + 1 && storeNum <= t.toQty + 1;
+        // For a tier with fromQty=0, toQty=5, it should include stores 1-5
+        // For a tier with fromQty=6, toQty=50, it should include stores 6-50
+        const matches = storeNum > t.fromQty && storeNum <= t.toQty + 1;
         console.log(`Store ${storeNum}: checking tier ${t.name} (${t.fromQty+1}-${t.toQty+1}): ${matches}`);
         return matches;
       });
