@@ -304,12 +304,12 @@ export function FeesSection({
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
-    // For each store (1-based counting), find which tier it belongs to and add its cost
+    // For each store, find which tier it belongs to and add its cost
     for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
       // Find the tier this store belongs to
-      // For a tier with fromQty=0, toQty=5, it should include stores 1-5
+      // For a tier with fromQty=0, toQty=5, it should include stores 0-5
       // For a tier with fromQty=6, toQty=50, it should include stores 6-50
-      const tier = sortedTiers.find(t => storeNum > t.fromQty && storeNum <= t.toQty + 1);
+      const tier = sortedTiers.find(t => storeNum >= t.fromQty && storeNum <= t.toQty);
       
       if (tier) {
         // Add the cost for this store
@@ -337,12 +337,12 @@ export function FeesSection({
     // Create a map to count stores in each tier
     const tierCounts = new Map();
     
-    // For each store (1-based counting), find which tier it belongs to and count it
+    // For each store, find which tier it belongs to and count it
     for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
       // Find the tier this store belongs to
-      // For a tier with fromQty=0, toQty=5, it should include stores 1-5
+      // For a tier with fromQty=0, toQty=5, it should include stores 0-5
       // For a tier with fromQty=6, toQty=50, it should include stores 6-50
-      const tier = sortedTiers.find(t => storeNum > t.fromQty && storeNum <= t.toQty + 1);
+      const tier = sortedTiers.find(t => storeNum >= t.fromQty && storeNum <= t.toQty);
       
       if (tier) {
         // Increment the count for this tier
