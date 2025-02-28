@@ -397,10 +397,10 @@ export function FeesSection({
     return breakdown;
   };
 
-  // Add a function to handle store connections input if it doesn't exist
+  // Add the handleStoreConnectionsChange function
+
   const handleStoreConnectionsChange = (value: string) => {
-    const numValue = value.replace(/,/g, '');
-    const parsedValue = parseInt(numValue, 10);
+    const parsedValue = parseInt(value.replace(/,/g, ""), 10);
     handleInputChange("storeConnections", isNaN(parsedValue) ? 0 : parsedValue);
   };
 
