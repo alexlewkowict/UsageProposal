@@ -308,24 +308,25 @@ export function FeesSection({
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       
-      // Skip tiers that don't apply to our remaining stores
-      if (remainingStores <= tier.fromQty) continue;
+      // Calculate the applicable stores for this tier
+      let storesInTier = 0;
       
-      // Calculate how many stores fall within this tier
-      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : tier.toQty;
-      const storesInTier = Math.min(remainingStores, tierMax) - tier.fromQty;
-      
-      if (storesInTier <= 0) continue;
-      
-      // Calculate cost for this tier
-      const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
-      totalCost += tierCost;
-      
-      // Subtract processed stores
-      remainingStores -= storesInTier;
-      
-      // If we've processed all stores, break out of the loop
-      if (remainingStores <= 0) break;
+      if (remainingStores > tier.fromQty) {
+        // Calculate upper bound for this tier
+        const upperBound = tier.toQty === Number.MAX_SAFE_INTEGER 
+          ? remainingStores 
+          : Math.min(tier.toQty, remainingStores);
+        
+        // Calculate stores that fall in this tier
+        storesInTier = upperBound - Math.max(tier.fromQty, 
+          i > 0 ? sortedTiers[i-1].toQty + 1 : 0);
+        
+        if (storesInTier > 0) {
+          // Calculate cost for this tier
+          const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+          totalCost += tierCost;
+        }
+      }
     }
     
     // Apply discount if enabled
@@ -352,39 +353,40 @@ export function FeesSection({
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       
-      // Skip tiers that don't apply to our remaining stores
-      if (remainingStores <= tier.fromQty) continue;
+      // Calculate the applicable stores for this tier
+      let storesInTier = 0;
       
-      // Calculate how many stores fall within this tier
-      const tierMax = tier.toQty === Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : tier.toQty;
-      const storesInTier = Math.min(remainingStores, tierMax) - tier.fromQty;
-      
-      if (storesInTier <= 0) continue;
-      
-      // Calculate cost for this tier
-      const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
-      
-      // Apply discount if enabled
-      let discountedCost = tierCost;
-      if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
-        const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
-        discountedCost = tierCost * discountMultiplier;
+      if (remainingStores > tier.fromQty) {
+        // Calculate upper bound for this tier
+        const upperBound = tier.toQty === Number.MAX_SAFE_INTEGER 
+          ? remainingStores 
+          : Math.min(tier.toQty, remainingStores);
+        
+        // Calculate stores that fall in this tier
+        storesInTier = upperBound - Math.max(tier.fromQty, 
+          i > 0 ? sortedTiers[i-1].toQty + 1 : 0);
+        
+        if (storesInTier > 0) {
+          // Calculate cost for this tier
+          const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
+          
+          // Apply discount if enabled
+          let discountedCost = tierCost;
+          if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
+            const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
+            discountedCost = tierCost * discountMultiplier;
+          }
+          
+          breakdown.push({
+            tier: tier.name,
+            storesInTier,
+            pricePerStore: tier.pricePerStore,
+            annualCost: tierCost,
+            discountedCost: discountedCost,
+            hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
+          });
+        }
       }
-      
-      breakdown.push({
-        tier: tier.name,
-        storesInTier,
-        pricePerStore: tier.pricePerStore,
-        annualCost: tierCost,
-        discountedCost: discountedCost,
-        hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
-      });
-      
-      // Subtract processed stores
-      remainingStores -= storesInTier;
-      
-      // If we've processed all stores, break out of the loop
-      if (remainingStores <= 0) break;
     }
     
     return breakdown;
