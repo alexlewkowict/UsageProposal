@@ -311,14 +311,26 @@ export function FeesSection({
       // Skip if we've already processed all stores
       if (processedStores >= formData.storeConnections) break;
       
-      // Calculate the range for this tier
-      const tierStart = tier.fromQty;
-      const tierEnd = tier.toQty === Number.MAX_SAFE_INTEGER ? 
-        formData.storeConnections : 
-        Math.min(tier.toQty, formData.storeConnections);
-      
       // Calculate how many stores fall within this tier
-      const storesInTier = Math.max(0, Math.min(tierEnd - tierStart + 1, formData.storeConnections - processedStores));
+      let storesInTier = 0;
+      
+      // For the first tier (usually "Included")
+      if (i === 0) {
+        storesInTier = Math.min(tier.toQty + 1, formData.storeConnections);
+      } else {
+        // For subsequent tiers
+        const prevTierEnd = sortedTiers[i-1].toQty;
+        const thisStart = tier.fromQty;
+        const thisEnd = tier.toQty;
+        
+        // If there's a gap between tiers, skip it
+        if (thisStart > prevTierEnd + 1) {
+          continue;
+        }
+        
+        // Calculate stores in this tier
+        storesInTier = Math.min(formData.storeConnections, thisEnd + 1) - Math.max(processedStores, thisStart);
+      }
       
       if (storesInTier > 0) {
         // Calculate cost for this tier
@@ -357,14 +369,26 @@ export function FeesSection({
       // Skip if we've already processed all stores
       if (processedStores >= formData.storeConnections) break;
       
-      // Calculate the range for this tier
-      const tierStart = tier.fromQty;
-      const tierEnd = tier.toQty === Number.MAX_SAFE_INTEGER ? 
-        formData.storeConnections : 
-        Math.min(tier.toQty, formData.storeConnections);
-      
       // Calculate how many stores fall within this tier
-      const storesInTier = Math.max(0, Math.min(tierEnd - tierStart + 1, formData.storeConnections - processedStores));
+      let storesInTier = 0;
+      
+      // For the first tier (usually "Included")
+      if (i === 0) {
+        storesInTier = Math.min(tier.toQty + 1, formData.storeConnections);
+      } else {
+        // For subsequent tiers
+        const prevTierEnd = sortedTiers[i-1].toQty;
+        const thisStart = tier.fromQty;
+        const thisEnd = tier.toQty;
+        
+        // If there's a gap between tiers, skip it
+        if (thisStart > prevTierEnd + 1) {
+          continue;
+        }
+        
+        // Calculate stores in this tier
+        storesInTier = Math.min(formData.storeConnections, thisEnd + 1) - Math.max(processedStores, thisStart);
+      }
       
       if (storesInTier > 0) {
         // Calculate cost for this tier
