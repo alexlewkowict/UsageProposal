@@ -295,7 +295,7 @@ export function FeesSection({
   };
 
   const calculateStoreConnectionsCost = () => {
-    if (!formData.storeConnections <= 0) {
+    if (formData.storeConnections <= 0) {
       return 0;
     }
     
@@ -304,10 +304,10 @@ export function FeesSection({
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
-    // For each store, find which tier it belongs to and add its cost
-    for (let storeNum = 0; storeNum < formData.storeConnections; storeNum++) {
+    // For each store (1-based counting), find which tier it belongs to and add its cost
+    for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
       // Find the tier this store belongs to
-      const tier = sortedTiers.find(t => storeNum >= t.fromQty && storeNum <= t.toQty);
+      const tier = sortedTiers.find(t => storeNum >= t.fromQty + 1 && storeNum <= t.toQty + 1);
       
       if (tier) {
         // Add the cost for this store
@@ -325,7 +325,7 @@ export function FeesSection({
   };
 
   const getStoreConnectionsBreakdown = () => {
-    if (!formData.storeConnections || formData.storeConnections <= 0) {
+    if (formData.storeConnections <= 0) {
       return [];
     }
     
@@ -335,10 +335,10 @@ export function FeesSection({
     // Create a map to count stores in each tier
     const tierCounts = new Map();
     
-    // For each store, find which tier it belongs to and count it
-    for (let storeNum = 0; storeNum < formData.storeConnections; storeNum++) {
+    // For each store (1-based counting), find which tier it belongs to and count it
+    for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
       // Find the tier this store belongs to
-      const tier = sortedTiers.find(t => storeNum >= t.fromQty && storeNum <= t.toQty);
+      const tier = sortedTiers.find(t => storeNum >= t.fromQty + 1 && storeNum <= t.toQty + 1);
       
       if (tier) {
         // Increment the count for this tier
