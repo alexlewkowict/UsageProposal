@@ -76,6 +76,7 @@ export function FeesSection({
 }: FeesSectionProps) {
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([])
   const [currentTier, setCurrentTier] = useState<PricingTier | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const frequencyOptions = [
     { value: "daily", label: "Daily" },
@@ -663,9 +664,9 @@ export function FeesSection({
             <div className="font-medium">Store Connections</div>
           </div>
           
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)}>
                 <Edit className="h-4 w-4 mr-2" />
                 Configure Tiers
               </Button>
@@ -688,14 +689,7 @@ export function FeesSection({
               <DialogFooter>
                 <Button 
                   type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    // Close the dialog
-                    const closeButton = document.querySelector('[data-state="open"] button[data-state="closed"]');
-                    if (closeButton instanceof HTMLElement) {
-                      closeButton.click();
-                    }
-                  }}
+                  onClick={() => setIsDialogOpen(false)}
                 >
                   {document.querySelector('[data-has-changes="true"]') ? 'Save' : 'Close'}
                 </Button>
