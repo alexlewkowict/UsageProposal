@@ -550,6 +550,40 @@ export function FeesSection({
         )}
       </div>
 
+      <div className="p-4 border rounded-lg space-y-3">
+        <div className="flex items-center space-x-2">
+          <div className="text-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-6 w-6"
+            >
+              <line x1="19" y1="5" x2="5" y2="19"></line>
+              <circle cx="6.5" cy="6.5" r="2.5"></circle>
+              <circle cx="17.5" cy="17.5" r="2.5"></circle>
+            </svg>
+          </div>
+          <div className="font-medium">Discount</div>
+        </div>
+        
+        <div className="relative">
+          <Input
+            type="number"
+            value={formData.saasFeeDiscount}
+            onChange={(e) => handleInputChange("saasFeeDiscount", Number(e.target.value))}
+            className="pr-8"
+            min="0"
+            max="100"
+          />
+          <span className="absolute right-3 top-1/2 transform -translate-y-1/2">%</span>
+        </div>
+      </div>
+
       <div className={`p-4 border rounded-lg flex flex-col space-y-3 ${invalidFields.includes("storeConnections") ? "border-red-500" : ""}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -602,7 +636,16 @@ export function FeesSection({
           </Dialog>
         </div>
         
-        {/* Summary of store connection tiers */}
+        <div className="space-y-2">
+          <Label>Total Store Connections</Label>
+          <Input
+            type="text"
+            value={formatNumber(formData.storeConnections)}
+            onChange={(e) => handleStoreConnectionsChange(e.target.value)}
+            className={invalidFields.includes("storeConnections") ? "border-red-500" : ""}
+          />
+        </div>
+        
         <div className="mt-2 space-y-2">
           <div className="text-sm font-medium">Pricing Tiers Summary</div>
           
@@ -629,19 +672,16 @@ export function FeesSection({
             </table>
           </div>
           
-          {/* Total store connections */}
           <div className="flex justify-between items-center mt-3 font-medium">
             <span>Total Stores:</span>
             <span>{calculateTotalStores()}</span>
           </div>
           
-          {/* Total annual cost */}
           <div className="flex justify-between items-center font-medium">
             <span>Annual Cost:</span>
             <span>${calculateStoreConnectionsCost().toFixed(2)}</span>
           </div>
           
-          {/* Apply discount toggle */}
           <div className="flex items-center justify-between mt-2">
             <Label htmlFor="applyToStoreConnections" className="text-sm text-gray-700">
               Apply discount to store connections
@@ -655,16 +695,6 @@ export function FeesSection({
             />
           </div>
         </div>
-      </div>
-
-      <div className="space-y-2 mt-4">
-        <Label>Total Store Connections</Label>
-        <Input
-          type="text"
-          value={formatNumber(formData.storeConnections)}
-          onChange={(e) => handleStoreConnectionsChange(e.target.value)}
-          className={invalidFields.includes("storeConnections") ? "border-red-500" : ""}
-        />
       </div>
     </div>
   )
