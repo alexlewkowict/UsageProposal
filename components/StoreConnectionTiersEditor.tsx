@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Trash } from "lucide-react"
-import { v4 as uuidv4 } from "uuid" // You'll need to install this package
 
 interface StoreConnectionTier {
   id: string;
@@ -41,12 +40,17 @@ export function StoreConnectionTiersEditor({ tiers, onChange }: StoreConnectionT
     onChange(sortedTiers);
   };
 
+  function generateId() {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+  }
+
   const addTier = () => {
     // Find the highest toQty to set as the new fromQty
     const highestToQty = Math.max(...localTiers.map(t => t.toQty), 0);
     
     const newTier: StoreConnectionTier = {
-      id: uuidv4(),
+      id: generateId(),
       name: `Tier ${localTiers.length + 1}`,
       fromQty: highestToQty + 1,
       toQty: highestToQty + 100,

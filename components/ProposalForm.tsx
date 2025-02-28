@@ -11,7 +11,6 @@ import { ProposalOptionsSection } from "./ProposalOptionsSection"
 import { ImplementationSection } from "./ImplementationSection"
 import { ReviewSection } from "./ReviewSection"
 import { toast } from "@/components/ui/use-toast"
-import { v4 as uuidv4 } from "uuid"
 
 const STEPS = [
   "Business Info",
@@ -21,6 +20,11 @@ const STEPS = [
   "Implementation",
   "Review"
 ]
+
+function generateId() {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15);
+}
 
 export default function ProposalForm() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -44,28 +48,28 @@ export default function ProposalForm() {
     storeConnectionPrice: 30,
     storeConnectionTiers: [
       {
-        id: uuidv4(),
+        id: generateId(),
         name: "Included",
         fromQty: 0,
         toQty: 5,
         pricePerStore: 0,
       },
       {
-        id: uuidv4(),
+        id: generateId(),
         name: "Additional Stores",
         fromQty: 6,
         toQty: 50,
         pricePerStore: 30,
       },
       {
-        id: uuidv4(),
+        id: generateId(),
         name: "Discount Tier 1",
         fromQty: 51,
         toQty: 100,
         pricePerStore: 25,
       },
       {
-        id: uuidv4(),
+        id: generateId(),
         name: "Discount Tier 2",
         fromQty: 101,
         toQty: Number.MAX_SAFE_INTEGER,
