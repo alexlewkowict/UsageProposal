@@ -290,19 +290,15 @@ export function FeesSection({
   };
 
   const calculateTotalStores = () => {
-    // Sum up all store connections
-    return formData.storeConnectionTiers.reduce((total, tier) => {
-      // For each tier, calculate how many stores fall within its range
-      const storesInTier = Math.min(
-        formData.storeConnections, 
-        tier.toQty
-      ) - tier.fromQty + 1;
-      
-      return total + Math.max(0, storesInTier);
-    }, 0);
+    // If no store connections are specified, return 0
+    if (!formData.storeConnections) return 0;
+    
+    return formData.storeConnections;
   };
 
   const calculateStoreConnectionsCost = () => {
+    if (!formData.storeConnections) return 0;
+    
     let totalCost = 0;
     let remainingStores = formData.storeConnections;
     
@@ -313,8 +309,12 @@ export function FeesSection({
       if (remainingStores <= 0) break;
       
       // Calculate how many stores fall within this tier
-      const tierRange = tier.toQty - tier.fromQty + 1;
-      const storesInTier = Math.min(remainingStores, tierRange);
+      const storesInTier = Math.min(
+        remainingStores, 
+        tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores : tier.toQty - tier.fromQty + 1
+      );
+      
+      if (storesInTier <= 0) continue;
       
       // Calculate cost for this tier
       const tierCost = storesInTier * tier.pricePerStore * 12; // Annual cost
@@ -331,6 +331,13 @@ export function FeesSection({
     }
     
     return totalCost;
+  };
+
+  // Add a function to handle store connections input
+  const handleStoreConnectionsChange = (value: string) => {
+    const numValue = value.replace(/,/g, '');
+    const parsedValue = parseInt(numValue, 10);
+    handleInputChange("storeConnections", isNaN(parsedValue) ? 0 : parsedValue);
   };
 
   return (
@@ -646,6 +653,16 @@ export function FeesSection({
             />
           </div>
         </div>
+      </div>
+
+      <div className="space-y-2 mt-4">
+        <Label>Total Store Connections</Label>
+        <Input
+          type="text"
+          value={formatNumber(formData.storeConnections)}
+          onChange={(e) => handleStoreConnectionsChange(e.target.value)}
+          className={invalidFields.includes("storeConnections") ? "border-red-500" : ""}
+        />
       </div>
     </div>
   )
