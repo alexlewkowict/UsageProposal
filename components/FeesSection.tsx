@@ -349,6 +349,9 @@ export function FeesSection({
     // Sort tiers by fromQty to ensure proper calculation
     const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
+    console.log("Store connections:", formData.storeConnections);
+    console.log("Sorted tiers:", sortedTiers);
+    
     // For each tier, calculate how many stores fall within its range
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
@@ -357,11 +360,27 @@ export function FeesSection({
       const lowerBound = tier.fromQty;
       const upperBound = tier.toQty;
       
-      // If total stores is less than the lower bound of this tier, skip it
-      if (formData.storeConnections <= lowerBound) continue;
+      console.log(`Tier ${tier.name}: lowerBound=${lowerBound}, upperBound=${upperBound}`);
+      
+      // If total stores is less than or equal to the lower bound of this tier, skip it
+      // But for the first tier (usually "Included"), we want to include it even if total stores equals lowerBound
+      if (i > 0 && formData.storeConnections <= lowerBound) {
+        console.log(`Skipping tier ${tier.name} - total stores (${formData.storeConnections}) <= lowerBound (${lowerBound})`);
+        continue;
+      }
       
       // Calculate how many stores fall within this tier
-      const storesInTier = Math.min(formData.storeConnections, upperBound) - lowerBound;
+      let storesInTier = 0;
+      
+      if (i === 0) {
+        // For the first tier, include all stores up to the upper bound
+        storesInTier = Math.min(formData.storeConnections, upperBound + 1);
+      } else {
+        // For subsequent tiers, calculate stores between this tier's lower bound and upper bound
+        storesInTier = Math.max(0, Math.min(formData.storeConnections, upperBound + 1) - lowerBound);
+      }
+      
+      console.log(`Tier ${tier.name}: storesInTier=${storesInTier}`);
       
       if (storesInTier > 0) {
         // Calculate cost for this tier
@@ -382,9 +401,12 @@ export function FeesSection({
           discountedCost: discountedCost,
           hasDiscount: formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0
         });
+        
+        console.log(`Added to breakdown: ${tier.name}, ${storesInTier} stores, $${tierCost}`);
       }
     }
     
+    console.log("Final breakdown:", breakdown);
     return breakdown;
   };
 
@@ -395,8 +417,12 @@ export function FeesSection({
     handleInputChange("storeConnections", isNaN(parsedValue) ? 0 : parsedValue);
   };
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent form submission
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onSubmit={handleFormSubmit}>
       <div className="space-y-4">
         <Label className="text-lg font-semibold">SaaS Fee</Label>
 
@@ -634,6 +660,7 @@ export function FeesSection({
             type="number"
             value={formData.saasFeeDiscount}
             onChange={(e) => handleInputChange("saasFeeDiscount", Number(e.target.value))}
+            onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
             className="pr-8"
             min="0"
             max="100"
@@ -709,6 +736,7 @@ export function FeesSection({
             type="text"
             value={formatNumber(formData.storeConnections)}
             onChange={(e) => handleStoreConnectionsChange(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
             className={invalidFields.includes("storeConnections") ? "border-red-500" : ""}
           />
         </div>
@@ -783,6 +811,12 @@ function TotalUnitTile({ icon, label, quantity, equivalentUnits, total, onChange
     return value.toLocaleString("en-US")
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className={`p-4 border rounded-lg flex flex-col space-y-2 ${isInvalid ? "border-red-500" : ""}`}>
       <div className="flex items-center space-x-2">
@@ -792,6 +826,7 @@ function TotalUnitTile({ icon, label, quantity, equivalentUnits, total, onChange
       <Input
         value={formatNumber(quantity)}
         onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
         className="text-right"
       />
       <div className="text-sm text-gray-500">
