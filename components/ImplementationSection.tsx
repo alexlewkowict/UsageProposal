@@ -46,53 +46,43 @@ export function ImplementationSection({
     // Mock implementation packages data based on Supabase table structure
     const mockPackages = [
       {
-        id: "1",
-        name: "QuickStart Brand",
-        description: "Basic implementation for brand owners",
-        onboarding_fee: 3000,
-        virtual_training_hours: 12,
-        onsite_support_days: 0,
-        onsite_support_fee: 2000,
-        optional_prof_services_rate: 300
-      },
-      {
-        id: "2",
-        name: "QuickStart 3PL",
-        description: "Basic implementation for 3PL providers",
-        onboarding_fee: 3700,
-        virtual_training_hours: 15,
-        onsite_support_days: 0,
-        onsite_support_fee: 2000,
-        optional_prof_services_rate: 300
-      },
-      {
-        id: "3",
-        name: "Standard",
-        description: "Standard implementation package suitable for most customers",
+        id: "standard",
+        name: "Standard Implementation",
+        description: "Basic setup with standard training",
         onboarding_fee: 5000,
-        virtual_training_hours: 20,
+        virtual_training_hours: 4,
         onsite_support_days: 0,
-        onsite_support_fee: 2000,
+        onsite_support_fee: 0,
         optional_prof_services_rate: 300
       },
       {
-        id: "4",
-        name: "Advanced",
-        description: "Enhanced implementation with additional training and support",
-        onboarding_fee: 7500,
-        virtual_training_hours: 30,
-        onsite_support_days: 2,
-        onsite_support_fee: 2000,
+        id: "professional",
+        name: "Professional Implementation",
+        description: "Enhanced setup with additional training and support",
+        onboarding_fee: 10000,
+        virtual_training_hours: 8,
+        onsite_support_days: 1,
+        onsite_support_fee: 2500,
         optional_prof_services_rate: 300
       },
       {
-        id: "5",
-        name: "Custom",
-        description: "Tailored implementation package based on specific requirements",
+        id: "enterprise",
+        name: "Enterprise Implementation",
+        description: "Comprehensive implementation with extensive training and onsite support",
+        onboarding_fee: 15000,
+        virtual_training_hours: 12,
+        onsite_support_days: 3,
+        onsite_support_fee: 7500,
+        optional_prof_services_rate: 300
+      },
+      {
+        id: "custom",
+        name: "Custom Implementation",
+        description: "Tailored implementation package with custom options",
         onboarding_fee: 0,
         virtual_training_hours: 0,
         onsite_support_days: 0,
-        onsite_support_fee: 2000,
+        onsite_support_fee: 0,
         optional_prof_services_rate: 300
       }
     ];
@@ -241,91 +231,42 @@ export function ImplementationSection({
       <div>
         <Label className="text-lg font-semibold">Implementation Package</Label>
         <div className="mt-2">
-          <RadioGroup
-            value={formData.implementationPackage}
-            onValueChange={handlePackageSelect}
-            className={`space-y-4 ${invalidFields.includes("implementationPackage") ? "border-red-500 p-2 rounded-md border" : ""}`}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {packages.map((pkg) => (
-              <div key={pkg.id} className="flex items-start space-x-2 p-3 border rounded-md">
-                <RadioGroupItem value={pkg.id} id={pkg.id} className="mt-1" />
-                <div className="flex-1">
-                  <Label htmlFor={pkg.id} className="font-medium text-base cursor-pointer">
-                    {pkg.name}
-                  </Label>
-                  <p className="text-sm text-gray-500 mt-1">{pkg.description}</p>
-                  
-                  {formData.implementationPackage === pkg.id && (
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm">Onboarding Fee</Label>
-                        <div className="relative mt-1">
-                          <Input
-                            value={formData.onboardingFee}
-                            onChange={(e) => handleCustomValueChange("onboardingFee", e.target.value)}
-                            className="pl-6"
-                          />
-                          <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          Calculated: ${calculatedFee} (Virtual: ${250 * (Number(formData.virtualTrainingHours) || 0)} + Onsite: ${(Number(formData.onsiteSupportDays) || 0) * (Number(formData.onsiteSupportFee) || 0)})
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm">Virtual Training Hours</Label>
-                        <Input
-                          value={formData.virtualTrainingHours}
-                          onChange={(e) => handleCustomValueChange("virtualTrainingHours", e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm">Onsite Support Days</Label>
-                        <Input
-                          value={formData.onsiteSupportDays}
-                          onChange={(e) => handleCustomValueChange("onsiteSupportDays", e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm">Onsite Support Fee</Label>
-                        <div className="relative mt-1">
-                          <Input
-                            value={formData.onsiteSupportFee}
-                            onChange={(e) => handleCustomValueChange("onsiteSupportFee", e.target.value)}
-                            className="pl-6"
-                          />
-                          <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm">Optional Prof. Services Rate</Label>
-                        <div className="relative mt-1">
-                          <Input
-                            value={formData.optionalProfServicesRate}
-                            onChange={(e) => handleCustomValueChange("optionalProfServicesRate", e.target.value)}
-                            className="pl-6"
-                          />
-                          <span className="absolute left-2 top-1/2 transform -translate-y-1/2">$</span>
-                        </div>
-                      </div>
-                      
-                      {isCustomized && (
-                        <div className="col-span-2 p-2 bg-blue-50 text-blue-700 rounded-md text-sm">
-                          <p>This package has been customized from the default values.</p>
-                          <p className="mt-1">Onboarding Fee = $250 × {formData.virtualTrainingHours} Virtual Hours + {formData.onsiteSupportDays} Onsite Days × ${formData.onsiteSupportFee}</p>
+              <div key={pkg.id} className="border rounded-lg p-4 hover:border-primary cursor-pointer">
+                <RadioGroup
+                  value={formData.implementationPackage}
+                  onValueChange={(value) => {
+                    handleInputChange("implementationPackage", value);
+                    if (value !== "custom") {
+                      const selectedPackage = packages.find(p => p.id === value);
+                      if (selectedPackage) {
+                        handleInputChange("onboardingFee", selectedPackage.onboarding_fee);
+                        handleInputChange("virtualTrainingHours", selectedPackage.virtual_training_hours);
+                        handleInputChange("onsiteSupportDays", selectedPackage.onsite_support_days);
+                        handleInputChange("onsiteSupportFee", selectedPackage.onsite_support_fee);
+                      }
+                    }
+                  }}
+                >
+                  <div className="flex items-start space-x-2">
+                    <RadioGroupItem value={pkg.id} id={`package-${pkg.id}`} />
+                    <div>
+                      <Label htmlFor={`package-${pkg.id}`} className="font-medium">{pkg.name}</Label>
+                      <p className="text-sm text-gray-500">{pkg.description}</p>
+                      {pkg.id !== "custom" && (
+                        <div className="mt-2 text-sm">
+                          <p>Onboarding Fee: ${pkg.onboarding_fee}</p>
+                          <p>Virtual Training: {pkg.virtual_training_hours} hours</p>
+                          <p>Onsite Support: {pkg.onsite_support_days} days</p>
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                </RadioGroup>
               </div>
             ))}
-          </RadioGroup>
+          </div>
         </div>
       </div>
     </div>

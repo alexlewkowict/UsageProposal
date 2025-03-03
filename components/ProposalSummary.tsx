@@ -1,7 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatNumber } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { ChevronDown, ChevronUp, Info } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface ProposalSummaryProps {
   formData: any;
@@ -9,6 +13,11 @@ interface ProposalSummaryProps {
 }
 
 export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps) {
+  const [showSaasBreakdown, setShowSaasBreakdown] = useState(false)
+  const [showStoreBreakdown, setShowStoreBreakdown] = useState(false)
+  const [showIntegrationBreakdown, setShowIntegrationBreakdown] = useState(false)
+  const [showImplementationBreakdown, setShowImplementationBreakdown] = useState(false)
+
   // Calculate SaaS fee
   const calculateAnnualSaasFee = () => {
     const baseUnits = 
@@ -115,6 +124,95 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   const totalCosts = calculateTotalCosts();
   const integrationCosts = calculateIntegrationCosts();
 
+  // Add this function to get the package name from the ID
+  const getImplementationPackageName = (packageId: string) => {
+    const packages = {
+      "standard": "Standard Implementation",
+      "professional": "Professional Implementation",
+      "enterprise": "Enterprise Implementation",
+      "custom": "Custom Implementation"
+    };
+    
+    return packages[packageId] || packageId;
+  };
+
+  // New function to get store connection tier breakdown
+  const getStoreConnectionBreakdown = () => {
+    if (formData.storeConnections <= 0) return [];
+    
+    const breakdown = [];
+    const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
+    
+    let remainingStores = formData.storeConnections;
+    
+    for (const tier of sortedTiers) {
+      if (remainingStores <= 0) break;
+      
+      const storesInTier = Math.min(
+        remainingStores,
+        tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores : tier.toQty - tier.fromQty + 1
+      );
+      
+      const tierCost = storesInTier * tier.pricePerStore;
+      
+      breakdown.push({
+        tier: tier.name,
+        storesInTier,
+        pricePerStore: tier.pricePerStore,
+        cost: tierCost
+      });
+      
+      remainingStores -= storesInTier;
+    }
+    
+    return breakdown;
+  };
+  
+  // Get SPS support breakdown
+  const getSpsRetailerSupportBreakdown = () => {
+    if (!formData.spsIntegration.enabled || formData.spsIntegration.retailerCount <= 0) {
+      return [];
+    }
+    
+    const breakdown = [];
+    const sortedTiers = [...formData.spsIntegration.supportTiers].sort((a, b) => a.fromQty - b.fromQty);
+    
+    // Create a map to count retailers in each tier
+    const tierCounts = new Map();
+    
+    // For each retailer, find which tier it belongs to and count it
+    for (let retailerNum = 1; retailerNum <= formData.spsIntegration.retailerCount; retailerNum++) {
+      // Find the tier this retailer belongs to
+      const tier = sortedTiers.find(t => retailerNum >= t.fromQty && retailerNum <= t.toQty);
+      
+      if (tier) {
+        // Increment the count for this tier
+        const currentCount = tierCounts.get(tier.name) || 0;
+        tierCounts.set(tier.name, currentCount + 1);
+      }
+    }
+    
+    // Convert the map to the breakdown format
+    for (const tier of sortedTiers) {
+      const retailersInTier = tierCounts.get(tier.name) || 0;
+      
+      if (retailersInTier > 0) {
+        // Calculate cost for this tier (quarterly)
+        const tierCost = retailersInTier * tier.pricePerRetailer;
+        
+        breakdown.push({
+          tier: tier.name,
+          retailersInTier,
+          pricePerRetailer: tier.pricePerRetailer,
+          quarterlyCost: tierCost,
+          annualCost: tierCost * 4
+        });
+      }
+    }
+    
+    return breakdown;
+  };
+
   return (
     <Card className="sticky top-4">
       <CardHeader>
@@ -142,8 +240,39 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           formData.saasFee.cases.value > 0 || 
           formData.saasFee.eaches.value > 0) && (
           <div>
-            <h3 className="font-semibold mb-2">SaaS Fee</h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold">SaaS Fee</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2"
+                onClick={() => setShowSaasBreakdown(!showSaasBreakdown)}
+              >
+                {showSaasBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </Button>
+            </div>
             <div className="space-y-1 text-sm">
+              {showSaasBreakdown && (
+                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-1">
+                  <div className="flex justify-between font-medium">
+                    <span>Base Units:</span>
+                    <span>{formatNumber(
+                      (formData.saasFee.pallets.value || 0) + 
+                      (formData.saasFee.cases.value || 0) + 
+                      (formData.saasFee.eaches.value || 0)
+                    )}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Discount Applied:</span>
+                    <span>{formData.saasFeeDiscount}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Calculation:</span>
+                    <span>Base Units × (1 - {formData.saasFeeDiscount}%)</span>
+                  </div>
+                </div>
+              )}
+              
               {formData.saasFee.pallets.value > 0 && (
                 <div className="flex justify-between">
                   <span>Pallets:</span>
@@ -177,12 +306,55 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         {/* Store Connections */}
         {formData.storeConnections > 0 && (
           <div>
-            <h3 className="font-semibold mb-2">Store Connections</h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold">Store Connections</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2"
+                onClick={() => setShowStoreBreakdown(!showStoreBreakdown)}
+              >
+                {showStoreBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </Button>
+            </div>
             <div className="space-y-1 text-sm">
+              {showStoreBreakdown && (
+                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-2">
+                  <div className="text-xs font-medium">Tier Breakdown:</div>
+                  {getStoreConnectionBreakdown().map((item, index) => (
+                    <div key={index} className="pl-2 border-l-2 border-gray-200">
+                      <div className="flex justify-between">
+                        <span>{item.tier}:</span>
+                        <span>{item.storesInTier} stores × ${item.pricePerStore}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-500">
+                        <span></span>
+                        <span>${formatNumber(item.cost)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {formData.applyDiscountToStoreConnections && (
+                    <div className="mt-1 pt-1 border-t border-gray-200">
+                      <div className="flex justify-between">
+                        <span>Discount Applied:</span>
+                        <span>{formData.saasFeeDiscount}%</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="flex justify-between">
                 <span>Total Stores:</span>
                 <span>{formData.storeConnections}</span>
               </div>
+              {formData.applyDiscountToStoreConnections && (
+                <div className="flex justify-between">
+                  <span>Discount Applied:</span>
+                  <span>{formData.saasFeeDiscount}%</span>
+                </div>
+              )}
               <div className="flex justify-between font-medium">
                 <span>Annual Cost:</span>
                 <span>{formatCurrency(calculateStoreConnectionsCost())}</span>
@@ -194,8 +366,78 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         {/* Integrations */}
         {(formData.spsIntegration.enabled || formData.crstlIntegration.enabled) && (
           <div>
-            <h3 className="font-semibold mb-2">Integrations</h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold">Integrations</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2"
+                onClick={() => setShowIntegrationBreakdown(!showIntegrationBreakdown)}
+              >
+                {showIntegrationBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </Button>
+            </div>
             <div className="space-y-1 text-sm">
+              {showIntegrationBreakdown && (
+                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-2">
+                  {formData.spsIntegration.enabled && (
+                    <div>
+                      <div className="font-medium">SPS Commerce:</div>
+                      <div className="pl-2 border-l-2 border-gray-200 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Setup Fee:</span>
+                          <span>${formatNumber(formData.spsIntegration.setupFee)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Retailer Setup:</span>
+                          <span>${formatNumber(formData.spsIntegration.retailerSetupFee)} × {formData.spsIntegration.retailerCount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Total Setup:</span>
+                          <span>${formatNumber(formData.spsIntegration.setupFee + formData.spsIntegration.retailerSetupFee * formData.spsIntegration.retailerCount)}</span>
+                        </div>
+                        
+                        <div className="mt-1 pt-1 border-t border-gray-200">
+                          <div className="font-medium">Support Tiers:</div>
+                          {getSpsRetailerSupportBreakdown().map((item, index) => (
+                            <div key={index} className="pl-2 border-l-2 border-gray-200 mt-1">
+                              <div className="flex justify-between">
+                                <span>{item.tier}:</span>
+                                <span>{item.retailersInTier} × ${item.pricePerRetailer}/quarter</span>
+                              </div>
+                              <div className="flex justify-between text-gray-500">
+                                <span>Annual:</span>
+                                <span>${formatNumber(item.annualCost)}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {formData.crstlIntegration.enabled && (
+                    <div className={formData.spsIntegration.enabled ? "mt-2 pt-2 border-t border-gray-200" : ""}>
+                      <div className="font-medium">Crstl:</div>
+                      <div className="pl-2 border-l-2 border-gray-200 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Setup Fee:</span>
+                          <span>${formatNumber(formData.crstlIntegration.setupFee)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Support Fee:</span>
+                          <span>${formatNumber(formData.crstlIntegration.supportFee)} × {formData.crstlIntegration.retailerCount} × 4 quarters</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Annual Support:</span>
+                          <span>${formatNumber(formData.crstlIntegration.supportFee * 4 * formData.crstlIntegration.retailerCount)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               {formData.spsIntegration.enabled && (
                 <div className="ml-2">
                   <p>SPS Commerce ({formData.spsIntegration.retailerCount} retailers)</p>
@@ -221,16 +463,56 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         {/* Implementation */}
         {formData.implementationPackage && (
           <div>
-            <h3 className="font-semibold mb-2">Implementation</h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold">Implementation</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2"
+                onClick={() => setShowImplementationBreakdown(!showImplementationBreakdown)}
+              >
+                {showImplementationBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </Button>
+            </div>
             <div className="space-y-1 text-sm">
+              {showImplementationBreakdown && (
+                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-1">
+                  {formData.implementationPackage === "custom" && (
+                    <>
+                      <div className="flex justify-between">
+                        <span>Virtual Training:</span>
+                        <span>{formData.virtualTrainingHours} hours × $250</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Onsite Support:</span>
+                        <span>{formData.onsiteSupportDays} days × ${formatNumber(parseFloat(formData.onsiteSupportFee || 0))}</span>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <span>Calculation:</span>
+                        <span>
+                          ${formatNumber(formData.virtualTrainingHours * 250)} + 
+                          ${formatNumber(formData.onsiteSupportDays * parseFloat(formData.onsiteSupportFee || 0))}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+              
               <div className="flex justify-between">
                 <span>Package:</span>
-                <span>{formData.implementationPackage}</span>
+                <span>{getImplementationPackageName(formData.implementationPackage)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Onboarding Fee:</span>
                 <span>{formatCurrency(parseFloat(formData.onboardingFee || 0))}</span>
               </div>
+              {formData.virtualTrainingHours > 0 && (
+                <div className="flex justify-between">
+                  <span>Virtual Training:</span>
+                  <span>{formData.virtualTrainingHours} hours</span>
+                </div>
+              )}
               {formData.onsiteSupportDays > 0 && (
                 <div className="flex justify-between">
                   <span>Onsite Support:</span>
