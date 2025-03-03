@@ -5,3 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export const formatNumber = (value: number): string => {
+  return value.toLocaleString('en-US');
+};
+
