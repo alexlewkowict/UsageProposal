@@ -1,13 +1,23 @@
 "use client"
 
-import type React from "react"
 import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Package, Zap, Users, Briefcase, Building, Pencil } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { toast } from "@/components/ui/use-toast"
+import { Card, CardContent } from "@/components/ui/card"
+
+interface ImplementationSectionProps {
+  formData: {
+    implementationPackage: string;
+    onboardingFee: string;
+    virtualTrainingHours: string;
+    onsiteSupportDays: string;
+    onsiteSupportFee: string;
+    optionalProfServicesRate: string;
+  };
+  handleInputChange: (field: string, value: string | number | boolean) => void;
+  invalidFields: string[];
+}
 
 interface ImplementationPackage {
   id: string;
@@ -18,19 +28,6 @@ interface ImplementationPackage {
   onsite_support_days: number;
   onsite_support_fee: number;
   optional_prof_services_rate: number;
-}
-
-interface ImplementationSectionProps {
-  formData: {
-    implementationPackage: string;
-    onboardingFee: string | number;
-    virtualTrainingHours: string | number;
-    onsiteSupportDays: string | number;
-    onsiteSupportFee: string | number;
-    optionalProfServicesRate: string | number;
-  };
-  handleInputChange: (field: string, value: string | number) => void;
-  invalidFields: string[];
 }
 
 export function ImplementationSection({
@@ -269,65 +266,74 @@ export function ImplementationSection({
           </div>
         </div>
       </div>
-    </div>
-  )
-}
 
-interface PackageTileProps {
-  package: { id: string; name: string; icon: React.ElementType }
-  selected: boolean
-  onClick: () => void
-  isInvalid: boolean
-}
-
-function PackageTile({ package: pkg, selected, onClick, isInvalid }: PackageTileProps) {
-  const Icon = pkg.icon
-  return (
-    <div
-      className={`
-        p-4 border rounded-lg cursor-pointer transition-all
-        flex flex-col items-center justify-center text-center gap-2
-        hover:bg-gray-50
-        ${selected ? "border-primary border-2 bg-primary/5" : "border-gray-200"}
-        ${isInvalid ? "border-red-500" : ""}
-      `}
-      onClick={onClick}
-    >
-      <Icon className={`h-8 w-8 ${selected ? "text-primary" : "text-gray-500"}`} />
-      <span className="text-sm font-medium">{pkg.name}</span>
-    </div>
-  )
-}
-
-interface PackageDetailItemProps {
-  label: string
-  value: string | number
-  suffix?: string
-  editable: boolean
-  onChange: (value: string) => void
-  format?: (value: string | number) => string
-}
-
-function PackageDetailItem({ label, value, suffix, editable, onChange, format }: PackageDetailItemProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value)
-  }
-
-  const displayValue = format ? format(value) : value.toString()
-
-  return (
-    <div>
-      <p className="font-medium">{label}</p>
-      {editable ? (
-        <div className="flex items-center">
-          <Input value={value.toString()} onChange={handleChange} className="w-24 mr-2" />
-          {suffix && <span className="text-sm text-gray-500">{suffix}</span>}
+      {formData.implementationPackage === "custom" && (
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="virtualTrainingHours">Virtual Training Hours</Label>
+                  <Input
+                    id="virtualTrainingHours"
+                    type="text"
+                    value={formData.virtualTrainingHours}
+                    onChange={(e) => handleCustomValueChange("virtualTrainingHours", e.target.value)}
+                    className={invalidFields.includes("virtualTrainingHours") ? "border-red-500" : ""}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">$250 per hour</p>
+                </div>
+                <div>
+                  <Label htmlFor="onsiteSupportDays">Onsite Support Days</Label>
+                  <Input
+                    id="onsiteSupportDays"
+                    type="text"
+                    value={formData.onsiteSupportDays}
+                    onChange={(e) => handleCustomValueChange("onsiteSupportDays", e.target.value)}
+                    className={invalidFields.includes("onsiteSupportDays") ? "border-red-500" : ""}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="onsiteSupportFee">Onsite Support Fee (per day)</Label>
+                  <Input
+                    id="onsiteSupportFee"
+                    type="text"
+                    value={formData.onsiteSupportFee}
+                    onChange={(e) => handleCustomValueChange("onsiteSupportFee", e.target.value)}
+                    className={invalidFields.includes("onsiteSupportFee") ? "border-red-500" : ""}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="optionalProfServicesRate">Optional Prof. Services Rate (per hour)</Label>
+                  <Input
+                    id="optionalProfServicesRate"
+                    type="text"
+                    value={formData.optionalProfServicesRate}
+                    onChange={(e) => handleCustomValueChange("optionalProfServicesRate", e.target.value)}
+                    className={invalidFields.includes("optionalProfServicesRate") ? "border-red-500" : ""}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      ) : (
-        <p>
-          {displayValue} {suffix}
-        </p>
       )}
+
+      <div>
+        <Label htmlFor="onboardingFee">Total Onboarding Fee</Label>
+        <Input
+          id="onboardingFee"
+          type="text"
+          value={`$${Number(formData.onboardingFee).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+          disabled
+          className="bg-gray-50"
+        />
+        {isCustomized && formData.implementationPackage !== "custom" && (
+          <p className="text-sm text-amber-600 mt-1">
+            This package has been customized from the default values.
+          </p>
+        )}
+      </div>
     </div>
   )
 }
