@@ -12,6 +12,8 @@ import { ImplementationSection } from "./ImplementationSection"
 import { ReviewSection } from "./ReviewSection"
 import { toast } from "@/components/ui/use-toast"
 import { IntegrationsSection } from "./IntegrationsSection"
+import { ProposalSummary } from "./ProposalSummary"
+import { formatNumber } from "@/lib/utils"
 
 const STEPS = [
   "Business Info",
@@ -104,7 +106,7 @@ export default function ProposalForm() {
         {
           name: "Standard",
           fromQty: 1,
-          toQty: 1,
+          toQty: 5,
           pricePerRetailer: 0
         },
         {
@@ -339,103 +341,111 @@ export default function ProposalForm() {
   }, [formData.opportunityName])
 
   return (
-    <Card className="w-full max-w-3xl">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Create a Usage Proposal</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-6">
-          <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
-        </div>
+    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
+      {/* Left column - Form */}
+      <Card className="w-full lg:w-2/3">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Create a Usage Proposal</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {currentStep === 0 && (
-            <BusinessInfoSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-              invalidFields={invalidFields}
-            />
-          )}
-          {currentStep === 1 && (
-            <PaymentDetailsSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-              invalidFields={invalidFields}
-            />
-          )}
-          {currentStep === 2 && (
-            <FeesSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleSaasFeeChange={handleSaasFeeChange}
-              handleFrequencyChange={handleFrequencyChange}
-              handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
-              handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
-              invalidFields={invalidFields}
-            />
-          )}
-          {currentStep === 3 && (
-            <IntegrationsSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleSpsRetailerCountChange={handleSpsRetailerCountChange}
-              handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
-              invalidFields={invalidFields}
-            />
-          )}
-          {currentStep === 4 && (
-            <ProposalOptionsSection
-              selectedOptions={formData.selectedOptions}
-              handleOptionSelect={handleOptionSelect}
-              invalidFields={invalidFields}
-            />
-          )}
-          {currentStep === 5 && (
-            <ImplementationSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-              invalidFields={invalidFields}
-            />
-          )}
-          {currentStep === 6 && <ReviewSection formData={formData} />}
-
-          <div className="flex justify-between">
-            {currentStep > 0 && (
-              <Button type="button" onClick={handleBack} variant="outline">
-                Back
-              </Button>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {currentStep === 0 && (
+              <BusinessInfoSection
+                formData={formData}
+                handleInputChange={handleInputChange}
+                invalidFields={invalidFields}
+              />
             )}
-            {currentStep < STEPS.length - 1 ? (
-              <Button type="button" onClick={handleContinue} className="ml-auto">
-                {currentStep === STEPS.length - 2 ? "Review Proposal" : "Continue"}
-              </Button>
-            ) : (
-              <Button 
-                type="button" 
-                onClick={handleGenerateProposal} 
-                disabled={isGenerating || !validateStep().isValid}
-                className="ml-auto"
+            {currentStep === 1 && (
+              <PaymentDetailsSection
+                formData={formData}
+                handleInputChange={handleInputChange}
+                invalidFields={invalidFields}
+              />
+            )}
+            {currentStep === 2 && (
+              <FeesSection
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSaasFeeChange={handleSaasFeeChange}
+                handleFrequencyChange={handleFrequencyChange}
+                handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
+                handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
+                invalidFields={invalidFields}
+              />
+            )}
+            {currentStep === 3 && (
+              <IntegrationsSection
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSpsRetailerCountChange={handleSpsRetailerCountChange}
+                handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
+                invalidFields={invalidFields}
+              />
+            )}
+            {currentStep === 4 && (
+              <ProposalOptionsSection
+                selectedOptions={formData.selectedOptions}
+                handleOptionSelect={handleOptionSelect}
+                invalidFields={invalidFields}
+              />
+            )}
+            {currentStep === 5 && (
+              <ImplementationSection
+                formData={formData}
+                handleInputChange={handleInputChange}
+                invalidFields={invalidFields}
+              />
+            )}
+            {currentStep === 6 && <ReviewSection formData={formData} />}
+
+            <div className="flex justify-between">
+              {currentStep > 0 && (
+                <Button type="button" onClick={handleBack} variant="outline">
+                  Back
+                </Button>
+              )}
+              {currentStep < STEPS.length - 1 ? (
+                <Button type="button" onClick={handleContinue} className="ml-auto">
+                  {currentStep === STEPS.length - 2 ? "Review Proposal" : "Continue"}
+                </Button>
+              ) : (
+                <Button 
+                  type="button" 
+                  onClick={handleGenerateProposal} 
+                  disabled={isGenerating || !validateStep().isValid}
+                  className="ml-auto"
+                >
+                  {isGenerating ? 'Generating...' : 'Generate Proposal'}
+                </Button>
+              )}
+            </div>
+          </form>
+
+          {proposalUrl && (
+            <div className="mt-4">
+              <a 
+                href={proposalUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
               >
-                {isGenerating ? 'Generating...' : 'Generate Proposal'}
-              </Button>
-            )}
-          </div>
-        </form>
+                View Generated Proposal
+              </a>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {proposalUrl && (
-          <div className="mt-4">
-            <a 
-              href={proposalUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              View Generated Proposal
-            </a>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Right column - Summary */}
+      <div className="w-full lg:w-1/3 sticky top-4 self-start">
+        <ProposalSummary formData={formData} currentStep={currentStep} />
+      </div>
+    </div>
   )
 }
 

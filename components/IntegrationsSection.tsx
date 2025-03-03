@@ -293,7 +293,7 @@ export function IntegrationsSection({
                 
                 <div className="border rounded-md p-4">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium">Support Tiers</h4>
+                    <h4 className="font-medium">Support Fees</h4>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -308,18 +308,18 @@ export function IntegrationsSection({
                       <thead>
                         <tr className="border-b">
                           <th className="text-left py-2">Tier</th>
-                          <th className="text-right py-2">From</th>
-                          <th className="text-right py-2">To</th>
+                          <th className="text-center py-2">From</th>
+                          <th className="text-center py-2">To</th>
                           <th className="text-right py-2">Price Per Retailer</th>
                           <th className="text-right py-2">Billing Terms</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {formData.spsIntegration.supportTiers.sort((a, b) => a.fromQty - b.fromQty).map((tier, index) => (
+                        {formData.spsIntegration.supportTiers.map((tier, index) => (
                           <tr key={index} className="border-b">
                             <td className="py-2">{tier.name}</td>
-                            <td className="text-right py-2">{tier.fromQty}</td>
-                            <td className="text-right py-2">{tier.toQty === Number.MAX_SAFE_INTEGER ? '51+' : tier.toQty}</td>
+                            <td className="text-center py-2">{tier.fromQty}</td>
+                            <td className="text-center py-2">{tier.toQty === Number.MAX_SAFE_INTEGER ? '51+' : tier.toQty}</td>
                             <td className="text-right py-2">${tier.pricePerRetailer}</td>
                             <td className="text-right py-2">Quarter</td>
                           </tr>
