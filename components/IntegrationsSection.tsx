@@ -4,8 +4,11 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { formatNumber } from "@/lib/utils"
+import { Trash2 } from "lucide-react"
 
 interface IntegrationsSectionProps {
   formData: {
@@ -43,6 +46,10 @@ export function IntegrationsSection({
   handleCrstlRetailerCountChange,
   invalidFields,
 }: IntegrationsSectionProps) {
+  const [isSpsTiersDialogOpen, setIsSpsTiersDialogOpen] = useState(false)
+  const [spsTiers, setSpsTiers] = useState<SupportTier[]>([])
+  const [isCrstlTiersDialogOpen, setIsCrstlTiersDialogOpen] = useState(false)
+  const [crstlTier, setCrstlTier] = useState<{ supportFee: number }>({ supportFee: 0 })
   
   // Calculate SPS support cost based on tiers
   const calculateSpsRetailerSupportCost = () => {
@@ -141,6 +148,80 @@ export function IntegrationsSection({
     return breakdown;
   };
   
+  // Handle setup fee changes
+  const handleSpsSetupFeeChange = (value: string) => {
+    const parsedValue = parseInt(value.replace(/[^0-9]/g, ""), 10);
+    handleInputChange("spsIntegration.setupFee", isNaN(parsedValue) ? 0 : parsedValue);
+  };
+  
+  const handleSpsRetailerSetupFeeChange = (value: string) => {
+    const parsedValue = parseInt(value.replace(/[^0-9]/g, ""), 10);
+    handleInputChange("spsIntegration.retailerSetupFee", isNaN(parsedValue) ? 0 : parsedValue);
+  };
+  
+  const handleCrstlSetupFeeChange = (value: string) => {
+    const parsedValue = parseInt(value.replace(/[^0-9]/g, ""), 10);
+    handleInputChange("crstlIntegration.setupFee", isNaN(parsedValue) ? 0 : parsedValue);
+  };
+  
+  // Handle tier configuration
+  const openSpsTiersDialog = () => {
+    setSpsTiers([...formData.spsIntegration.supportTiers]);
+    setIsSpsTiersDialogOpen(true);
+  };
+  
+  const saveSpsTiers = () => {
+    handleInputChange("spsIntegration.supportTiers", spsTiers);
+    setIsSpsTiersDialogOpen(false);
+  };
+  
+  const handleSpsTierChange = (index: number, field: keyof SupportTier, value: string | number) => {
+    const updatedTiers = [...spsTiers];
+    
+    if (field === 'name') {
+      updatedTiers[index][field] = value as string;
+    } else {
+      // For numeric fields
+      const numValue = typeof value === 'string' ? parseInt(value.replace(/[^0-9]/g, ""), 10) : value;
+      updatedTiers[index][field] = isNaN(numValue as number) ? 0 : numValue as number;
+    }
+    
+    setSpsTiers(updatedTiers);
+  };
+  
+  const addSpsTier = () => {
+    const newTier: SupportTier = {
+      name: `Tier ${spsTiers.length + 1}`,
+      fromQty: 1,
+      toQty: 10,
+      pricePerRetailer: 100
+    };
+    
+    setSpsTiers([...spsTiers, newTier]);
+  };
+  
+  const removeSpsTier = (index: number) => {
+    const updatedTiers = [...spsTiers];
+    updatedTiers.splice(index, 1);
+    setSpsTiers(updatedTiers);
+  };
+  
+  // Handle Crstl tier configuration
+  const openCrstlTiersDialog = () => {
+    setCrstlTier({ supportFee: formData.crstlIntegration.supportFee });
+    setIsCrstlTiersDialogOpen(true);
+  };
+  
+  const saveCrstlTier = () => {
+    handleInputChange("crstlIntegration.supportFee", crstlTier.supportFee);
+    setIsCrstlTiersDialogOpen(false);
+  };
+  
+  const handleCrstlTierChange = (value: string) => {
+    const parsedValue = parseInt(value.replace(/[^0-9]/g, ""), 10);
+    setCrstlTier({ supportFee: isNaN(parsedValue) ? 0 : parsedValue });
+  };
+  
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission on ENTER
   };
@@ -176,8 +257,9 @@ export function IntegrationsSection({
                     <Input
                       id="spsSetupFee"
                       type="text"
-                      value={`$${formData.spsIntegration.setupFee}`}
-                      disabled
+                      value={`$${formatNumber(formData.spsIntegration.setupFee)}`}
+                      onChange={(e) => handleSpsSetupFeeChange(e.target.value)}
+                      className={invalidFields.includes("spsIntegration.setupFee") ? "border-red-500" : ""}
                     />
                   </div>
                   <div>
@@ -185,8 +267,9 @@ export function IntegrationsSection({
                     <Input
                       id="spsRetailerSetupFee"
                       type="text"
-                      value={`$${formData.spsIntegration.retailerSetupFee}`}
-                      disabled
+                      value={`$${formatNumber(formData.spsIntegration.retailerSetupFee)}`}
+                      onChange={(e) => handleSpsRetailerSetupFeeChange(e.target.value)}
+                      className={invalidFields.includes("spsIntegration.retailerSetupFee") ? "border-red-500" : ""}
                     />
                   </div>
                 </div>
@@ -209,43 +292,67 @@ export function IntegrationsSection({
                 </div>
                 
                 <div className="border rounded-md p-4">
-                  <h4 className="font-medium mb-2">Support Tiers</h4>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium">Support Tiers</h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={openSpsTiersDialog}
+                    >
+                      Configure Tiers
+                    </Button>
+                  </div>
+                  
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
                           <th className="text-left py-2">Tier</th>
-                          <th className="text-right py-2">Range</th>
+                          <th className="text-right py-2">From</th>
+                          <th className="text-right py-2">To</th>
                           <th className="text-right py-2">Price Per Retailer</th>
+                          <th className="text-right py-2">Billing Terms</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {formData.spsIntegration.supportTiers.map((tier) => (
-                          <tr key={tier.name} className="border-b">
+                        {formData.spsIntegration.supportTiers.sort((a, b) => a.fromQty - b.fromQty).map((tier, index) => (
+                          <tr key={index} className="border-b">
                             <td className="py-2">{tier.name}</td>
-                            <td className="text-right py-2">
-                              {tier.fromQty === tier.toQty ? tier.fromQty : `${tier.fromQty} - ${tier.toQty === Number.MAX_SAFE_INTEGER ? "∞" : tier.toQty}`}
-                            </td>
-                            <td className="text-right py-2">
-                              {tier.pricePerRetailer === 0 ? "Included" : `$${tier.pricePerRetailer.toFixed(2)}`}
-                            </td>
+                            <td className="text-right py-2">{tier.fromQty}</td>
+                            <td className="text-right py-2">{tier.toQty === Number.MAX_SAFE_INTEGER ? '51+' : tier.toQty}</td>
+                            <td className="text-right py-2">${tier.pricePerRetailer}</td>
+                            <td className="text-right py-2">Quarter</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                   
-                  <div className="mt-4">
-                    <h4 className="font-medium mb-2">Cost Breakdown</h4>
-                    {getSpsRetailerSupportBreakdown().map((item, index) => (
-                      <div key={index} className="flex justify-between items-center py-1">
-                        <span>
-                          {item.tier} ({item.retailersInTier} {item.retailersInTier === 1 ? "retailer" : "retailers"} @ {item.pricePerRetailer === 0 ? "Included" : `$${item.pricePerRetailer}/quarter`})
-                        </span>
-                        <span>${formatNumber(item.annualCost)}/year</span>
-                      </div>
-                    ))}
-                  </div>
+                  {getSpsRetailerSupportBreakdown().length > 0 && (
+                    <div className="mt-4 border-t pt-2">
+                      <h5 className="font-medium mb-2">Cost Breakdown</h5>
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-1">Tier</th>
+                            <th className="text-right py-1">Retailers</th>
+                            <th className="text-right py-1">Price</th>
+                            <th className="text-right py-1">Annual Cost</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {getSpsRetailerSupportBreakdown().map((item, index) => (
+                            <tr key={index} className="border-b">
+                              <td className="py-1">{item.tier}</td>
+                              <td className="text-right py-1">{item.retailersInTier}</td>
+                              <td className="text-right py-1">${item.pricePerRetailer}</td>
+                              <td className="text-right py-1">${formatNumber(item.annualCost)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                   
                   <div className="flex justify-between items-center mt-3 font-medium">
                     <span>Total Retailers:</span>
@@ -298,8 +405,9 @@ export function IntegrationsSection({
                   <Input
                     id="crstlSetupFee"
                     type="text"
-                    value={`$${formData.crstlIntegration.setupFee}`}
-                    disabled
+                    value={`$${formatNumber(formData.crstlIntegration.setupFee)}`}
+                    onChange={(e) => handleCrstlSetupFeeChange(e.target.value)}
+                    className={invalidFields.includes("crstlIntegration.setupFee") ? "border-red-500" : ""}
                   />
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
@@ -321,7 +429,17 @@ export function IntegrationsSection({
                 </div>
                 
                 <div className="border rounded-md p-4">
-                  <h4 className="font-medium mb-2">Support Fee</h4>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium">Support Fee</h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={openCrstlTiersDialog}
+                    >
+                      Configure Fee
+                    </Button>
+                  </div>
+                  
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
@@ -361,6 +479,126 @@ export function IntegrationsSection({
           </CardContent>
         )}
       </Card>
+      
+      {/* SPS Tiers Configuration Dialog */}
+      <Dialog open={isSpsTiersDialogOpen} onOpenChange={setIsSpsTiersDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Configure SPS Support Tiers</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 my-4">
+            <div className="overflow-y-auto max-h-[400px]">
+              <table className="w-full">
+                <thead className="sticky top-0 bg-background">
+                  <tr className="border-b">
+                    <th className="text-left py-2">Tier Name</th>
+                    <th className="text-right py-2">From Qty</th>
+                    <th className="text-right py-2">To Qty</th>
+                    <th className="text-right py-2">Price Per Retailer</th>
+                    <th className="text-right py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {spsTiers.map((tier, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="py-2">
+                        <Input
+                          value={tier.name}
+                          onChange={(e) => handleSpsTierChange(index, 'name', e.target.value)}
+                        />
+                      </td>
+                      <td className="py-2">
+                        <Input
+                          type="text"
+                          value={tier.fromQty}
+                          onChange={(e) => handleSpsTierChange(index, 'fromQty', e.target.value)}
+                          className="text-right"
+                        />
+                      </td>
+                      <td className="py-2">
+                        <Input
+                          type="text"
+                          value={tier.toQty === Number.MAX_SAFE_INTEGER ? '51+' : tier.toQty}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const toQty = value.includes('+') 
+                              ? Number.MAX_SAFE_INTEGER 
+                              : parseInt(value.replace(/[^0-9]/g, ""), 10);
+                            handleSpsTierChange(index, 'toQty', toQty);
+                          }}
+                          className="text-right"
+                        />
+                      </td>
+                      <td className="py-2">
+                        <Input
+                          type="text"
+                          value={tier.pricePerRetailer}
+                          onChange={(e) => handleSpsTierChange(index, 'pricePerRetailer', e.target.value)}
+                          className="text-right"
+                        />
+                      </td>
+                      <td className="py-2 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeSpsTier(index)}
+                          disabled={spsTiers.length <= 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <Button onClick={addSpsTier} variant="outline">
+              Add Tier
+            </Button>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSpsTiersDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveSpsTiers}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Crstl Fee Configuration Dialog */}
+      <Dialog open={isCrstlTiersDialogOpen} onOpenChange={setIsCrstlTiersDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configure Crstl Support Fee</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 my-4">
+            <div>
+              <Label htmlFor="crstlSupportFee">Price Per Retailer (Quarterly)</Label>
+              <Input
+                id="crstlSupportFee"
+                type="text"
+                value={crstlTier.supportFee}
+                onChange={(e) => handleCrstlTierChange(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCrstlTiersDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveCrstlTier}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
