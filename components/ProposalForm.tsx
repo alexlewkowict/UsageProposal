@@ -139,10 +139,25 @@ export default function ProposalForm() {
   const [proposalUrl, setProposalUrl] = useState<string | null>(null)
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
+    setFormData((prev) => {
+      // Handle nested properties (e.g., "spsIntegration.enabled")
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        return {
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: value
+          }
+        };
+      }
+      
+      // Handle top-level properties
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
   }
 
   const handleSaasFeeChange = (type: "pallets" | "cases" | "eaches", value: number) => {

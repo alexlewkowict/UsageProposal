@@ -156,9 +156,11 @@ export function IntegrationsSection({
             <CardTitle>SPS Commerce Integration</CardTitle>
             <Switch
               checked={formData.spsIntegration.enabled}
-              onCheckedChange={(checked) => 
-                handleInputChange("spsIntegration.enabled", checked)
-              }
+              onCheckedChange={(checked) => {
+                console.log("SPS toggle changed to:", checked);
+                handleInputChange("spsIntegration.enabled", checked);
+              }}
+              id="sps-integration-toggle"
             />
           </div>
         </CardHeader>
@@ -277,9 +279,11 @@ export function IntegrationsSection({
             <CardTitle>Crstl Integration</CardTitle>
             <Switch
               checked={formData.crstlIntegration.enabled}
-              onCheckedChange={(checked) => 
-                handleInputChange("crstlIntegration.enabled", checked)
-              }
+              onCheckedChange={(checked) => {
+                console.log("Crstl toggle changed to:", checked);
+                handleInputChange("crstlIntegration.enabled", checked);
+              }}
+              id="crstl-integration-toggle"
             />
           </div>
         </CardHeader>
