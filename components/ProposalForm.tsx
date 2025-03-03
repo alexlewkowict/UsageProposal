@@ -228,7 +228,8 @@ export default function ProposalForm() {
   };
 
   const validateStep = () => {
-    const invalidFields: string[] = []
+    const invalidFields = []
+    
     switch (currentStep) {
       case 0:
         if (!formData.accountExec) invalidFields.push("accountExec")
@@ -253,12 +254,16 @@ export default function ProposalForm() {
         if (!formData.storeConnections) invalidFields.push("storeConnections")
         break
       case 3:
-        // All options are optional
+        // No validation required for this step
         break
       case 4:
+        // All options are optional
+        break
+      case 5:
         if (!formData.implementationPackage) invalidFields.push("implementationPackage")
         break
     }
+    
     return { isValid: invalidFields.length === 0, invalidFields }
   }
 

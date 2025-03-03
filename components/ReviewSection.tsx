@@ -48,6 +48,32 @@ export function ReviewSection({ formData }: ReviewSectionProps) {
 
   const integrationCosts = calculateIntegrationCosts();
 
+  const calculateSpsRetailerSupportCost = () => {
+    if (!formData.spsIntegration.enabled || formData.spsIntegration.retailerCount <= 0) {
+      return 0;
+    }
+    
+    let totalCost = 0;
+    const sortedTiers = [...formData.spsIntegration.supportTiers].sort((a, b) => a.fromQty - b.fromQty);
+    
+    for (let retailerNum = 1; retailerNum <= formData.spsIntegration.retailerCount; retailerNum++) {
+      const tier = sortedTiers.find(t => retailerNum >= t.fromQty && retailerNum <= t.toQty);
+      if (tier) {
+        totalCost += tier.pricePerRetailer;
+      }
+    }
+    
+    return totalCost * 4; // Annual cost
+  };
+
+  const calculateCrstlSupportCost = () => {
+    if (!formData.crstlIntegration.enabled || formData.crstlIntegration.retailerCount <= 0) {
+      return 0;
+    }
+    
+    return formData.crstlIntegration.supportFee * 4 * formData.crstlIntegration.retailerCount;
+  };
+
   return (
     <div className="space-y-6">
       <Card>
