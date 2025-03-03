@@ -11,11 +11,13 @@ import { ProposalOptionsSection } from "./ProposalOptionsSection"
 import { ImplementationSection } from "./ImplementationSection"
 import { ReviewSection } from "./ReviewSection"
 import { toast } from "@/components/ui/use-toast"
+import { IntegrationsSection } from "./IntegrationsSection"
 
 const STEPS = [
   "Business Info",
   "Payment Details",
   "SaaS Fee",
+  "Integrations",
   "Proposal Options",
   "Implementation",
   "Review"
@@ -93,6 +95,44 @@ export default function ProposalForm() {
     contractTerm: "24",
     billingFrequency: "quarterly",
     paymentMethods: ["creditCard"],
+    spsIntegration: {
+      enabled: false,
+      setupFee: 500,
+      retailerSetupFee: 500,
+      retailerCount: 0,
+      supportTiers: [
+        {
+          name: "Standard",
+          fromQty: 1,
+          toQty: 1,
+          pricePerRetailer: 0
+        },
+        {
+          name: "Discounted 1",
+          fromQty: 6,
+          toQty: 25,
+          pricePerRetailer: 150
+        },
+        {
+          name: "Discounted 2",
+          fromQty: 26,
+          toQty: 50,
+          pricePerRetailer: 135
+        },
+        {
+          name: "Discounted 3",
+          fromQty: 51,
+          toQty: Number.MAX_SAFE_INTEGER,
+          pricePerRetailer: 120
+        }
+      ]
+    },
+    crstlIntegration: {
+      enabled: false,
+      setupFee: 250,
+      supportFee: 105,
+      retailerCount: 0
+    },
   })
   const [invalidFields, setInvalidFields] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
@@ -151,6 +191,16 @@ export default function ProposalForm() {
       storeConnectionTiers: tiers,
     }))
   }
+
+  const handleSpsRetailerCountChange = (value: string) => {
+    const parsedValue = parseInt(value.replace(/,/g, ""), 10);
+    handleInputChange("spsIntegration.retailerCount", isNaN(parsedValue) ? 0 : parsedValue);
+  };
+
+  const handleCrstlRetailerCountChange = (value: string) => {
+    const parsedValue = parseInt(value.replace(/,/g, ""), 10);
+    handleInputChange("crstlIntegration.retailerCount", isNaN(parsedValue) ? 0 : parsedValue);
+  };
 
   const validateStep = () => {
     const invalidFields: string[] = []
@@ -295,20 +345,29 @@ export default function ProposalForm() {
             />
           )}
           {currentStep === 3 && (
+            <IntegrationsSection
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleSpsRetailerCountChange={handleSpsRetailerCountChange}
+              handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
+              invalidFields={invalidFields}
+            />
+          )}
+          {currentStep === 4 && (
             <ProposalOptionsSection
               selectedOptions={formData.selectedOptions}
               handleOptionSelect={handleOptionSelect}
               invalidFields={invalidFields}
             />
           )}
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <ImplementationSection
               formData={formData}
               handleInputChange={handleInputChange}
               invalidFields={invalidFields}
             />
           )}
-          {currentStep === 5 && <ReviewSection formData={formData} />}
+          {currentStep === 6 && <ReviewSection formData={formData} />}
 
           <div className="flex justify-between">
             {currentStep > 0 && (

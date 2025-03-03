@@ -49,6 +49,12 @@ export const slideTemplates: SlideTemplate[] = [
     description: "Training services and pricing",
     condition: (formData) => formData.selectedOptions.training,
   },
+  {
+    id: "1Abcd123456_slide7",
+    name: "Integrations",
+    description: "EDI integration options and pricing",
+    condition: (formData) => formData.spsIntegration.enabled || formData.crstlIntegration.enabled,
+  },
   // Add more slide templates as needed
 ];
 
@@ -128,4 +134,28 @@ export const variableMappings: VariableMapping[] = [
   { formField: "expirationDate", slideVariable: "{{expirationDate}}", formatter: formatDate },
   
   // Add more mappings as needed
+  { formField: "spsIntegration.enabled", slideVariable: "{{spsIntegrationEnabled}}" },
+  { formField: "spsIntegration.retailerCount", slideVariable: "{{spsRetailerCount}}" },
+  { 
+    formField: "calculateSpsSetupCost", 
+    slideVariable: "{{spsSetupCost}}",
+    formatter: formatCurrency
+  },
+  { 
+    formField: "calculateSpsRetailerSupportCost", 
+    slideVariable: "{{spsAnnualCost}}",
+    formatter: formatCurrency
+  },
+  { formField: "crstlIntegration.enabled", slideVariable: "{{crstlIntegrationEnabled}}" },
+  { formField: "crstlIntegration.retailerCount", slideVariable: "{{crstlRetailerCount}}" },
+  { 
+    formField: "calculateCrstlSetupCost", 
+    slideVariable: "{{crstlSetupCost}}",
+    formatter: formatCurrency
+  },
+  { 
+    formField: "calculateCrstlSupportCost", 
+    slideVariable: "{{crstlAnnualCost}}",
+    formatter: formatCurrency
+  },
 ]; 

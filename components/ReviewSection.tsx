@@ -9,6 +9,45 @@ export function ReviewSection({ formData }: ReviewSectionProps) {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value)
   }
 
+  // Calculate integration costs
+  const calculateIntegrationCosts = () => {
+    let setupCost = 0;
+    let annualCost = 0;
+    
+    // SPS Commerce
+    if (formData.spsIntegration.enabled) {
+      // Setup costs
+      setupCost += formData.spsIntegration.setupFee;
+      setupCost += formData.spsIntegration.retailerSetupFee * formData.spsIntegration.retailerCount;
+      
+      // Annual support costs
+      let spsAnnualCost = 0;
+      const sortedTiers = [...formData.spsIntegration.supportTiers].sort((a, b) => a.fromQty - b.fromQty);
+      
+      for (let retailerNum = 1; retailerNum <= formData.spsIntegration.retailerCount; retailerNum++) {
+        const tier = sortedTiers.find(t => retailerNum >= t.fromQty && retailerNum <= t.toQty);
+        if (tier) {
+          spsAnnualCost += tier.pricePerRetailer * 4; // Quarterly * 4
+        }
+      }
+      
+      annualCost += spsAnnualCost;
+    }
+    
+    // Crstl
+    if (formData.crstlIntegration.enabled) {
+      // Setup costs
+      setupCost += formData.crstlIntegration.setupFee;
+      
+      // Annual support costs
+      annualCost += formData.crstlIntegration.supportFee * 4 * formData.crstlIntegration.retailerCount;
+    }
+    
+    return { setupCost, annualCost };
+  };
+
+  const integrationCosts = calculateIntegrationCosts();
+
   return (
     <div className="space-y-6">
       <Card>
@@ -117,6 +156,58 @@ export function ReviewSection({ formData }: ReviewSectionProps) {
             <strong>Optional Prof. Services Rate:</strong> {formatCurrency(Number(formData.optionalProfServicesRate))}
             /hour
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Integrations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {formData.spsIntegration.enabled && (
+            <div>
+              <h4 className="font-medium">SPS Commerce</h4>
+              <div className="grid grid-cols-2 gap-2 ml-4">
+                <span>Setup Fee:</span>
+                <span>${formatCurrency(formData.spsIntegration.setupFee)}</span>
+                
+                <span>Retailer Setup Fee:</span>
+                <span>${formatCurrency(formData.spsIntegration.retailerSetupFee)} × {formData.spsIntegration.retailerCount} retailers</span>
+                
+                <span>Annual Support Cost:</span>
+                <span>${formatCurrency(calculateSpsRetailerSupportCost())}</span>
+              </div>
+            </div>
+          )}
+          
+          {formData.crstlIntegration.enabled && (
+            <div className="mt-2">
+              <h4 className="font-medium">Crstl</h4>
+              <div className="grid grid-cols-2 gap-2 ml-4">
+                <span>Setup Fee:</span>
+                <span>${formatCurrency(formData.crstlIntegration.setupFee)}</span>
+                
+                <span>Annual Support Cost:</span>
+                <span>${formatCurrency(calculateCrstlSupportCost())}</span>
+              </div>
+            </div>
+          )}
+          
+          {(formData.spsIntegration.enabled || formData.crstlIntegration.enabled) && (
+            <div className="font-medium mt-2">
+              <div className="grid grid-cols-2 gap-2">
+                <span>Total Integration Setup Cost:</span>
+                <span>${formatCurrency(integrationCosts.setupCost)}</span>
+                
+                <span>Total Annual Integration Cost:</span>
+                <span>${formatCurrency(integrationCosts.annualCost)}</span>
+              </div>
+            </div>
+          )}
+          
+          {!formData.spsIntegration.enabled && !formData.crstlIntegration.enabled && (
+            <p>No integrations selected</p>
+          )}
         </CardContent>
       </Card>
     </div>
