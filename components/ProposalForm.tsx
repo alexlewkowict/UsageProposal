@@ -139,24 +139,34 @@ export default function ProposalForm() {
   const [proposalUrl, setProposalUrl] = useState<string | null>(null)
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
+    console.log(`Updating field: ${field} with value:`, value);
+    
     setFormData((prev) => {
+      // Create a copy of the previous state
+      const newState = { ...prev };
+      
       // Handle nested properties (e.g., "spsIntegration.enabled")
       if (field.includes('.')) {
-        const [parent, child] = field.split('.');
-        return {
-          ...prev,
-          [parent]: {
-            ...prev[parent],
-            [child]: value
+        const parts = field.split('.');
+        let current = newState;
+        
+        // Navigate to the nested object, creating the path if needed
+        for (let i = 0; i < parts.length - 1; i++) {
+          const part = parts[i];
+          if (!current[part]) {
+            current[part] = {};
           }
-        };
+          current = current[part];
+        }
+        
+        // Set the value at the final property
+        current[parts[parts.length - 1]] = value;
+      } else {
+        // Handle top-level properties
+        newState[field] = value;
       }
       
-      // Handle top-level properties
-      return {
-        ...prev,
-        [field]: value
-      };
+      return newState;
     });
   }
 
