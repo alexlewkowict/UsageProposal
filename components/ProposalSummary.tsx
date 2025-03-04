@@ -126,14 +126,15 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
 
   // Add this function to get the package name from the ID
   const getImplementationPackageName = (packageId: string) => {
-    const packages = {
-      "standard": "Standard Implementation",
-      "professional": "Professional Implementation",
-      "enterprise": "Enterprise Implementation",
-      "custom": "Custom Implementation"
+    const packageNames = {
+      "1": "QuickStart Brand",
+      "2": "QuickStart 3PL",
+      "3": "Standard",
+      "4": "Advanced",
+      "5": "Custom"
     };
     
-    return packages[packageId] || packageId;
+    return packageNames[packageId] || packageId;
   };
 
   // New function to get store connection tier breakdown
