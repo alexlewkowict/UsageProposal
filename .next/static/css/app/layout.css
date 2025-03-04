@@ -965,6 +965,12 @@ video {
 .h-1 {
   height: 0.25rem;
 }
+.h-16 {
+  height: 4rem;
+}
+.h-20 {
+  height: 5rem;
+}
 .max-h-96 {
   max-height: 24rem;
 }
@@ -1064,6 +1070,15 @@ video {
 .w-12 {
   width: 3rem;
 }
+.w-16 {
+  width: 4rem;
+}
+.w-56 {
+  width: 14rem;
+}
+.w-20 {
+  width: 5rem;
+}
 .min-w-0 {
   min-width: 0px;
 }
@@ -1102,6 +1117,15 @@ video {
 }
 .max-w-max {
   max-width: max-content;
+}
+.max-w-md {
+  max-width: 28rem;
+}
+.max-w-\[100px\] {
+  max-width: 100px;
+}
+.max-w-sm {
+  max-width: 24rem;
 }
 .flex-1 {
   flex: 1 1 0%;
@@ -1315,6 +1339,11 @@ video {
   --tw-space-x-reverse: 0;
   margin-right: calc(0.75rem * var(--tw-space-x-reverse));
   margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
+}
+.space-y-8 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(2rem * var(--tw-space-y-reverse));
 }
 .self-start {
   align-self: flex-start;
@@ -1595,6 +1624,9 @@ video {
 .object-contain {
   object-fit: contain;
 }
+.object-cover {
+  object-fit: cover;
+}
 .p-0 {
   padding: 0px;
 }
@@ -1618,6 +1650,9 @@ video {
 }
 .p-\[1px\] {
   padding: 1px;
+}
+.p-8 {
+  padding: 2rem;
 }
 .px-1 {
   padding-left: 0.25rem;

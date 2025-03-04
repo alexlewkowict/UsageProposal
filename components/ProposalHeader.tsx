@@ -1,9 +1,24 @@
+"use client";
+
 import React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { FileText, ExternalLink, Settings } from "lucide-react"
+import { FileText, ExternalLink, Settings, LogIn, LogOut, User } from "lucide-react"
+import { useSession, signIn, signOut } from "next-auth/react"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function ProposalHeader() {
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
+
   return (
     <div className="w-full max-w-7xl mb-10">
       {/* Main header with shadow and subtle background */}
@@ -66,6 +81,53 @@ export function ProposalHeader() {
               <FileText size={16} />
               <span>My Proposals</span>
             </Link>
+            
+            {!session && (
+              <Button 
+                onClick={() => signIn("google")}
+                className="flex items-center gap-2 ml-4"
+                disabled={isLoading}
+              >
+                <LogIn size={16} />
+                <span>{isLoading ? "Loading..." : "Sign in with Google"}</span>
+              </Button>
+            )}
+            
+            {session && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="ml-4 flex items-center gap-2">
+                    {session.user?.image ? (
+                      <Image 
+                        src={session.user.image} 
+                        alt={session.user.name || "User"} 
+                        width={24} 
+                        height={24} 
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <User size={16} />
+                    )}
+                    <span className="max-w-[100px] truncate">
+                      {session.user?.name || "User"}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{session.user?.name}</span>
+                      <span className="text-xs text-gray-500 truncate">{session.user?.email}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </div>
