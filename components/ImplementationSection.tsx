@@ -22,13 +22,12 @@ interface ImplementationSectionProps {
 
 interface ImplementationPackage {
   id: string;
-  name: string;
-  description: string;
+  package: string;
   onboarding_fee: number;
-  virtual_training_hours: number;
+  virtual_training_sessions: number;
   onsite_support_days: number;
   onsite_support_fee: number;
-  optional_prof_services_rate: number;
+  professional_services_hourly_rate: number;
 }
 
 export function ImplementationSection({
@@ -49,7 +48,7 @@ export function ImplementationSection({
     async function fetchPackages() {
       try {
         const { data, error } = await supabase
-          .from('implementation_packages')
+          .from('Implementation Packages')
           .select('*')
           .order('id');
 
@@ -58,44 +57,49 @@ export function ImplementationSection({
           // Fallback to mock data if there's an error
           setPackages([
             {
-              id: "quickstart_brand",
-              name: "QuickStart Brand",
-              description: "Basic implementation for brand owners",
+              id: "1",
+              package: "QuickStart Brand",
+              onboarding_fee: 3000,
+              virtual_training_sessions: 12,
+              onsite_support_days: 0,
+              onsite_support_fee: 2000,
+              professional_services_hourly_rate: 300
+            },
+            {
+              id: "2",
+              package: "QuickStart 3PL",
+              onboarding_fee: 3700,
+              virtual_training_sessions: 15,
+              onsite_support_days: 0,
+              onsite_support_fee: 2000,
+              professional_services_hourly_rate: 300
+            },
+            {
+              id: "3",
+              package: "Standard",
               onboarding_fee: 5000,
-              virtual_training_hours: 4,
+              virtual_training_sessions: 20,
               onsite_support_days: 0,
-              onsite_support_fee: 0,
-              optional_prof_services_rate: 300
+              onsite_support_fee: 2000,
+              professional_services_hourly_rate: 300
             },
             {
-              id: "quickstart_3pl",
-              name: "QuickStart 3PL",
-              description: "Basic implementation for 3PL providers",
-              onboarding_fee: 10000,
-              virtual_training_hours: 8,
-              onsite_support_days: 1,
-              onsite_support_fee: 2500,
-              optional_prof_services_rate: 300
+              id: "4",
+              package: "Advanced",
+              onboarding_fee: 7500,
+              virtual_training_sessions: 30,
+              onsite_support_days: 2,
+              onsite_support_fee: 2000,
+              professional_services_hourly_rate: 300
             },
             {
-              id: "enterprise",
-              name: "Enterprise",
-              description: "Comprehensive implementation with extensive training and onsite support",
-              onboarding_fee: 15000,
-              virtual_training_hours: 12,
-              onsite_support_days: 3,
-              onsite_support_fee: 2500,
-              optional_prof_services_rate: 300
-            },
-            {
-              id: "custom",
-              name: "Custom Implementation",
-              description: "Tailored implementation package with custom options",
+              id: "5",
+              package: "Custom",
               onboarding_fee: 0,
-              virtual_training_hours: 0,
+              virtual_training_sessions: 0,
               onsite_support_days: 0,
-              onsite_support_fee: 0,
-              optional_prof_services_rate: 300
+              onsite_support_fee: 2000,
+              professional_services_hourly_rate: 300
             }
           ]);
         } else {
@@ -118,10 +122,10 @@ export function ImplementationSection({
       if (selected) {
         const isModified = 
           Number(formData.onboardingFee) !== selected.onboarding_fee ||
-          Number(formData.virtualTrainingHours) !== selected.virtual_training_hours ||
+          Number(formData.virtualTrainingHours) !== selected.virtual_training_sessions ||
           Number(formData.onsiteSupportDays) !== selected.onsite_support_days ||
           Number(formData.onsiteSupportFee) !== selected.onsite_support_fee ||
-          Number(formData.optionalProfServicesRate) !== selected.optional_prof_services_rate
+          Number(formData.optionalProfServicesRate) !== selected.professional_services_hourly_rate
         
         setIsCustomized(isModified)
       }
@@ -134,10 +138,10 @@ export function ImplementationSection({
     const selected = packages.find(pkg => pkg.id === packageId);
     if (selected) {
       // Set default values from the selected package
-      handleInputChange("virtualTrainingHours", selected.virtual_training_hours);
+      handleInputChange("virtualTrainingHours", selected.virtual_training_sessions);
       handleInputChange("onsiteSupportDays", selected.onsite_support_days);
       handleInputChange("onsiteSupportFee", selected.onsite_support_fee);
-      handleInputChange("optionalProfServicesRate", selected.optional_prof_services_rate);
+      handleInputChange("optionalProfServicesRate", selected.professional_services_hourly_rate);
       
       // Set the onboarding fee from the package
       handleInputChange("onboardingFee", selected.onboarding_fee);
@@ -204,8 +208,14 @@ export function ImplementationSection({
               <div className="flex items-start space-x-2">
                 <RadioGroupItem value={pkg.id} id={`package-${pkg.id}`} />
                 <div className="w-full">
-                  <Label htmlFor={`package-${pkg.id}`} className="font-medium">{pkg.name}</Label>
-                  <p className="text-sm text-gray-500 mb-4">{pkg.description}</p>
+                  <Label htmlFor={`package-${pkg.id}`} className="font-medium">{pkg.package}</Label>
+                  <p className="text-sm text-gray-500 mb-4">
+                    {pkg.package === "QuickStart Brand" && "Basic implementation for brand owners"}
+                    {pkg.package === "QuickStart 3PL" && "Basic implementation for 3PL providers"}
+                    {pkg.package === "Standard" && "Standard implementation with basic training"}
+                    {pkg.package === "Advanced" && "Advanced implementation with extensive training and onsite support"}
+                    {pkg.package === "Custom" && "Tailored implementation package with custom options"}
+                  </p>
                   
                   {formData.implementationPackage === pkg.id && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
