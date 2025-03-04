@@ -3,35 +3,45 @@ import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  // Skip middleware for these paths
-  const { pathname } = req.nextUrl;
+  // Get the pathname
+  const path = req.nextUrl.pathname;
+  
+  // Public paths that don't require authentication
+  const publicPaths = ['/auth/signin'];
+  
+  // Check if the current path is public
+  const isPublicPath = publicPaths.some(path => 
+    req.nextUrl.pathname === path || 
+    req.nextUrl.pathname.startsWith(`${path}/`)
+  );
+  
+  // Skip middleware for API routes and static files
   if (
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/_next/') ||
-    pathname.includes('/favicon.ico') ||
-    pathname.includes('.svg')
+    path.startsWith('/api/auth') || 
+    path.startsWith('/_next/') || 
+    path.includes('/favicon.ico')
   ) {
     return NextResponse.next();
   }
-
-  // Check if user is authenticated
+  
+  // Get the token
   const token = await getToken({ 
     req, 
     secret: process.env.NEXTAUTH_SECRET 
   });
-
-  // Redirect unauthenticated users to login page
-  if (!token && pathname !== '/auth/signin') {
-    const url = new URL('/auth/signin', req.url);
-    return NextResponse.redirect(url);
+  
+  // Redirect to sign-in if accessing a protected route without authentication
+  if (!token && !isPublicPath) {
+    const signInUrl = new URL('/auth/signin', req.url);
+    signInUrl.searchParams.set('callbackUrl', req.nextUrl.pathname);
+    return NextResponse.redirect(signInUrl);
   }
-
-  // Redirect authenticated users away from login page
-  if (token && pathname === '/auth/signin') {
-    const url = new URL('/', req.url);
-    return NextResponse.redirect(url);
+  
+  // Redirect to home if accessing sign-in while already authenticated
+  if (token && isPublicPath) {
+    return NextResponse.redirect(new URL('/', req.url));
   }
-
+  
   return NextResponse.next();
 }
 
