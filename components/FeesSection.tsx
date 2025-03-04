@@ -430,8 +430,12 @@ export function FeesSection({
       
       // Determine if this is a platform fee tier or per-unit pricing
       const isPlatformFee = tier.platform_fee_list_price !== null && tier.platform_fee_list_price > 0;
-      const originalFee = isPlatformFee ? tier.platform_fee_sales_price : null;
-      const originalRate = isPlatformFee ? null : tier.shipped_unit_sales_price;
+      
+      // For platform fee (base tier), use platform_fee_list_price
+      // For other tiers, use shipped_unit_list_price
+      const originalFee = isPlatformFee ? tier.platform_fee_list_price : null;
+      const originalRate = isPlatformFee ? null : tier.shipped_unit_list_price;
+      
       const discountMultiplier = (100 - discount) / 100;
       
       // Calculate the total for this tier

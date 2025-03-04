@@ -580,7 +580,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                     <p key={index} className="mb-1">
                       Base fee (up to {formatNumber(tier.unitsInTier)} units): ${formatNumber(tier.originalFee || 0)} 
                       {formData.saasFeeDiscount > 0 && (
-                        <span className="text-blue-600"> → ${formatNumber(tier.tierTotal)} after discount</span>
+                        <span className="text-blue-600"> → ${formatNumber(tier.tierTotal)} after {formData.saasFeeDiscount}% discount</span>
                       )}
                     </p>
                   );
@@ -589,7 +589,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                     <p key={index} className="mb-1">
                       {formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0} 
                       {formData.saasFeeDiscount > 0 && (
-                        <span className="text-blue-600"> → ${tier.discountedRate?.toFixed(3) || 0} after discount</span>
+                        <span className="text-blue-600"> → ${tier.discountedRate?.toFixed(3) || 0} after {formData.saasFeeDiscount}% discount</span>
                       )}: ${formatNumber(tier.tierTotal)}
                     </p>
                   );
