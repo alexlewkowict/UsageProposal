@@ -353,120 +353,123 @@ export default function ProposalForm() {
   }, [formData.opportunityName])
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
-      {/* Left column - Form */}
-      <Card className="w-full lg:w-2/3">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Create a Usage Proposal</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Proposal Generator</h1>
-            <Link href="/admin/variable-mapping">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                Variable Mapping
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="mb-6">
-            <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {currentStep === 0 && (
-              <BusinessInfoSection
-                formData={formData}
-                handleInputChange={handleInputChange}
-                invalidFields={invalidFields}
-              />
-            )}
-            {currentStep === 1 && (
-              <PaymentDetailsSection
-                formData={formData}
-                handleInputChange={handleInputChange}
-                invalidFields={invalidFields}
-              />
-            )}
-            {currentStep === 2 && (
-              <FeesSection
-                formData={formData}
-                handleInputChange={handleInputChange}
-                handleSaasFeeChange={handleSaasFeeChange}
-                handleFrequencyChange={handleFrequencyChange}
-                handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
-                handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
-                invalidFields={invalidFields}
-              />
-            )}
-            {currentStep === 3 && (
-              <IntegrationsSection
-                formData={formData}
-                handleInputChange={handleInputChange}
-                handleSpsRetailerCountChange={handleSpsRetailerCountChange}
-                handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
-                invalidFields={invalidFields}
-              />
-            )}
-            {currentStep === 4 && (
-              <ProposalOptionsSection
-                selectedOptions={formData.selectedOptions}
-                handleOptionSelect={handleOptionSelect}
-                invalidFields={invalidFields}
-              />
-            )}
-            {currentStep === 5 && (
-              <ImplementationSection
-                formData={formData}
-                handleInputChange={handleInputChange}
-                invalidFields={invalidFields}
-              />
-            )}
-            {currentStep === 6 && <ReviewSection formData={formData} />}
-
-            <div className="flex justify-between">
-              {currentStep > 0 && (
-                <Button type="button" onClick={handleBack} variant="outline">
-                  Back
-                </Button>
-              )}
-              {currentStep < STEPS.length - 1 ? (
-                <Button type="button" onClick={handleContinue} className="ml-auto">
-                  {currentStep === STEPS.length - 2 ? "Review Proposal" : "Continue"}
-                </Button>
-              ) : (
-                <Button 
-                  type="button" 
-                  onClick={handleGenerateProposal} 
-                  disabled={isGenerating || !validateStep().isValid}
-                  className="ml-auto"
-                >
-                  {isGenerating ? 'Generating...' : 'Generate Proposal'}
-                </Button>
-              )}
-            </div>
-          </form>
-
-          {proposalUrl && (
-            <div className="mt-4">
-              <a 
-                href={proposalUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                View Generated Proposal
-              </a>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Right column - Summary */}
-      <div className="w-full lg:w-1/3 sticky top-4 self-start">
-        <ProposalSummary formData={formData} currentStep={currentStep} />
+    <>
+      {/* Add the navigation link at the top right of the page */}
+      <div className="flex justify-end w-full max-w-7xl mb-4">
+        <Link href="/admin/variable-mapping">
+          <Button variant="ghost" size="sm" className="flex items-center gap-2">
+            Variable Mapping
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
       </div>
-    </div>
+      
+      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
+        {/* Left column - Form */}
+        <Card className="w-full lg:w-2/3">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Create a Usage Proposal</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-6">
+              <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {currentStep === 0 && (
+                <BusinessInfoSection
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  invalidFields={invalidFields}
+                />
+              )}
+              {currentStep === 1 && (
+                <PaymentDetailsSection
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  invalidFields={invalidFields}
+                />
+              )}
+              {currentStep === 2 && (
+                <FeesSection
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleSaasFeeChange={handleSaasFeeChange}
+                  handleFrequencyChange={handleFrequencyChange}
+                  handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
+                  handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
+                  invalidFields={invalidFields}
+                />
+              )}
+              {currentStep === 3 && (
+                <IntegrationsSection
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleSpsRetailerCountChange={handleSpsRetailerCountChange}
+                  handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
+                  invalidFields={invalidFields}
+                />
+              )}
+              {currentStep === 4 && (
+                <ProposalOptionsSection
+                  selectedOptions={formData.selectedOptions}
+                  handleOptionSelect={handleOptionSelect}
+                  invalidFields={invalidFields}
+                />
+              )}
+              {currentStep === 5 && (
+                <ImplementationSection
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  invalidFields={invalidFields}
+                />
+              )}
+              {currentStep === 6 && <ReviewSection formData={formData} />}
+
+              <div className="flex justify-between">
+                {currentStep > 0 && (
+                  <Button type="button" onClick={handleBack} variant="outline">
+                    Back
+                  </Button>
+                )}
+                {currentStep < STEPS.length - 1 ? (
+                  <Button type="button" onClick={handleContinue} className="ml-auto">
+                    {currentStep === STEPS.length - 2 ? "Review Proposal" : "Continue"}
+                  </Button>
+                ) : (
+                  <Button 
+                    type="button" 
+                    onClick={handleGenerateProposal} 
+                    disabled={isGenerating || !validateStep().isValid}
+                    className="ml-auto"
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Proposal'}
+                  </Button>
+                )}
+              </div>
+            </form>
+
+            {proposalUrl && (
+              <div className="mt-4">
+                <a 
+                  href={proposalUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  View Generated Proposal
+                </a>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Right column - Summary */}
+        <div className="w-full lg:w-1/3 sticky top-4 self-start">
+          <ProposalSummary formData={formData} currentStep={currentStep} />
+        </div>
+      </div>
+    </>
   )
 }
 
