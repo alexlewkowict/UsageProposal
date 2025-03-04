@@ -243,6 +243,11 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
     return breakdown;
   };
 
+  // Add this near the top of your component
+  console.log("Form data contract term:", formData.contractTerm);
+  console.log("Form data contract length:", formData.contractLength);
+  console.log("Full form data:", formData);
+
   return (
     <Card className="sticky top-4">
       <CardHeader>
@@ -281,7 +286,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
               </div>
-              <div className="text-lg font-medium">{formData.contractLength || 24} Months</div>
+              <div className="text-lg font-medium">{formData.contractTerm || 24} Months</div>
             </div>
             
             {/* Billing Frequency Tile */}
