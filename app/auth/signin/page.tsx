@@ -39,7 +39,7 @@ export default function SignIn() {
           </h1>
           
           <p className="text-gray-600 text-center max-w-sm">
-            Sign in to create and manage professional proposals for ShipHero customers
+            Sign in to create and manage proposals and agreements
           </p>
         </div>
         
@@ -49,11 +49,10 @@ export default function SignIn() {
             className="w-full flex items-center justify-center gap-3 py-6"
             disabled={status === "loading"}
           >
-            <Image 
-              src="/google-logo.svg" 
+            <img 
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
               alt="Google" 
-              width={20} 
-              height={20} 
+              className="w-5 h-5"
             />
             <span>{status === "loading" ? "Loading..." : "Sign in with Google"}</span>
           </Button>
