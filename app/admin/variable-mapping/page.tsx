@@ -9,6 +9,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Check, ChevronDown, ChevronUp, Code, Info, Save, Search } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { toast } from "@/components/ui/use-toast"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface VariableMapping {
   variable: string;
@@ -18,9 +20,278 @@ interface VariableMapping {
   group: string;
 }
 
+interface CodeElement {
+  path: string;
+  elements: string[];
+}
+
 export default function VariableMappingPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [mappings, setMappings] = useState<VariableMapping[]>([
+  const [mappings, setMappings] = useState<VariableMapping[]>([])
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+  const [codeElements, setCodeElements] = useState<CodeElement[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasChanges, setHasChanges] = useState(false)
+
+  // Fetch mappings and code elements on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        // Fetch variable mappings
+        const mappingsResponse = await fetch('/api/variable-mappings')
+        let mappingsData = await mappingsResponse.json()
+        
+        // If no mappings exist yet, use default ones
+        if (!mappingsData || mappingsData.length === 0) {
+          mappingsData = getDefaultMappings()
+        }
+        
+        setMappings(mappingsData)
+        
+        // Fetch code elements
+        const elementsResponse = await fetch('/api/code-elements')
+        const elementsData = await elementsResponse.json()
+        setCodeElements(elementsData)
+        
+        // Initialize expanded state for all groups
+        const groups = [...new Set(mappingsData.map((m: VariableMapping) => m.group))]
+        const initialExpandedState: Record<string, boolean> = {}
+        groups.forEach(group => {
+          initialExpandedState[group as string] = true
+        })
+        setExpandedGroups(initialExpandedState)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to load variable mappings',
+          variant: 'destructive',
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchData()
+  }, [])
+
+  // Save mappings
+  const saveMappings = async () => {
+    try {
+      const response = await fetch('/api/variable-mappings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(mappings),
+      })
+      
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Variable mappings saved successfully',
+        })
+        setHasChanges(false)
+      } else {
+        throw new Error('Failed to save mappings')
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save variable mappings',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  // Update a mapping
+  const updateMapping = (variable: string, mappedTo: string) => {
+    const updatedMappings = mappings.map(mapping => {
+      if (mapping.variable === variable) {
+        return { ...mapping, mappedTo }
+      }
+      return mapping
+    })
+    
+    setMappings(updatedMappings)
+    setHasChanges(true)
+  }
+
+  // Toggle group expansion
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [group]: !prev[group]
+    }))
+  }
+
+  // Filter mappings based on search query
+  const filteredMappings = mappings.filter(mapping => {
+    const searchLower = searchQuery.toLowerCase()
+    return (
+      mapping.variable.toLowerCase().includes(searchLower) ||
+      mapping.description.toLowerCase().includes(searchLower) ||
+      mapping.group.toLowerCase().includes(searchLower) ||
+      mapping.mappedTo.toLowerCase().includes(searchLower)
+    )
+  })
+
+  // Group mappings by category and group
+  const groupedMappings: Record<string, VariableMapping[]> = {}
+  filteredMappings.forEach(mapping => {
+    if (!groupedMappings[mapping.group]) {
+      groupedMappings[mapping.group] = []
+    }
+    groupedMappings[mapping.group].push(mapping)
+  })
+
+  // Get all available code elements for a specific path
+  const getElementsForPath = (path: string) => {
+    const found = codeElements.find(ce => ce.path === path)
+    return found ? found.elements : []
+  }
+
+  // Get all available paths
+  const getAllPaths = () => {
+    return codeElements.map(ce => ce.path)
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Variable Mapping Configuration</CardTitle>
+          <Button 
+            onClick={saveMappings} 
+            disabled={!hasChanges}
+            className="flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            Save Mappings
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <Input
+                placeholder="Search variables..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+          </div>
+
+          <Tabs defaultValue="grouped">
+            <TabsList className="mb-4">
+              <TabsTrigger value="grouped">Grouped</TabsTrigger>
+              <TabsTrigger value="unmapped">Unmapped</TabsTrigger>
+              <TabsTrigger value="all">All Variables</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="grouped" className="mt-0">
+              <ScrollArea className="h-[calc(100vh-300px)]">
+                <div className="space-y-4">
+                  {Object.entries(groupedMappings).map(([group, groupMappings]) => {
+                    const filteredGroupMappings = groupMappings
+                    return (
+                      <Collapsible
+                        key={group}
+                        open={expandedGroups[group]}
+                        onOpenChange={() => toggleGroup(group)}
+                        className="border rounded-md"
+                      >
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-medium">{group}</span>
+                            <span className="text-sm text-gray-500">({filteredGroupMappings.length})</span>
+                          </div>
+                          {expandedGroups[group] ? (
+                            <ChevronUp className="h-5 w-5" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5" />
+                          )}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="p-4 pt-0 border-t">
+                            <div className="space-y-3">
+                              {filteredGroupMappings.map((mapping) => (
+                                <div
+                                  key={mapping.variable}
+                                  className="grid grid-cols-12 gap-4 items-center p-3 rounded-md hover:bg-gray-50"
+                                >
+                                  <div className="col-span-5 flex items-center gap-2">
+                                    <Code className="h-4 w-4 text-gray-400" />
+                                    <div className="font-mono text-sm">{`{{${mapping.variable}}}`}</div>
+                                  </div>
+                                  <div className="col-span-5 relative">
+                                    <Select
+                                      value={mapping.mappedTo}
+                                      onValueChange={(value) => updateMapping(mapping.variable, value)}
+                                    >
+                                      <SelectTrigger className="font-mono text-sm">
+                                        <SelectValue placeholder="Map to code element..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <ScrollArea className="h-[200px]">
+                                          {getAllPaths().map((path) => (
+                                            <div key={path} className="p-1">
+                                              <div className="font-semibold text-xs text-gray-500 px-2 py-1">{path}</div>
+                                              {getElementsForPath(path).map((element) => (
+                                                <SelectItem key={`${path}:${element}`} value={`${path}.${element}`}>
+                                                  {element}
+                                                </SelectItem>
+                                              ))}
+                                            </div>
+                                          ))}
+                                        </ScrollArea>
+                                      </SelectContent>
+                                    </Select>
+                                    {mapping.mappedTo && (
+                                      <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+                                        <Check className="h-4 w-4 text-green-500" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="col-span-2 flex justify-end">
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <Info className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>{mapping.description}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )
+                  })}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+            
+            {/* Similar content for other tabs... */}
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Default mappings to use if none exist yet
+function getDefaultMappings(): VariableMapping[] {
+  return [
     // General Information
     {
       variable: "friendly_name",
@@ -43,311 +314,6 @@ export default function VariableMappingPage() {
       category: "general",
       group: "General Information",
     },
-
-    // Payment Information
-    {
-      variable: "payment_terms",
-      mappedTo: "formData.paymentTerms",
-      description: "Payment terms (Net 30, etc.)",
-      category: "payment",
-      group: "Payment Information",
-    },
-    {
-      variable: "payment_type",
-      mappedTo: "formData.paymentType",
-      description: "Type of payment",
-      category: "payment",
-      group: "Payment Information",
-    },
-    {
-      variable: "saasFrequency",
-      mappedTo: "formData.saasFee.frequency",
-      description: "Frequency of SaaS payments",
-      category: "payment",
-      group: "Payment Information",
-    },
-    {
-      variable: "quarterlyFee",
-      mappedTo: "",
-      description: "Quarterly fee amount",
-      category: "payment",
-      group: "Payment Information",
-    },
-    {
-      variable: "annualFee",
-      mappedTo: "calculateAnnualSaasFee()",
-      description: "Annual fee amount",
-      category: "payment",
-      group: "Payment Information",
-    },
-    {
-      variable: "implementationCost",
-      mappedTo: "formData.onboardingFee",
-      description: "One-time implementation cost",
-      category: "payment",
-      group: "Payment Information",
-    },
-
-    // Store Connections
-    {
-      variable: "store_connections",
-      mappedTo: "",
-      description: "Store connections description",
-      category: "connections",
-      group: "Store Connections",
-    },
-    {
-      variable: "storeConnectionsCount",
-      mappedTo: "formData.storeConnections",
-      description: "Number of store connections",
-      category: "connections",
-      group: "Store Connections",
-    },
-    // Add more mappings as in your example...
-  ])
-
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    "General Information": true,
-    "Payment Information": true,
-    "Store Connections": true,
-    "Store Tiers": false,
-    "Annual Units": true,
-    "Overages": false,
-    "AA Setup": true,
-    "AA1 Connections": true,
-    "AA1 Tiers": false,
-    "AA2 Connections": true,
-    "AA2 Tiers": false,
-    "Features": true,
-  })
-
-  const toggleGroup = (group: string) => {
-    setExpandedGroups({
-      ...expandedGroups,
-      [group]: !expandedGroups[group],
-    })
-  }
-
-  const updateMapping = (variable: string, value: string) => {
-    setMappings(mappings.map((mapping) => (mapping.variable === variable ? { ...mapping, mappedTo: value } : mapping)))
-  }
-
-  const saveVariableMappings = async () => {
-    try {
-      // In a real implementation, you would send this to your API
-      // await fetch('/api/variable-mappings', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(mappings)
-      // });
-      
-      // For now, we'll just simulate a successful save
-      toast({
-        title: "Mappings saved",
-        description: "Variable mappings have been saved successfully.",
-      })
-    } catch (error) {
-      toast({
-        title: "Error saving mappings",
-        description: "There was an error saving your variable mappings.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const filteredMappings = mappings.filter(
-    (mapping) =>
-      mapping.variable.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mapping.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mapping.mappedTo.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
-
-  // Group mappings by their group
-  const groupedMappings: Record<string, VariableMapping[]> = {}
-  filteredMappings.forEach((mapping) => {
-    if (!groupedMappings[mapping.group]) {
-      groupedMappings[mapping.group] = []
-    }
-    groupedMappings[mapping.group].push(mapping)
-  })
-
-  // Count mapped variables
-  const mappedCount = mappings.filter(m => m.mappedTo).length
-  const totalCount = mappings.length
-  const mappedPercentage = Math.round((mappedCount / totalCount) * 100)
-
-  return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Variable Mapping</h1>
-        <Button onClick={saveVariableMappings} className="flex items-center gap-2">
-          <Save className="h-4 w-4" />
-          Save Mappings
-        </Button>
-      </div>
-      
-      <div className="mb-6">
-        <p className="text-gray-500 mb-2">
-          Map variables from your codebase to template placeholders. These mappings will be used when generating proposals and sending webhook data.
-        </p>
-        <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-blue-800">Mapping Progress</p>
-              <p className="text-sm text-blue-600">{mappedCount} of {totalCount} variables mapped ({mappedPercentage}%)</p>
-            </div>
-            <div className="w-32 h-2 bg-blue-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-blue-600 rounded-full" 
-                style={{ width: `${mappedPercentage}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Search variables..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
-
-      <Tabs defaultValue="grouped">
-        <TabsList className="mb-4">
-          <TabsTrigger value="grouped">Grouped View</TabsTrigger>
-          <TabsTrigger value="all">All Variables</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="grouped">
-          <Card>
-            <CardHeader>
-              <CardTitle>Variables by Group</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {Object.entries(groupedMappings).map(([group, groupMappings]) => {
-                  return (
-                    <Collapsible key={group} open={expandedGroups[group]}>
-                      <CollapsibleTrigger 
-                        className="flex w-full items-center justify-between p-3 font-medium bg-gray-100 hover:bg-gray-200 rounded-md"
-                        onClick={() => toggleGroup(group)}
-                      >
-                        <span>{group}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">
-                            {groupMappings.filter(m => m.mappedTo).length}/{groupMappings.length} mapped
-                          </span>
-                          {expandedGroups[group] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-2">
-                        <div className="border rounded-md">
-                          <div className="p-2 space-y-1">
-                            {groupMappings.map((mapping) => (
-                              <div
-                                key={mapping.variable}
-                                className="grid grid-cols-12 gap-4 items-center p-3 rounded-md hover:bg-gray-50"
-                              >
-                                <div className="col-span-5 flex items-center gap-2">
-                                  <Code className="h-4 w-4 text-gray-400" />
-                                  <div className="font-mono text-sm">{`{{${mapping.variable}}}`}</div>
-                                </div>
-                                <div className="col-span-5 relative">
-                                  <Input
-                                    placeholder="Map to code element..."
-                                    value={mapping.mappedTo}
-                                    onChange={(e) => updateMapping(mapping.variable, e.target.value)}
-                                    className="font-mono text-sm"
-                                  />
-                                  {mapping.mappedTo && (
-                                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                      <Check className="h-4 w-4 text-green-500" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="col-span-2 flex justify-end">
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                                          <Info className="h-4 w-4" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{mapping.description}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="all">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Variables</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {filteredMappings.map((mapping) => (
-                  <div
-                    key={mapping.variable}
-                    className="grid grid-cols-12 gap-4 items-center p-3 border rounded-md hover:bg-gray-50"
-                  >
-                    <div className="col-span-5 flex items-center gap-2">
-                      <Code className="h-4 w-4 text-gray-400" />
-                      <div className="font-mono text-sm">{`{{${mapping.variable}}}`}</div>
-                    </div>
-                    <div className="col-span-5 relative">
-                      <Input
-                        placeholder="Map to code element..."
-                        value={mapping.mappedTo}
-                        onChange={(e) => updateMapping(mapping.variable, e.target.value)}
-                        className="font-mono text-sm"
-                      />
-                      {mapping.mappedTo && (
-                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                          <Check className="h-4 w-4 text-green-500" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="col-span-2 flex justify-end">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Info className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{mapping.description}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
+    // Add more default mappings as needed
+  ]
 } 
