@@ -137,23 +137,38 @@ export default function VariableMappingPage() {
     })
   }
   
-  // Get code elements for dropdown
-  const codeElements = [
-    { path: "formData", element: "friendlyBusinessName" },
-    { path: "formData", element: "opportunityName" },
-    { path: "formData", element: "contractTerm" },
-    { path: "formData", element: "paymentTerms" },
-    { path: "formData", element: "paymentType" },
-    { path: "formData", element: "storeConnections" },
-    { path: "formData.saasFee", element: "frequency" },
-    { path: "formData.saasFee", element: "pallets.value" },
-    { path: "formData.saasFee", element: "cases.value" },
-    { path: "formData.saasFee", element: "eaches.value" },
-    { path: "calculations", element: "calculateAnnualSaasFee" },
-    { path: "calculations", element: "calculateStoreConnectionsCost" },
-    // Add more code elements as needed
-  ]
+  // Get category display name
+  function getCategoryName(category: string): string {
+    const categoryNames: Record<string, string> = {
+      "general": "General Information",
+      "payment": "Payment Information",
+      "units": "Units & Pricing",
+      "connections": "Connections",
+      "features": "Features",
+      "tiers": "Pricing Tiers",
+      "implementation": "Implementation"
+    }
+    
+    return categoryNames[category] || category
+  }
   
+  // Get code elements for dropdown
+  const getCodeElements = () => {
+    return [
+      { label: "formData.friendlyBusinessName", value: "formData.friendlyBusinessName" },
+      { label: "formData.contractTerm", value: "formData.contractTerm" },
+      { label: "formData.paymentTerms", value: "formData.paymentTerms" },
+      { label: "formData.paymentType", value: "formData.paymentType" },
+      { label: "formData.storeConnections", value: "formData.storeConnections" },
+      { label: "formData.saasFee.frequency", value: "formData.saasFee.frequency" },
+      { label: "calculateAnnualSaasFee()", value: "calculateAnnualSaasFee()" },
+      { label: "calculateQuarterlySaasFee()", value: "calculateQuarterlySaasFee()" },
+      { label: "formData.implementationPackage", value: "formData.implementationPackage" },
+      { label: "formData.onboardingFee", value: "formData.onboardingFee" },
+      // Add more code elements as needed
+    ]
+  }
+
   return (
     <div className="container mx-auto py-6 max-w-7xl">
       <div className="flex justify-between items-center mb-6">
@@ -162,11 +177,7 @@ export default function VariableMappingPage() {
           <p className="text-gray-500">Map template variables to code elements</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Variable
-          </Button>
-          <Button variant="outline">
+          <Button variant="outline" size="sm" onClick={() => {}}>
             <Filter className="h-4 w-4 mr-2" />
             Filter
           </Button>
@@ -177,127 +188,137 @@ export default function VariableMappingPage() {
         </div>
       </div>
       
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input 
-            placeholder="Search variables..." 
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex justify-between mt-2">
-          <div className="flex gap-2">
-            <button 
-              className={`px-3 py-1 rounded-md text-sm ${activeCategory === 'all' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
-              onClick={() => setActiveCategory('all')}
-            >
-              All Variables
-            </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-sm ${activeCategory === 'general' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
-              onClick={() => setActiveCategory('general')}
-            >
-              General
-            </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-sm ${activeCategory === 'payment' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
-              onClick={() => setActiveCategory('payment')}
-            >
-              Payment
-            </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-sm ${activeCategory === 'connections' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
-              onClick={() => setActiveCategory('connections')}
-            >
-              Connections
-            </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-sm ${activeCategory === 'units' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
-              onClick={() => setActiveCategory('units')}
-            >
-              Units
-            </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-sm ${activeCategory === 'features' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
-              onClick={() => setActiveCategory('features')}
-            >
-              Features
-            </button>
-            <button 
-              className={`px-3 py-1 rounded-md text-sm ${activeCategory === 'unmapped' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
-              onClick={() => setActiveCategory('unmapped')}
-            >
-              Unmapped
-            </button>
-          </div>
-          <div className="flex gap-2 items-center">
-            <Badge variant="secondary" className="text-sm">
-              {mappings.length} variables
-            </Badge>
-            <Badge variant="outline" className="text-sm">
-              {mappedCount} mapped
-            </Badge>
+      <div className="bg-white border rounded-lg shadow-sm">
+        <div className="p-4 border-b">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search variables..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
-      </div>
-      
-      <div className="space-y-4">
-        {Object.entries(groupedMappings).map(([category, variables]) => {
-          const isExpanded = expandedGroups[category] !== false; // Default to expanded
+        
+        <div className="flex border-b">
+          <button
+            className={`px-4 py-2 text-sm font-medium ${activeCategory === 'all' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveCategory('all')}
+          >
+            All Variables
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${activeCategory === 'general' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveCategory('general')}
+          >
+            General
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${activeCategory === 'payment' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveCategory('payment')}
+          >
+            Payment
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${activeCategory === 'connections' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveCategory('connections')}
+          >
+            Connections
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${activeCategory === 'units' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveCategory('units')}
+          >
+            Units
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${activeCategory === 'features' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveCategory('features')}
+          >
+            Features
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${activeCategory === 'unmapped' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveCategory('unmapped')}
+          >
+            Unmapped
+          </button>
+        </div>
+        
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex gap-2">
+              <Badge variant="outline" className="bg-gray-100">
+                {mappings.length} variables
+              </Badge>
+              <Badge variant="outline" className="bg-gray-100">
+                {mappedCount} mapped
+              </Badge>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Variable
+            </Button>
+          </div>
           
-          return (
-            <div key={category} className="border rounded-md overflow-hidden">
+          {Object.entries(groupedMappings).map(([group, groupMappings]) => (
+            <div key={group} className="mb-4 border rounded-md overflow-hidden">
               <div 
-                className="flex justify-between items-center p-4 bg-gray-50 cursor-pointer"
-                onClick={() => toggleGroup(category)}
+                className="flex justify-between items-center p-3 bg-gray-50 cursor-pointer"
+                onClick={() => toggleGroup(group)}
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{variables.length}</span>
-                  <h3 className="text-lg font-medium">{category}</h3>
+                  <Badge variant="outline" className="bg-white">
+                    {groupMappings.length}
+                  </Badge>
+                  <h3 className="font-medium">{group}</h3>
                 </div>
-                {isExpanded ? <ChevronUp /> : <ChevronDown />}
+                {expandedGroups[group] ? (
+                  <ChevronUp className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-gray-500" />
+                )}
               </div>
               
-              {isExpanded && (
-                <div className="divide-y">
-                  {variables.map(variable => (
-                    <div key={variable.variable} className="p-4 grid grid-cols-12 gap-4 items-center">
-                      <div className="col-span-4 flex items-center gap-2">
+              {expandedGroups[group] && (
+                <div className="p-3 space-y-3">
+                  {groupMappings.map((mapping) => (
+                    <div key={mapping.variable} className="grid grid-cols-12 gap-4 items-center">
+                      <div className="col-span-5 flex items-center gap-2">
                         <Code className="h-4 w-4 text-gray-400" />
-                        <code className="text-sm">{{"{{"}{variable.variable}{"}}"}}}</code>
+                        <div className="font-mono text-sm">
+                          {`{{${mapping.variable}}}`}
+                        </div>
                       </div>
-                      <div className="col-span-7">
+                      <div className="col-span-5 relative">
                         <Select
-                          value={variable.mappedTo}
-                          onValueChange={(value) => updateMapping(variable.variable, value)}
+                          value={mapping.mappedTo}
+                          onValueChange={(value) => updateMapping(mapping.variable, value)}
                         >
                           <SelectTrigger className="font-mono text-sm">
                             <SelectValue placeholder="Map to code element..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {codeElements.map((element) => (
-                              <SelectItem 
-                                key={`${element.path}.${element.element}`} 
-                                value={`${element.path}.${element.element}`}
-                              >
-                                {element.path}.{element.element}
+                            <SelectItem value="">-- None --</SelectItem>
+                            {getCodeElements().map((element) => (
+                              <SelectItem key={element.value} value={element.value}>
+                                {element.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-1 flex justify-end">
+                      <div className="col-span-2 flex justify-end">
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
                                 <Info className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>{variable.description}</p>
+                              <p>{mapping.description}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -307,8 +328,8 @@ export default function VariableMappingPage() {
                 </div>
               )}
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
       
       {/* Add Variable Dialog */}
@@ -317,68 +338,53 @@ export default function VariableMappingPage() {
           <DialogHeader>
             <DialogTitle>Add New Variable</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="variable">Variable Name</Label>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="variable-name">Variable Name</Label>
               <Input
-                id="variable"
-                placeholder="e.g., friendly_name"
+                id="variable-name"
+                placeholder="e.g., store_connections"
                 value={newVariable.variable}
                 onChange={(e) => setNewVariable({...newVariable, variable: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={newVariable.category}
-                onValueChange={(value) => setNewVariable({...newVariable, category: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="general">General Information</SelectItem>
-                  <SelectItem value="payment">Payment Information</SelectItem>
-                  <SelectItem value="connections">Connections</SelectItem>
-                  <SelectItem value="units">Units</SelectItem>
-                  <SelectItem value="features">Features</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+            <div>
+              <Label htmlFor="variable-description">Description</Label>
               <Textarea
-                id="description"
+                id="variable-description"
                 placeholder="Describe what this variable represents"
                 value={newVariable.description}
                 onChange={(e) => setNewVariable({...newVariable, description: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="mappedTo">Map To (Optional)</Label>
+            <div>
+              <Label htmlFor="variable-category">Category</Label>
               <Select
-                value={newVariable.mappedTo}
-                onValueChange={(value) => setNewVariable({...newVariable, mappedTo: value})}
+                value={newVariable.category}
+                onValueChange={(value) => setNewVariable({...newVariable, category: value})}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Map to code element..." />
+                <SelectTrigger id="variable-category">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {codeElements.map((element) => (
-                    <SelectItem 
-                      key={`${element.path}.${element.element}`} 
-                      value={`${element.path}.${element.element}`}
-                    >
-                      {element.path}.{element.element}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="general">General Information</SelectItem>
+                  <SelectItem value="payment">Payment Information</SelectItem>
+                  <SelectItem value="units">Units & Pricing</SelectItem>
+                  <SelectItem value="connections">Connections</SelectItem>
+                  <SelectItem value="features">Features</SelectItem>
+                  <SelectItem value="tiers">Pricing Tiers</SelectItem>
+                  <SelectItem value="implementation">Implementation</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-            <Button onClick={addVariable}>Add Variable</Button>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addVariable}>
+              Add Variable
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -386,21 +392,7 @@ export default function VariableMappingPage() {
   )
 }
 
-// Helper function to get category display name
-function getCategoryName(category: string): string {
-  const categoryMap: Record<string, string> = {
-    'general': 'General Information',
-    'payment': 'Payment Information',
-    'connections': 'Connections',
-    'units': 'Units',
-    'features': 'Features',
-    'tiers': 'Pricing Tiers'
-  }
-  
-  return categoryMap[category] || category
-}
-
-// Default mappings with all your variables
+// Default mappings to use if none exist yet
 function getDefaultMappings(): VariableMapping[] {
   return [
     // General Information
@@ -422,45 +414,113 @@ function getDefaultMappings(): VariableMapping[] {
       description: "Contract length description",
       category: "general"
     },
-    
+
     // Payment Information
     {
       variable: "payment_terms",
-      mappedTo: "formData.paymentTerms",
+      mappedTo: "",
       description: "Payment terms (Net 30, etc.)",
       category: "payment"
     },
     {
       variable: "payment_type",
-      mappedTo: "formData.paymentType",
+      mappedTo: "",
       description: "Type of payment",
       category: "payment"
     },
     {
       variable: "saasFrequency",
       mappedTo: "formData.saasFee.frequency",
-      description: "Frequency of SaaS payments",
+      description: "SaaS fee frequency (monthly, quarterly, annually)",
       category: "payment"
     },
     {
       variable: "quarterlyFee",
       mappedTo: "",
-      description: "Quarterly fee amount",
+      description: "Quarterly SaaS fee amount",
       category: "payment"
     },
     {
       variable: "annualFee",
-      mappedTo: "calculations.calculateAnnualSaasFee",
-      description: "Annual fee amount",
+      mappedTo: "",
+      description: "Annual SaaS fee amount",
       category: "payment"
+    },
+
+    // Units & Pricing
+    {
+      variable: "annualUnitTotal",
+      mappedTo: "",
+      description: "Total annual units",
+      category: "units"
     },
     {
-      variable: "implementationCost",
-      mappedTo: "formData.onboardingFee",
-      description: "Implementation cost",
-      category: "payment"
+      variable: "overage_example",
+      mappedTo: "",
+      description: "Example of overage calculation",
+      category: "units"
     },
-    
+    {
+      variable: "PAYGO_overage_rate",
+      mappedTo: "",
+      description: "Pay-as-you-go overage rate",
+      category: "units"
+    },
+    {
+      variable: "PAYGO_total",
+      mappedTo: "",
+      description: "Pay-as-you-go total cost",
+      category: "units"
+    },
+    {
+      variable: "AP_overage_rate",
+      mappedTo: "",
+      description: "Annual plan overage rate",
+      category: "units"
+    },
+    {
+      variable: "AP_total",
+      mappedTo: "",
+      description: "Annual plan total cost",
+      category: "units"
+    },
+    {
+      variable: "annualUnitTotal_y2",
+      mappedTo: "",
+      description: "Year 2 total annual units",
+      category: "units"
+    },
+    {
+      variable: "PAYGO_overage_rate_y2",
+      mappedTo: "",
+      description: "Year 2 pay-as-you-go overage rate",
+      category: "units"
+    },
+    {
+      variable: "AP_overage_rate_y2",
+      mappedTo: "",
+      description: "Year 2 annual plan overage rate",
+      category: "units"
+    },
+    {
+      variable: "annualUnitTotal_y3",
+      mappedTo: "",
+      description: "Year 3 total annual units",
+      category: "units"
+    },
+    {
+      variable: "PAYGO_overage_rate_y3",
+      mappedTo: "",
+      description: "Year 3 pay-as-you-go overage rate",
+      category: "units"
+    },
+    {
+      variable: "AP_overage_rate_y3",
+      mappedTo: "",
+      description: "Year 3 annual plan overage rate",
+      category: "units"
+    },
+
     // Connections
     {
       variable: "store_connections",
@@ -470,128 +530,76 @@ function getDefaultMappings(): VariableMapping[] {
     },
     {
       variable: "storeConnectionsCount",
-      mappedTo: "formData.storeConnections",
-      description: "Number of store connections",
+      mappedTo: "",
+      description: "Total count of store connections",
       category: "connections"
     },
     {
       variable: "aa1_connections",
       mappedTo: "",
-      description: "AA1 connections count",
+      description: "Number of AA1 connections",
       category: "connections"
     },
     {
       variable: "aa2_connections",
       mappedTo: "",
-      description: "AA2 connections count",
-      category: "connections"
-    },
-    {
-      variable: "WFH_LCD",
-      mappedTo: "",
-      description: "WFH LCD connections",
-      category: "connections"
-    },
-    {
-      variable: "client_portal",
-      mappedTo: "",
-      description: "Client portal",
-      category: "connections"
-    },
-    {
-      variable: "3pl_billing",
-      mappedTo: "",
-      description: "3PL billing",
+      description: "Number of AA2 connections",
       category: "connections"
     },
     {
       variable: "EDI_connections",
       mappedTo: "",
-      description: "EDI connections count",
+      description: "Number of EDI connections",
       category: "connections"
     },
     {
-      variable: "netsuite_nonnections",
+      variable: "netsuite_connections",
       mappedTo: "",
-      description: "NetSuite connections count",
+      description: "Number of NetSuite connections",
       category: "connections"
     },
-    
-    // Units
+
+    // Features
     {
-      variable: "annualUnitTotal",
+      variable: "WFH_LCD",
       mappedTo: "",
-      description: "Annual unit total",
-      category: "units"
+      description: "Work from home LCD feature",
+      category: "features"
     },
     {
-      variable: "overage_example",
+      variable: "client_portal",
       mappedTo: "",
-      description: "Overage example",
-      category: "units"
+      description: "Client portal feature",
+      category: "features"
     },
     {
-      variable: "PAYGO_overage_rate",
+      variable: "3pl_billing",
       mappedTo: "",
-      description: "PAYGO overage rate",
-      category: "units"
+      description: "3PL billing feature",
+      category: "features"
+    },
+
+    // Implementation
+    {
+      variable: "implementationCost",
+      mappedTo: "formData.onboardingFee",
+      description: "Implementation cost",
+      category: "implementation"
     },
     {
-      variable: "PAYGO_total",
+      variable: "aa_setup_fee",
       mappedTo: "",
-      description: "PAYGO total",
-      category: "units"
+      description: "AA setup fee",
+      category: "implementation"
     },
     {
-      variable: "AP_overage_rate",
+      variable: "aa_setup_days",
       mappedTo: "",
-      description: "AP overage rate",
-      category: "units"
+      description: "AA setup days",
+      category: "implementation"
     },
-    {
-      variable: "AP_total",
-      mappedTo: "",
-      description: "AP total",
-      category: "units"
-    },
-    {
-      variable: "annualUnitTotal_y2",
-      mappedTo: "",
-      description: "Annual unit total year 2",
-      category: "units"
-    },
-    {
-      variable: "PAYGO_overage_rate_y2",
-      mappedTo: "",
-      description: "PAYGO overage rate year 2",
-      category: "units"
-    },
-    {
-      variable: "AP_overage_rate_y2",
-      mappedTo: "",
-      description: "AP overage rate year 2",
-      category: "units"
-    },
-    {
-      variable: "annualUnitTotal_y3",
-      mappedTo: "",
-      description: "Annual unit total year 3",
-      category: "units"
-    },
-    {
-      variable: "PAYGO_overage_rate_y3",
-      mappedTo: "",
-      description: "PAYGO overage rate year 3",
-      category: "units"
-    },
-    {
-      variable: "AP_overage_rate_3",
-      mappedTo: "",
-      description: "AP overage rate year 3",
-      category: "units"
-    },
-    
-    // Store Tiers
+
+    // Store Connection Tiers
     {
       variable: "store_tier_from1",
       mappedTo: "",
@@ -657,20 +665,6 @@ function getDefaultMappings(): VariableMapping[] {
       mappedTo: "",
       description: "Store tier 4 price",
       category: "tiers"
-    },
-    
-    // AA Setup
-    {
-      variable: "aa_setup_fee",
-      mappedTo: "",
-      description: "AA setup fee",
-      category: "features"
-    },
-    {
-      variable: "aa_setup_days",
-      mappedTo: "",
-      description: "AA setup days",
-      category: "features"
     },
     
     // AA1 Tiers
