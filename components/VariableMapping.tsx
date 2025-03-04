@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import { ChevronDown, ChevronUp, Info, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -8,9 +8,10 @@ interface VariableMappingProps {
   categories: VariableCategory[];
   onVariableSelect: (variable: Variable) => void;
   mappedVariables: Record<string, string>;
-  onSaveMappings: () => void;
+  onSaveMappings: () => Promise<void>;
   totalVariables: number;
   mappedCount: number;
+  isSaving: boolean;
 }
 
 interface VariableCategory {
@@ -33,7 +34,8 @@ export function VariableMapping({
   mappedVariables, 
   onSaveMappings,
   totalVariables,
-  mappedCount
+  mappedCount,
+  isSaving
 }: VariableMappingProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
@@ -93,18 +95,27 @@ export function VariableMapping({
           <p className="text-gray-500">Map template variables to code elements</p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => {}}>
+          <Button variant="outline" onClick={() => {}} disabled={isSaving}>
             <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 4.5h18M3 9.5h18M3 14.5h18M3 19.5h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
             Filter
           </Button>
-          <Button onClick={onSaveMappings}>
-            <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Save All to Database
+          <Button 
+            onClick={onSaveMappings} 
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save All to Database
+              </>
+            )}
           </Button>
         </div>
       </div>

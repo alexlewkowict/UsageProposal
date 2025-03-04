@@ -44,6 +44,7 @@ export default function VariableMappingPage() {
   const [totalVariables, setTotalVariables] = useState(0)
   const [mappedCount, setMappedCount] = useState(0)
   const [allCodeElements, setAllCodeElements] = useState<string[]>([])
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     fetchVariableMappings()
@@ -214,29 +215,38 @@ export default function VariableMappingPage() {
 
   const handleSaveAllMappings = async () => {
     try {
+      setIsSaving(true)
+      
       // Show loading toast
       toast({
         title: 'Saving...',
         description: 'Saving all variable mappings to database',
-      });
+      })
       
       // Prepare the mappings data for saving
       const mappingsToSave = Object.entries(mappings).map(([variableName, codeElement]) => ({
         variable_name: `{{${variableName}}}`,
         code_element: codeElement
-      }));
+      }))
       
       // Add unmapped variables with null code_element
       categories.forEach(category => {
         category.variables.forEach(variable => {
-          if (!mappings[variable.id]) {
+          // Check if this variable is already in the mappingsToSave array
+          const alreadyIncluded = mappingsToSave.some(
+            m => m.variable_name === `{{${variable.id}}}`
+          )
+          
+          if (!alreadyIncluded) {
             mappingsToSave.push({
               variable_name: `{{${variable.id}}}`,
               code_element: null
-            });
+            })
           }
-        });
-      });
+        })
+      })
+      
+      console.log('Saving mappings:', mappingsToSave)
       
       // Send the data to the API
       const response = await fetch('/api/variable-mappings', {
@@ -245,30 +255,34 @@ export default function VariableMappingPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(mappingsToSave),
-      });
+      })
+      
+      const responseData = await response.json()
+      console.log('API response:', responseData)
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save mappings');
+        throw new Error(responseData.error || 'Failed to save mappings')
       }
       
       // Show success toast
       toast({
         title: 'Success',
         description: `${mappingsToSave.length} variable mappings saved successfully`,
-      });
+      })
       
       // Refresh the data
-      fetchVariableMappings();
+      await fetchVariableMappings()
     } catch (error) {
-      console.error('Error saving all mappings:', error);
+      console.error('Error saving all mappings:', error)
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to save all mappings',
         variant: 'destructive',
-      });
+      })
+    } finally {
+      setIsSaving(false)
     }
-  };
+  }
 
   // Helper function for variable descriptions
   function getDescriptionFromVariable(variableName: string): string {
@@ -305,6 +319,7 @@ export default function VariableMappingPage() {
         onSaveMappings={handleSaveAllMappings}
         totalVariables={totalVariables}
         mappedCount={mappedCount}
+        isSaving={isSaving}
       />
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
