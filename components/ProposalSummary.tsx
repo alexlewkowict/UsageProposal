@@ -504,24 +504,10 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
               })}
               
               <div className="border-t border-blue-200 pt-4 mt-4">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-lg font-bold text-blue-900">Total Annual Investment</span>
-                  <span className="text-xl font-bold text-blue-600">
-                    ${formatNumber(
-                      formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + 
-                      (formData.storeConnectionsCost || 0) + 
-                      (integrationCosts.annualCost || 0)
-                    )}
-                  </span>
-                </div>
-                
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-blue-900">Total Upfront Cost</span>
+                  <span className="text-lg font-bold text-blue-900">Total Annual Commitment</span>
                   <span className="text-xl font-bold text-blue-600">
-                    ${formatNumber(
-                      (integrationCosts.setupCost || 0) + 
-                      (parseFloat(formData.onboardingFee || 0))
-                    )}
+                    ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0))}
                   </span>
                 </div>
               </div>
@@ -529,6 +515,32 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           ) : (
             <p>No pricing tiers available</p>
           )}
+        </div>
+
+        {/* New Investment Summary Section */}
+        <div className="bg-green-50 p-6 rounded-md mt-4">
+          <h3 className="text-xl font-semibold text-green-900 mb-4">Investment Summary</h3>
+          
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-lg font-bold text-green-900">Total Annual Investment</span>
+            <span className="text-xl font-bold text-green-600">
+              ${formatNumber(
+                formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + 
+                (formData.storeConnectionsCost || 0) + 
+                (integrationCosts.annualCost || 0)
+              )}
+            </span>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-bold text-green-900">Total Upfront Cost</span>
+            <span className="text-xl font-bold text-green-600">
+              ${formatNumber(
+                (integrationCosts.setupCost || 0) + 
+                (parseFloat(formData.onboardingFee || 0))
+              )}
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>
