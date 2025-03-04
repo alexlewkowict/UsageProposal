@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatNumber } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   const [showStoreBreakdown, setShowStoreBreakdown] = useState(false)
   const [showIntegrationBreakdown, setShowIntegrationBreakdown] = useState(false)
   const [showImplementationBreakdown, setShowImplementationBreakdown] = useState(false)
+  const [accountType, setAccountType] = useState<string>("")
 
   // Define step numbers for each section
   const BUSINESS_INFO_STEP = 1;
@@ -25,6 +26,26 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   const INTEGRATIONS_STEP = 4;
   const PROPOSAL_OPTIONS_STEP = 5;
   const IMPLEMENTATION_STEP = 6;
+
+  // Fetch account type from Supabase when opportunity name changes
+  useEffect(() => {
+    async function fetchAccountType() {
+      if (formData.opportunityName) {
+        try {
+          const response = await fetch(`/api/account-type?opportunity=${encodeURIComponent(formData.opportunityName)}`);
+          if (response.ok) {
+            const data = await response.json();
+            // Remove any quotes from the account type
+            setAccountType(data.accountType?.replace(/['"]/g, '') || "");
+          }
+        } catch (error) {
+          console.error("Error fetching account type:", error);
+        }
+      }
+    }
+    
+    fetchAccountType();
+  }, [formData.opportunityName]);
 
   // Calculate SaaS fee
   const calculateAnnualSaasFee = () => {
@@ -228,6 +249,56 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         <CardTitle>Proposal Summary</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* New header design */}
+        <div className="mb-8">
+          <div className="text-gray-600 mb-1">Prepared for</div>
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-3xl font-bold">{formData.businessName || "Client Name"}</h2>
+              <div className="text-gray-500">Fiscal Year {new Date().getFullYear()}</div>
+            </div>
+            {accountType && (
+              <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full border border-blue-100">
+                {accountType} Partner
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Agreement Terms section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">Agreement Terms</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-50 p-4 rounded-md">
+              <div className="text-gray-600 mb-1">Duration</div>
+              <div className="text-2xl font-bold">{formData.contractLength || 24} Months</div>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-md">
+              <div className="text-gray-600 mb-1">Billing Cycle</div>
+              <div className="text-2xl font-bold">{formData.billingFrequency || "Quarterly"}</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Investment Overview section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">Investment Overview</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span>One-Time Setup</span>
+              <span className="font-bold">${formatNumber(totalCosts.oneTimeCosts)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Annual Recurring</span>
+              <span className="font-bold">${formatNumber(totalCosts.annualRecurringCosts)}</span>
+            </div>
+            <div className="flex justify-between items-center text-blue-600">
+              <span>Monthly Equivalent</span>
+              <span className="font-bold">${formatNumber(totalCosts.monthlyRecurringCosts)}</span>
+            </div>
+          </div>
+        </div>
+        
         {/* Business Info - only show if we've reached or passed this step */}
         {currentStep >= BUSINESS_INFO_STEP && formData.friendlyBusinessName && (
           <div>
