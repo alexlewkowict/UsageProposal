@@ -14,6 +14,8 @@ import { toast } from "@/components/ui/use-toast"
 import { IntegrationsSection } from "./IntegrationsSection"
 import { ProposalSummary } from "./ProposalSummary"
 import { formatNumber } from "@/lib/utils"
+import { ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 const STEPS = [
   "Business Info",
@@ -358,6 +360,15 @@ export default function ProposalForm() {
           <CardTitle className="text-2xl font-bold">Create a Usage Proposal</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Proposal Generator</h1>
+            <Link href="/admin/variable-mapping">
+              <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                Variable Mapping
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
           <div className="mb-6">
             <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
           </div>

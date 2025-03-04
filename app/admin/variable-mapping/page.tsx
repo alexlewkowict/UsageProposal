@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Code, Filter, Info, Save, Search, ChevronDown, ChevronUp, Plus } from "lucide-react"
+import { Code, Filter, Info, Save, Search, ChevronDown, ChevronUp, Plus, ArrowLeft } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { toast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { VariableMapping } from "@/components/VariableMapping"
+import Link from "next/link"
 
 interface VariableMappingData {
   id: string;
@@ -334,6 +335,15 @@ export default function VariableMappingPage() {
 
   return (
     <div className="container mx-auto py-8">
+      <div className="flex items-center mb-6">
+        <Link href="/">
+          <Button variant="ghost" size="icon" className="mr-4">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold">Variable Mapping</h1>
+      </div>
+      
       <VariableMapping
         categories={categories}
         onVariableSelect={handleVariableSelect}

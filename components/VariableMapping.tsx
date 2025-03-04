@@ -90,10 +90,7 @@ export function VariableMapping({
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Variable Mapping</h1>
-          <p className="text-gray-500">Map template variables to code elements</p>
-        </div>
+        <div></div>
         <div className="flex space-x-2">
           <Button variant="outline" onClick={() => {}} disabled={isSaving}>
             <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
