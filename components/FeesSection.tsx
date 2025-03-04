@@ -506,8 +506,17 @@ export function FeesSection({
   }, [formData.saasFee.pallets.value, formData.saasFee.cases.value, formData.saasFee.eaches.value, 
       formData.saasFeeDiscount, pricingTiers, formData.saasFee.frequency]);
 
-  const storeConnectionsCost = calculateStoreConnectionsCost();
-  handleInputChange("storeConnectionsCost", storeConnectionsCost);
+  // Add this useEffect to update the storeConnectionsCost whenever relevant values change
+  useEffect(() => {
+    const cost = calculateStoreConnectionsCost();
+    handleInputChange("storeConnectionsCost", cost);
+  }, [
+    formData.storeConnections, 
+    formData.storeConnectionTiers, 
+    formData.freeStoreConnections, 
+    formData.applyDiscountToStoreConnections, 
+    formData.saasFeeDiscount
+  ]);
 
   return (
     <div className="space-y-6" onSubmit={handleFormSubmit}>
