@@ -506,6 +506,9 @@ export function FeesSection({
   }, [formData.saasFee.pallets.value, formData.saasFee.cases.value, formData.saasFee.eaches.value, 
       formData.saasFeeDiscount, pricingTiers, formData.saasFee.frequency]);
 
+  const storeConnectionsCost = calculateStoreConnectionsCost();
+  handleInputChange("storeConnectionsCost", storeConnectionsCost);
+
   return (
     <div className="space-y-6" onSubmit={handleFormSubmit}>
       <div className="space-y-4">

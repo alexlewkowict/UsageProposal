@@ -66,28 +66,8 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   
   // Replace the calculateStoreConnectionsCost function with this simpler version
   const getStoreConnectionsCost = () => {
-    // Use the pre-calculated value from FeesSection if available
-    if (formData.storeConnectionsAnnualCost !== undefined) {
-      return formData.storeConnectionsAnnualCost;
-    }
-    
-    // Fallback calculation if the value isn't available
-    if (formData.storeConnections <= 0) return 0;
-    
-    const freeStoreConnections = formData.freeStoreConnections || 0;
-    const paidStoreConnections = Math.max(0, formData.storeConnections - freeStoreConnections);
-    
-    if (paidStoreConnections <= 0) return 0;
-    
-    const pricePerStore = formData.storeConnectionTiers[0]?.pricePerStore || 0;
-    let annualCost = pricePerStore * paidStoreConnections * 12;
-    
-    if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
-      const discountMultiplier = 1 - (formData.saasFeeDiscount / 100);
-      annualCost *= discountMultiplier;
-    }
-    
-    return annualCost;
+    // Just return the value calculated in FeesSection
+    return formData.storeConnectionsCost || 0;
   };
   
   // Calculate integration costs
@@ -353,7 +333,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                   </svg>
                 </div>
                 <div className="flex-1">Annual Cost</div>
-                <div className="text-xl font-bold">${formatNumber(getStoreConnectionsCost())}</div>
+                <div className="text-xl font-bold">${formatNumber(formData.storeConnectionsCost || 0)}</div>
               </div>
             </div>
           </div>
@@ -553,7 +533,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                   )}
                   
                   <div className="font-semibold mt-2">
-                    Total Store Connections Cost: ${formatNumber(getStoreConnectionsCost())}
+                    Total Store Connections Cost: ${formatNumber(formData.storeConnectionsCost || 0)}
                   </div>
                 </div>
               )}
@@ -562,7 +542,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-blue-900">Total Annual Investment</span>
                   <span className="text-xl font-bold text-blue-600">
-                    ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + getStoreConnectionsCost())}
+                    ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + (formData.storeConnectionsCost || 0))}
                   </span>
                 </div>
               </div>
