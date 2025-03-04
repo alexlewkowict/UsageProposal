@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { formatNumber } from "@/lib/utils"
 import { Trash2 } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface IntegrationsSectionProps {
   formData: {
@@ -25,6 +26,8 @@ interface IntegrationsSectionProps {
       supportFee: number;
       retailerCount: number;
     };
+    applyDiscountToIntegrations: boolean;
+    saasFeeDiscount: number;
   };
   handleInputChange: (field: string, value: string | number | boolean) => void;
   handleSpsRetailerCountChange: (value: string) => void;
@@ -51,7 +54,13 @@ export function IntegrationsSection({
   const [isCrstlTiersDialogOpen, setIsCrstlTiersDialogOpen] = useState(false)
   const [crstlTier, setCrstlTier] = useState<{ supportFee: number }>({ supportFee: 0 })
   
-  // Calculate SPS support cost based on tiers
+  useEffect(() => {
+    if (formData.applyDiscountToIntegrations === undefined) {
+      handleInputChange("applyDiscountToIntegrations", true);
+    }
+  }, []);
+  
+  // Calculate SPS support cost based on tiers with discount
   const calculateSpsRetailerSupportCost = () => {
     if (!formData.spsIntegration.enabled || formData.spsIntegration.retailerCount <= 0) {
       return 0;
@@ -71,18 +80,32 @@ export function IntegrationsSection({
       }
     }
     
+    // Apply discount if enabled
+    if (formData.applyDiscountToIntegrations && formData.saasFeeDiscount > 0) {
+      const discountMultiplier = (100 - formData.saasFeeDiscount) / 100;
+      totalCost *= discountMultiplier;
+    }
+    
     // Return annual cost (quarterly * 4)
     return totalCost * 4;
   };
   
-  // Calculate Crstl support cost
+  // Calculate Crstl support cost with discount
   const calculateCrstlSupportCost = () => {
     if (!formData.crstlIntegration.enabled || formData.crstlIntegration.retailerCount <= 0) {
       return 0;
     }
     
+    let supportFee = formData.crstlIntegration.supportFee;
+    
+    // Apply discount if enabled
+    if (formData.applyDiscountToIntegrations && formData.saasFeeDiscount > 0) {
+      const discountMultiplier = (100 - formData.saasFeeDiscount) / 100;
+      supportFee *= discountMultiplier;
+    }
+    
     // Return annual cost (quarterly * 4 * retailer count)
-    return formData.crstlIntegration.supportFee * 4 * formData.crstlIntegration.retailerCount;
+    return supportFee * 4 * formData.crstlIntegration.retailerCount;
   };
   
   // Calculate total setup costs
@@ -226,6 +249,19 @@ export function IntegrationsSection({
     e.preventDefault(); // Prevent form submission on ENTER
   };
 
+  const handleSpsToggle = (enabled: boolean) => {
+    // First update the enabled state
+    handleInputChange("spsIntegration.enabled", enabled);
+    
+    // Then update any dependent fields with safe checks
+    if (enabled) {
+      // If we're enabling SPS, make sure retailerCount is initialized
+      if (formData.spsIntegration && formData.spsIntegration.retailerCount === undefined) {
+        handleInputChange("spsIntegration.retailerCount", 0);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Integration Options</h2>
@@ -239,7 +275,7 @@ export function IntegrationsSection({
               checked={formData.spsIntegration.enabled}
               onCheckedChange={(checked) => {
                 console.log("SPS toggle changed to:", checked);
-                handleInputChange("spsIntegration.enabled", checked);
+                handleSpsToggle(checked);
               }}
               id="sps-integration-toggle"
             />
@@ -599,6 +635,23 @@ export function IntegrationsSection({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Add a checkbox to apply discount to integrations */}
+      <div className="flex items-center space-x-2 mt-4 mb-2">
+        <Checkbox
+          id="applyDiscountToIntegrations"
+          checked={formData.applyDiscountToIntegrations}
+          onCheckedChange={(checked) => 
+            handleInputChange("applyDiscountToIntegrations", checked)
+          }
+        />
+        <label
+          htmlFor="applyDiscountToIntegrations"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          Apply {formData.saasFeeDiscount}% discount to integration support fees
+        </label>
+      </div>
     </div>
   )
 } 

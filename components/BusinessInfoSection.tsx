@@ -1,15 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import React from 'react'
+import { Card, CardContent } from "@/components/ui/card"
 
 // Define proper types for the form data
 interface FormData {
@@ -20,9 +20,34 @@ interface FormData {
 
 interface BusinessInfoSectionProps {
   formData: FormData
-  handleInputChange: (field: string, value: string) => void
+  handleInputChange: (field: string, value: string | number) => void
   invalidFields: string[]
 }
+
+// Define account executives with their initials and full names
+const ACCOUNT_EXECUTIVES = [
+  { initials: "AG", name: "Alex Gorney", color: "bg-green-200" },
+  { initials: "BO", name: "Brett Oliveira", color: "bg-yellow-200" },
+  { initials: "DL", name: "Daniel Lawson", color: "bg-purple-200" },
+  { initials: "MD", name: "Mark Davis", color: "bg-purple-200" },
+  { initials: "MR", name: "Marty Rodowsky", color: "bg-yellow-200" },
+  { initials: "MA", name: "Mike Azimi", color: "bg-green-200" },
+  { initials: "SO", name: "Stevie Oliveira", color: "bg-purple-200" },
+];
+
+// Opportunity names for the dropdown
+const OPPORTUNITY_NAMES = [
+  "Acme Corp",
+  "Globex Corporation",
+  "Soylent Corp",
+  "Initech",
+  "Umbrella Corporation",
+  "Stark Industries",
+  "Wayne Enterprises",
+  "Cyberdyne Systems",
+  "Oscorp Industries",
+  "Massive Dynamic",
+]
 
 function getInitials(name: string): string {
   return name
@@ -42,225 +67,205 @@ function stringToColor(str: string): string {
   return `hsl(${hue}, 70%, 70%)`
 }
 
-export function BusinessInfoSection({ formData, handleInputChange, invalidFields }: BusinessInfoSectionProps) {
-  const [accountExecutives, setAccountExecutives] = useState<string[]>([])
-  const [opportunities, setOpportunities] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [openAccountExec, setOpenAccountExec] = useState(false)
-  const [openOpportunity, setOpenOpportunity] = useState(false)
+export function BusinessInfoSection({
+  formData,
+  handleInputChange,
+  invalidFields,
+}: BusinessInfoSectionProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredExecs, setFilteredExecs] = useState(ACCOUNT_EXECUTIVES);
+  const [open, setOpen] = useState(false);
+  const [opportunities, setOpportunities] = useState<string[]>([]);
 
+  // Filter executives when search term changes
   useEffect(() => {
-    async function fetchAccountExecutives() {
-      try {
-        setLoading(true)
-        setError(null)
-        console.log("Fetching account executives")
-        const response = await fetch("/api/account-executives")
-        const data = await response.json()
-
-        console.log("Received response:", response.status, response.statusText)
-        console.log("Received data:", JSON.stringify(data, null, 2))
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}, message: ${data.error || "Unknown error"}`)
-        }
-
-        if (Array.isArray(data)) {
-          setAccountExecutives(data)
-        } else if (data.error) {
-          throw new Error(`API error: ${data.error}`)
-        } else {
-          throw new Error("Unexpected response format: " + JSON.stringify(data))
-        }
-      } catch (error) {
-        console.error(
-          "Failed to fetch account executives:",
-          error instanceof Error ? error.stack : JSON.stringify(error, null, 2),
-        )
-        setError(error instanceof Error ? error.message : String(error))
-        toast({
-          title: "Error",
-          description: "Failed to load account executives. Please check the console for more details.",
-          variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
-      }
+    if (searchTerm) {
+      const filtered = ACCOUNT_EXECUTIVES.filter(exec => 
+        exec.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredExecs(filtered);
+    } else {
+      setFilteredExecs(ACCOUNT_EXECUTIVES);
     }
+  }, [searchTerm]);
 
-    fetchAccountExecutives()
-  }, [])
-
+  // Fetch opportunities from API
   useEffect(() => {
     async function fetchOpportunities() {
-      if (!formData.accountExec) return
-
       try {
-        setLoading(true)
-        setError(null)
-        console.log(`Fetching opportunities for ${formData.accountExec}`)
-        const response = await fetch(`/api/opportunities?accountExecutive=${encodeURIComponent(formData.accountExec)}`)
-        const data = await response.json()
-
-        console.log("Received response:", response.status, response.statusText)
-        console.log("Received data:", JSON.stringify(data, null, 2))
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}, message: ${data.error || "Unknown error"}`)
-        }
-
-        if (Array.isArray(data)) {
-          setOpportunities(data)
-        } else if (data.error) {
-          throw new Error(`API error: ${data.error}`)
+        // Only fetch opportunities if an account executive is selected
+        if (formData.accountExec) {
+          console.log(`Fetching opportunities for ${formData.accountExec}`);
+          
+          const response = await fetch(`/api/opportunities?accountExec=${encodeURIComponent(formData.accountExec)}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Received opportunities:', data.opportunities);
+            
+            if (data.opportunities && data.opportunities.length > 0) {
+              setOpportunities(data.opportunities);
+            } else {
+              setOpportunities([]);
+              toast({
+                title: "No opportunities found",
+                description: `No open opportunities found for ${formData.accountExec}`,
+                variant: "warning",
+              });
+            }
+          } else {
+            console.error("API Error:", response.statusText);
+            setOpportunities([]);
+            toast({
+              title: "Error",
+              description: "Failed to fetch opportunities. Please try again.",
+              variant: "destructive",
+            });
+          }
         } else {
-          throw new Error("Unexpected response format: " + JSON.stringify(data))
+          // Clear opportunities if no account executive is selected
+          setOpportunities([]);
         }
       } catch (error) {
-        console.error(
-          "Failed to fetch opportunities:",
-          error instanceof Error ? error.stack : JSON.stringify(error, null, 2),
-        )
-        setError(error instanceof Error ? error.message : String(error))
+        console.error("Error fetching opportunities:", error);
+        setOpportunities([]);
         toast({
           title: "Error",
-          description: "Failed to load opportunities. Please check the console for more details.",
+          description: "An unexpected error occurred while fetching opportunities.",
           variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
+        });
       }
     }
-
-    fetchOpportunities()
-  }, [formData.accountExec])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange("friendlyBusinessName", e.target.value)
-  }
+    
+    fetchOpportunities();
+  }, [formData.accountExec]);
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
+    <div className="space-y-6">
+      {/* Account Executive Selection */}
+      <div>
         <Label htmlFor="accountExec">Account Executive</Label>
-        <Popover open={openAccountExec} onOpenChange={setOpenAccountExec}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={openAccountExec}
-              className={cn(
-                "w-full justify-between",
-                !formData.accountExec && "text-muted-foreground",
-                invalidFields.includes("accountExec") && "border-red-500",
-              )}
-            >
-              {formData.accountExec ? (
-                <div className="flex items-center">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center mr-2 text-xs font-semibold text-white"
-                    style={{ backgroundColor: stringToColor(formData.accountExec) }}
-                  >
-                    {getInitials(formData.accountExec)}
-                  </div>
-                  <span>{formData.accountExec}</span>
-                </div>
-              ) : (
-                "Select Account Executive"
-              )}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start" side="bottom" sideOffset={4} avoidCollisions={false}>
-            <Command>
-              <CommandInput placeholder="Search account executive..." />
-              <CommandList>
-                <CommandEmpty>No account executive found.</CommandEmpty>
-                <CommandGroup>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-2">
-                    {accountExecutives.map((ae) => (
-                      <CommandItem
-                        key={ae}
-                        onSelect={() => {
-                          handleInputChange("accountExec", ae)
-                          setOpenAccountExec(false)
-                        }}
-                        className="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-accent"
-                      >
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white"
-                          style={{ backgroundColor: stringToColor(ae) }}
-                        >
-                          {getInitials(ae)}
-                        </div>
-                        <span className="flex-grow truncate">{ae}</span>
-                        {formData.accountExec === ae && <Check className="h-4 w-4 text-primary" />}
-                      </CommandItem>
-                    ))}
-                  </div>
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-        {error && <p className="text-sm text-red-500">Error: {error}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="opportunityName">Opportunity Name</Label>
-        <Popover open={openOpportunity} onOpenChange={setOpenOpportunity}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={openOpportunity}
-              className={cn(
-                "w-full justify-between",
-                !formData.opportunityName && "text-muted-foreground",
-                invalidFields.includes("opportunityName") && "border-red-500",
-              )}
-            >
-              {formData.opportunityName || "Select Opportunity"}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start" side="bottom" sideOffset={4} avoidCollisions={false}>
-            <Command>
-              <CommandInput placeholder="Search opportunity..." />
-              <CommandList>
-                <CommandEmpty>No opportunity found.</CommandEmpty>
-                <CommandGroup>
-                  {opportunities.map((opp) => (
-                    <CommandItem
-                      key={opp}
-                      onSelect={() => {
-                        handleInputChange("opportunityName", opp)
-                        setOpenOpportunity(false)
-                      }}
-                    >
-                      {opp}
-                      {formData.opportunityName === opp && <Check className="ml-auto h-4 w-4" />}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {formData.opportunityName && (
-        <div className="space-y-2">
-          <Label htmlFor="friendlyBusinessName">Friendly Business Name</Label>
+        
+        {/* Search input */}
+        <div className="relative mt-2 mb-4">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <User className="h-4 w-4 text-gray-400" />
+          </div>
           <Input
-            id="friendlyBusinessName"
-            value={formData.friendlyBusinessName}
-            onChange={handleChange}
-            className={invalidFields.includes("friendlyBusinessName") ? "border-red-500" : ""}
+            type="text"
+            placeholder="Search account executive..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
           />
         </div>
-      )}
+        
+        {/* Executive tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+          {filteredExecs.map((exec) => (
+            <div
+              key={exec.initials}
+              className={`
+                p-4 border rounded-lg cursor-pointer transition-all
+                flex items-center space-x-3
+                hover:bg-gray-50
+                ${formData.accountExec === exec.name ? "border-primary border-2 bg-primary/5" : "border-gray-200"}
+              `}
+              onClick={() => {
+                if (formData.accountExec !== exec.name) {
+                  console.log(`Selecting account executive: ${exec.name}`);
+                  handleInputChange("accountExec", exec.name);
+                }
+              }}
+            >
+              <div className={`${exec.color} h-10 w-10 rounded-full flex items-center justify-center font-bold text-gray-700`}>
+                {exec.initials}
+              </div>
+              <span className="font-medium">{exec.name}</span>
+            </div>
+          ))}
+        </div>
+        
+        {invalidFields.includes("accountExec") && (
+          <p className="text-red-500 text-sm mt-1">Please select an account executive</p>
+        )}
+      </div>
+
+      {/* Opportunity Name Dropdown */}
+      <div>
+        <Label htmlFor="opportunityName">Opportunity Name</Label>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className={`w-full justify-between ${
+                invalidFields.includes("opportunityName") ? "border-red-500" : ""
+              }`}
+              disabled={!formData.accountExec}
+            >
+              {formData.opportunityName && formData.opportunityName.trim() !== ''
+                ? formData.opportunityName
+                : formData.accountExec 
+                  ? "Select Opportunity Name" 
+                  : "Select an Account Executive first"}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full p-0">
+            <Command>
+              <CommandInput placeholder="Search opportunity..." />
+              <CommandEmpty>
+                {formData.accountExec 
+                  ? "No opportunities found for this account executive." 
+                  : "Please select an account executive first."}
+              </CommandEmpty>
+              <CommandGroup>
+                <CommandList>
+                  {opportunities.map((opportunity) => (
+                    <CommandItem
+                      key={opportunity}
+                      value={opportunity}
+                      onSelect={() => {
+                        handleInputChange("opportunityName", opportunity);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          formData.opportunityName === opportunity
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                      {opportunity}
+                    </CommandItem>
+                  ))}
+                </CommandList>
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {invalidFields.includes("opportunityName") && (
+          <p className="text-red-500 text-sm mt-1">Please select an opportunity name</p>
+        )}
+      </div>
+
+      {/* Friendly Business Name */}
+      <div>
+        <Label htmlFor="friendlyBusinessName">Friendly Business Name</Label>
+        <Input
+          id="friendlyBusinessName"
+          value={formData.friendlyBusinessName}
+          onChange={(e) => handleInputChange("friendlyBusinessName", e.target.value)}
+          className={invalidFields.includes("friendlyBusinessName") ? "border-red-500" : ""}
+        />
+        {invalidFields.includes("friendlyBusinessName") && (
+          <p className="text-red-500 text-sm mt-1">Please enter a friendly business name</p>
+        )}
+      </div>
     </div>
   )
 }

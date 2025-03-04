@@ -16,12 +16,25 @@ import { ProposalSummary } from "./ProposalSummary"
 import { formatNumber } from "@/lib/utils"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { AttainableAutomationSection } from "./AttainableAutomationSection"
+import { 
+  Building, 
+  CreditCard, 
+  Package, 
+  Network, 
+  Zap, 
+  ListChecks, 
+  Wrench, 
+  FileCheck 
+} from "lucide-react"
+import { ProposalHeader } from "./ProposalHeader"
 
 const STEPS = [
   "Business Info",
   "Payment Details",
   "SaaS Fee",
   "Integrations",
+  "Automation",
   "Proposal Options",
   "Implementation",
   "Review"
@@ -49,9 +62,11 @@ export default function ProposalForm() {
     },
     saasFeeDiscount: 20,
     applyDiscountToStoreConnections: true,
+    applyDiscountToIntegrations: true,
     freeStoreConnections: 0,
-    storeConnections: 0,
+    storeConnections: 5,
     storeConnectionPrice: 30,
+    storeConnectionsCost: 0,
     storeConnectionTiers: [
       {
         id: generateId(),
@@ -137,28 +152,128 @@ export default function ProposalForm() {
       supportFee: 105,
       retailerCount: 0
     },
+    attainableAutomation: {
+      pickToLight: {
+        enabled: false,
+        connections: 0,
+        tiers: [
+          {
+            id: generateId(),
+            name: "Standard Tier",
+            fromQty: 1,
+            toQty: 5,
+            pricePerConnection: 250
+          },
+          {
+            id: generateId(),
+            name: "Discount Tier 1",
+            fromQty: 6,
+            toQty: 10,
+            pricePerConnection: 225
+          },
+          {
+            id: generateId(),
+            name: "Discount Tier 2",
+            fromQty: 11,
+            toQty: 15,
+            pricePerConnection: 200
+          },
+          {
+            id: generateId(),
+            name: "Discount Tier 3",
+            fromQty: 16,
+            toQty: Number.MAX_SAFE_INTEGER,
+            pricePerConnection: 175
+          }
+        ]
+      },
+      packToLight: {
+        enabled: false,
+        connections: 0,
+        tiers: [
+          {
+            id: generateId(),
+            name: "Standard Tier",
+            fromQty: 1,
+            toQty: 5,
+            pricePerConnection: 250
+          },
+          {
+            id: generateId(),
+            name: "Discount Tier 1",
+            fromQty: 6,
+            toQty: 10,
+            pricePerConnection: 225
+          },
+          {
+            id: generateId(),
+            name: "Discount Tier 2",
+            fromQty: 11,
+            toQty: 15,
+            pricePerConnection: 200
+          },
+          {
+            id: generateId(),
+            name: "Discount Tier 3",
+            fromQty: 16,
+            toQty: Number.MAX_SAFE_INTEGER,
+            pricePerConnection: 175
+          }
+        ]
+      },
+      remoteOnboardingFee: 1000,
+      onsiteSupportDays: 0
+    },
+    applyDiscountToAutomation: true,
   })
   const [invalidFields, setInvalidFields] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [proposalUrl, setProposalUrl] = useState<string | null>(null)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+  const [isReviewExpanded, setIsReviewExpanded] = useState(false)
+  const [highestStepReached, setHighestStepReached] = useState(0)
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
-    console.log(`Updating field: ${field} with value:`, value);
+    console.log(`Updating ${field} to:`, value);
     
-    setFormData((prev: any) => {
-      // Create a copy of the previous state
-      const newState = { ...prev };
+    // Use a function to update state to ensure we're working with the latest state
+    setFormData((prev) => {
+      // First, check if the value is already the same to prevent unnecessary updates
+      if (field.includes(".")) {
+        // For nested fields, check the current value
+        const parts = field.split('.');
+        let current = prev;
+        
+        // Navigate to the nested object
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (!current[parts[i]]) return prev; // Return previous state if path doesn't exist
+          current = current[parts[i]];
+        }
+        
+        // If the value is already the same, return the previous state unchanged
+        if (current[parts[parts.length - 1]] === value) {
+          return prev;
+        }
+      } else {
+        // For non-nested fields, check if the value is already the same
+        if (prev[field] === value) {
+          return prev;
+        }
+      }
       
-      // Handle nested properties (e.g., "spsIntegration.enabled")
-      if (field.includes('.')) {
+      // If we get here, the value is different and we should update it
+      // Create a deep copy of the previous state to avoid mutation issues
+      const newState = JSON.parse(JSON.stringify(prev));
+      
+      // Handle nested fields
+      if (field.includes(".")) {
         const parts = field.split('.');
         let current = newState;
         
         // Navigate to the nested object, creating the path if needed
         for (let i = 0; i < parts.length - 1; i++) {
           const part = parts[i];
-          if (!current[part]) {
+          if (current[part] === undefined) {
             current[part] = {};
           }
           current = current[part];
@@ -167,13 +282,13 @@ export default function ProposalForm() {
         // Set the value at the final property
         current[parts[parts.length - 1]] = value;
       } else {
-        // Handle top-level properties
+        // For non-nested fields, simply update the field directly
         newState[field] = value;
       }
       
       return newState;
     });
-  }
+  };
 
   const handleSaasFeeChange = (type: "pallets" | "cases" | "eaches", value: number) => {
     setFormData((prev: any) => ({
@@ -198,15 +313,15 @@ export default function ProposalForm() {
     }))
   }
 
-  const handleOptionSelect = (option: keyof typeof formData.selectedOptions) => {
-    setFormData((prev: any) => ({
+  const handleOptionSelect = (option: string, value: boolean) => {
+    setFormData((prev) => ({
       ...prev,
       selectedOptions: {
         ...prev.selectedOptions,
-        [option]: !prev.selectedOptions[option],
+        [option]: value,
       },
-    }))
-  }
+    }));
+  };
 
   const handleStoreConnectionPriceChange = (value: number) => {
     setFormData((prev: any) => ({
@@ -233,19 +348,21 @@ export default function ProposalForm() {
   };
 
   const validateStep = () => {
-    const invalidFields = []
-    
+    let isValid = true;
+    const newInvalidFields: string[] = [];
+
+    // Validation for each step
     switch (currentStep) {
       case 0:
-        if (!formData.accountExec) invalidFields.push("accountExec")
-        if (!formData.opportunityName) invalidFields.push("opportunityName")
-        if (!formData.friendlyBusinessName) invalidFields.push("friendlyBusinessName")
+        if (!formData.accountExec) newInvalidFields.push("accountExec")
+        if (!formData.opportunityName) newInvalidFields.push("opportunityName")
+        if (!formData.friendlyBusinessName) newInvalidFields.push("friendlyBusinessName")
         break
       case 1:
-        if (!formData.contractTerm) invalidFields.push("contractTerm")
-        if (!formData.billingFrequency) invalidFields.push("billingFrequency")
+        if (!formData.contractTerm) newInvalidFields.push("contractTerm")
+        if (!formData.billingFrequency) newInvalidFields.push("billingFrequency")
         if (!formData.paymentMethods || formData.paymentMethods.length === 0) {
-          invalidFields.push("paymentMethods")
+          newInvalidFields.push("paymentMethods")
         }
         break
       case 2:
@@ -254,9 +371,9 @@ export default function ProposalForm() {
           formData.saasFee.cases.value === 0 &&
           formData.saasFee.eaches.value === 0
         ) {
-          invalidFields.push("saasFee")
+          newInvalidFields.push("saasFee")
         }
-        if (!formData.storeConnections) invalidFields.push("storeConnections")
+        if (!formData.storeConnections) newInvalidFields.push("storeConnections")
         break
       case 3:
         // No validation required for this step
@@ -265,32 +382,56 @@ export default function ProposalForm() {
         // All options are optional
         break
       case 5:
-        if (!formData.implementationPackage) invalidFields.push("implementationPackage")
+        // This step doesn't require validation, so it should always be valid
+        isValid = true;
+        break
+      case 6:
+        if (!formData.implementationPackage) newInvalidFields.push("implementationPackage")
         break
     }
     
-    return { isValid: invalidFields.length === 0, invalidFields }
+    setInvalidFields(newInvalidFields);
+    return { isValid, invalidFields: newInvalidFields };
   }
 
   const handleContinue = () => {
-    const { isValid, invalidFields } = validateStep()
+    const { isValid, invalidFields: newInvalidFields } = validateStep();
+    
     if (isValid) {
-      setCurrentStep((prev: number) => prev + 1)
-      setInvalidFields([])
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      
+      // Update highest step reached if needed
+      if (nextStep > highestStepReached) {
+        setHighestStepReached(nextStep);
+      }
+      
+      setInvalidFields([]);
     } else {
-      setInvalidFields(invalidFields)
+      setInvalidFields(newInvalidFields);
       toast({
-        title: "Incomplete Information",
-        description: "Please fill in all required fields before proceeding.",
+        title: "Please fix the following errors:",
+        description: (
+          <ul className="list-disc pl-5">
+            {newInvalidFields.map((field) => (
+              <li key={field}>{formatFieldName(field)}</li>
+            ))}
+          </ul>
+        ),
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleBack = () => {
     setCurrentStep((prev: number) => prev - 1)
     setInvalidFields([])
   }
+
+  const handleBackFromReview = () => {
+    setIsReviewExpanded(false);
+    setCurrentStep(currentStep - 1);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -343,153 +484,272 @@ export default function ProposalForm() {
     }));
   }, []);
 
+  const handleStepClick = (step: number) => {
+    // Only allow navigation to steps that have been reached before
+    if (step <= highestStepReached) {
+      setCurrentStep(step);
+    }
+  };
+
   useEffect(() => {
-    if (formData.opportunityName) {
-      setFormData((prev: any) => ({
+    if (formData.opportunityName && formData.opportunityName.trim() !== '') {
+      setFormData((prev) => ({
         ...prev,
         friendlyBusinessName: formData.opportunityName,
-      }))
+      }));
     }
-  }, [formData.opportunityName])
+  }, [formData.opportunityName]);
 
   return (
     <>
-      {/* Add the navigation link at the top right of the page */}
-      <div className="flex justify-end w-full max-w-7xl mb-4">
-        <Link href="/admin/variable-mapping">
-          <Button variant="ghost" size="sm" className="flex items-center gap-2">
-            Variable Mapping
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
+      {/* Add the ProposalHero branded header */}
+      <ProposalHeader />
       
       <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
-        {/* Left column - Form */}
+        {/* Left column - Form or expanded Summary */}
         <Card className="w-full lg:w-2/3">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Create a Usage Proposal</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              {currentStep === STEPS.length - 1 ? "Review Proposal" : "Create a Usage Proposal"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-6">
-              <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />
+              <ProgressBar 
+                currentStep={currentStep} 
+                totalSteps={STEPS.length} 
+                onStepClick={handleStepClick}
+                highestStepReached={highestStepReached}
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {currentStep === 0 && (
-                <BusinessInfoSection
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  invalidFields={invalidFields}
+            {currentStep === STEPS.length - 1 ? (
+              // Review step - show the expanded summary
+              <div className="space-y-6">
+                <ProposalSummary 
+                  formData={formData} 
+                  currentStep={currentStep} 
+                  isExpanded={true} 
+                  onEdit={() => {
+                    setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
+                  }}
                 />
-              )}
-              {currentStep === 1 && (
-                <PaymentDetailsSection
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  invalidFields={invalidFields}
-                />
-              )}
-              {currentStep === 2 && (
-                <FeesSection
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  handleSaasFeeChange={handleSaasFeeChange}
-                  handleFrequencyChange={handleFrequencyChange}
-                  handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
-                  handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
-                  invalidFields={invalidFields}
-                />
-              )}
-              {currentStep === 3 && (
-                <IntegrationsSection
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  handleSpsRetailerCountChange={handleSpsRetailerCountChange}
-                  handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
-                  invalidFields={invalidFields}
-                />
-              )}
-              {currentStep === 4 && (
-                <ProposalOptionsSection
-                  selectedOptions={formData.selectedOptions}
-                  handleOptionSelect={handleOptionSelect}
-                  invalidFields={invalidFields}
-                />
-              )}
-              {currentStep === 5 && (
-                <ImplementationSection
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  invalidFields={invalidFields}
-                />
-              )}
-              {currentStep === 6 && <ReviewSection formData={formData} />}
-
-              <div className="flex justify-between">
-                {currentStep > 0 && (
-                  <Button type="button" onClick={handleBack} variant="outline">
+                
+                {/* Add a more prominent button container with a border and padding */}
+                <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 mt-8">
+                  <Button type="button" onClick={handleBackFromReview} variant="outline">
                     Back
                   </Button>
+                  <Button 
+                    type="button" 
+                    onClick={() => {
+                      setIsReviewExpanded(false);
+                      setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
+                    }}
+                    variant="default" // Use the primary button style
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                  >
+                    Continue Editing
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // Regular form steps
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {currentStep === 0 && (
+                  <BusinessInfoSection
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    invalidFields={invalidFields}
+                  />
                 )}
-                {currentStep < STEPS.length - 1 ? (
+                {currentStep === 1 && (
+                  <PaymentDetailsSection
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    invalidFields={invalidFields}
+                  />
+                )}
+                {currentStep === 2 && (
+                  <FeesSection
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    handleSaasFeeChange={handleSaasFeeChange}
+                    handleFrequencyChange={handleFrequencyChange}
+                    handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
+                    handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
+                    invalidFields={invalidFields}
+                  />
+                )}
+                {currentStep === 3 && (
+                  <IntegrationsSection
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    handleSpsRetailerCountChange={handleSpsRetailerCountChange}
+                    handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
+                    invalidFields={invalidFields}
+                  />
+                )}
+                {currentStep === 4 && (
+                  <AttainableAutomationSection
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    invalidFields={invalidFields}
+                  />
+                )}
+                {currentStep === 5 && (
+                  <ProposalOptionsSection
+                    selectedOptions={formData.selectedOptions}
+                    handleOptionSelect={handleOptionSelect}
+                    invalidFields={invalidFields}
+                  />
+                )}
+                {currentStep === 6 && (
+                  <ImplementationSection
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    invalidFields={invalidFields}
+                  />
+                )}
+                {currentStep === 7 && (
+                  <ReviewSection 
+                    formData={formData} 
+                    onContinueEditing={() => {
+                      setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
+                    }}
+                    onBack={handleBack}
+                  />
+                )}
+
+                <div className="flex justify-between">
+                  {currentStep > 0 && (
+                    <Button type="button" onClick={handleBack} variant="outline">
+                      Back
+                    </Button>
+                  )}
                   <Button type="button" onClick={handleContinue} className="ml-auto">
                     {currentStep === STEPS.length - 2 ? "Review Proposal" : "Continue"}
                   </Button>
-                ) : (
-                  <Button 
-                    type="button" 
-                    onClick={handleGenerateProposal} 
-                    disabled={isGenerating || !validateStep().isValid}
-                    className="ml-auto"
-                  >
-                    {isGenerating ? 'Generating...' : 'Generate Proposal'}
-                  </Button>
-                )}
-              </div>
-            </form>
-
-            {proposalUrl && (
-              <div className="mt-4">
-                <a 
-                  href={proposalUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  View Generated Proposal
-                </a>
-              </div>
+                </div>
+              </form>
             )}
           </CardContent>
         </Card>
 
-        {/* Right column - Summary */}
+        {/* Right column - Summary or Generate button */}
         <div className="w-full lg:w-1/3 sticky top-4 self-start">
-          <ProposalSummary formData={formData} currentStep={currentStep} />
+          {currentStep === STEPS.length - 1 ? (
+            // Generate Proposal button card
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-center">Ready to Generate?</h3>
+                  <p className="text-gray-600 text-center">
+                    Review your proposal details on the left, then click the button below to generate your proposal.
+                  </p>
+                  <Button 
+                    onClick={handleGenerateProposal} 
+                    disabled={isGenerating}
+                    className="w-full py-6 text-lg"
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Proposal'}
+                  </Button>
+                  
+                  {proposalUrl && (
+                    <div className="mt-4 text-center">
+                      <a 
+                        href={proposalUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-lg"
+                      >
+                        View Generated Proposal
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            // Regular summary
+            <ProposalSummary formData={formData} currentStep={currentStep} isExpanded={false} />
+          )}
         </div>
       </div>
     </>
   )
 }
 
-function ProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+function ProgressBar({ 
+  currentStep, 
+  totalSteps, 
+  onStepClick, 
+  highestStepReached 
+}: { 
+  currentStep: number; 
+  totalSteps: number; 
+  onStepClick: (step: number) => void;
+  highestStepReached: number;
+}) {
+  // Define icons for each step
+  const stepIcons = [
+    <Building key="business" size={18} />,
+    <CreditCard key="payment" size={18} />,
+    <Package key="saas" size={18} />,
+    <Network key="integrations" size={18} />,
+    <Zap key="automation" size={18} />,
+    <ListChecks key="options" size={18} />,
+    <Wrench key="implementation" size={18} />,
+    <FileCheck key="review" size={18} />
+  ];
+
   return (
-    <div className="w-full">
-      <div className="flex justify-between mb-2">
-        {STEPS.map((step, index) => (
-          <div key={step} className={`text-sm font-medium ${index <= currentStep ? "text-primary" : "text-gray-400"}`}>
-            {step}
-          </div>
-        ))}
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
-        <div
-          className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-in-out"
-          style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+    <div className="w-full mb-8">
+      {/* Step indicators with icons */}
+      <div className="flex justify-between mb-2 relative">
+        {/* Progress line */}
+        <div className="absolute top-4 left-0 right-0 h-1 bg-gray-200 -z-10"></div>
+        <div 
+          className="absolute top-4 left-0 h-1 bg-primary transition-all duration-300 ease-in-out -z-10"
+          style={{ width: `${(currentStep / (totalSteps - 1)) * 100}%` }}
         ></div>
+        
+        {STEPS.map((step, index) => {
+          const isCompleted = index < currentStep;
+          const isCurrent = index === currentStep;
+          const isClickable = index <= highestStepReached && index !== currentStep;
+          
+          return (
+            <div 
+              key={step} 
+              className={`flex flex-col items-center ${isClickable ? 'cursor-pointer' : ''}`}
+              onClick={() => isClickable ? onStepClick(index) : null}
+            >
+              <div 
+                className={`
+                  w-8 h-8 rounded-full flex items-center justify-center mb-1
+                  ${isCurrent ? 'bg-primary text-white' : 
+                    isCompleted ? 'bg-primary/20 text-primary' : 'bg-gray-200 text-gray-400'}
+                  ${isClickable ? 'hover:bg-primary/30' : ''}
+                  transition-all duration-200
+                `}
+              >
+                {stepIcons[index]}
+              </div>
+              <span 
+                className={`
+                  text-xs font-medium text-center
+                  ${isCurrent ? 'text-primary' : 
+                    isCompleted ? 'text-primary/80' : 'text-gray-400'}
+                `}
+              >
+                {step}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
-  )
+  );
 }
 

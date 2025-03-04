@@ -307,18 +307,18 @@ export function FeesSection({
     return formData.storeConnections || 0;
   };
 
-  const calculateStoreConnectionsCost = () => {
-    if (formData.storeConnections <= 0) {
+  const calculateStoreConnectionsCost = (storeConnections: number, tiers: StoreConnectionTier[], discount: number) => {
+    if (storeConnections <= 0) {
       return 0;
     }
     
     let totalCost = 0;
     
     // Sort tiers by fromQty to ensure proper calculation
-    const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
+    const sortedTiers = [...tiers].sort((a, b) => a.fromQty - b.fromQty);
     
     // For each store, find which tier it belongs to and add its cost
-    for (let storeNum = 1; storeNum <= formData.storeConnections; storeNum++) {
+    for (let storeNum = 1; storeNum <= storeConnections; storeNum++) {
       // Find the tier this store belongs to
       // For a tier with fromQty=0, toQty=5, it should include stores 0-5
       // For a tier with fromQty=6, toQty=50, it should include stores 6-50
@@ -508,12 +508,20 @@ export function FeesSection({
 
   // Add this useEffect to update the storeConnectionsCost whenever relevant values change
   useEffect(() => {
-    const cost = calculateStoreConnectionsCost();
+    // Calculate store connections cost when relevant values change
+    const cost = calculateStoreConnectionsCost(
+      formData.storeConnections,
+      formData.storeConnectionTiers,
+      formData.applyDiscountToStoreConnections ? formData.saasFeeDiscount : 0
+    );
+    
+    console.log('Calculated store connections cost:', cost);
+    
+    // Make sure we're using the correct handler function
     handleInputChange("storeConnectionsCost", cost);
   }, [
     formData.storeConnections, 
     formData.storeConnectionTiers, 
-    formData.freeStoreConnections, 
     formData.applyDiscountToStoreConnections, 
     formData.saasFeeDiscount
   ]);
@@ -788,7 +796,7 @@ export function FeesSection({
           
           <div className="flex justify-between items-center font-medium">
             <span>Annual Cost:</span>
-            <span>${formatNumber(calculateStoreConnectionsCost())}</span>
+            <span>${formatNumber(calculateStoreConnectionsCost(formData.storeConnections, formData.storeConnectionTiers, formData.applyDiscountToStoreConnections ? formData.saasFeeDiscount : 0))}</span>
           </div>
           
           <div className="flex items-center justify-between mt-2">

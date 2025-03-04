@@ -3,12 +3,30 @@ import { Label } from "@/components/ui/label"
 import { FileText, Package, Zap, Lightbulb, Box, Truck } from "lucide-react"
 
 interface ProposalOptionsSectionProps {
-  selectedOptions: any
-  handleOptionSelect: (option: string) => void
-  invalidFields?: string[]
+  selectedOptions: {
+    cover: boolean;
+    whatsAUnit: boolean;
+    flexibleGrowth: boolean;
+    pickAndReceiveToLight: boolean;
+    packToLight: boolean;
+    attainableAutomationPricing: boolean;
+  };
+  handleOptionSelect: (option: string, value: boolean) => void;
+  invalidFields: string[];
 }
 
-export function ProposalOptionsSection({ selectedOptions, handleOptionSelect, invalidFields = [] }: ProposalOptionsSectionProps) {
+export function ProposalOptionsSection({
+  selectedOptions,
+  handleOptionSelect,
+  invalidFields,
+}: ProposalOptionsSectionProps) {
+  // Update the handler to toggle the boolean value
+  const handleOptionToggle = (option: string) => {
+    // Get the current value and toggle it
+    const currentValue = selectedOptions[option as keyof typeof selectedOptions];
+    handleOptionSelect(option, !currentValue);
+  };
+
   return (
     <div className="space-y-4">
       <Label>Proposal Options</Label>
@@ -17,37 +35,37 @@ export function ProposalOptionsSection({ selectedOptions, handleOptionSelect, in
           title="Cover"
           icon={<FileText className="h-8 w-8" />}
           selected={selectedOptions.cover}
-          onClick={() => handleOptionSelect("cover")}
+          onClick={() => handleOptionToggle("cover")}
         />
         <OptionTile
           title="What's a Unit?"
           icon={<Box className="h-8 w-8" />}
           selected={selectedOptions.whatsAUnit}
-          onClick={() => handleOptionSelect("whatsAUnit")}
+          onClick={() => handleOptionToggle("whatsAUnit")}
         />
         <OptionTile
           title="Flexible Growth"
           icon={<Zap className="h-8 w-8" />}
           selected={selectedOptions.flexibleGrowth}
-          onClick={() => handleOptionSelect("flexibleGrowth")}
+          onClick={() => handleOptionToggle("flexibleGrowth")}
         />
         <OptionTile
           title="Pick & Receive to Light"
           icon={<Lightbulb className="h-8 w-8" />}
           selected={selectedOptions.pickAndReceiveToLight}
-          onClick={() => handleOptionSelect("pickAndReceiveToLight")}
+          onClick={() => handleOptionToggle("pickAndReceiveToLight")}
         />
         <OptionTile
           title="Pack to Light"
           icon={<Package className="h-8 w-8" />}
           selected={selectedOptions.packToLight}
-          onClick={() => handleOptionSelect("packToLight")}
+          onClick={() => handleOptionToggle("packToLight")}
         />
         <OptionTile
           title="Attainable Automation"
           icon={<Truck className="h-8 w-8" />}
           selected={selectedOptions.attainableAutomationPricing}
-          onClick={() => handleOptionSelect("attainableAutomationPricing")}
+          onClick={() => handleOptionToggle("attainableAutomationPricing")}
         />
       </div>
     </div>

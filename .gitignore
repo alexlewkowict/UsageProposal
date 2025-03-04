@@ -1,0 +1,10 @@
+.vercel
+node_modules
+
+# Add the specific large files
+node_modules/@next/swc-darwin-arm64/next-swc.darwin-arm64.node
+.next/cache/
+
+# General patterns for large build artifacts
+.next/cache/
+.next/**/*.pack

@@ -1,0 +1,8 @@
+{
+  "/page": "app/page.js",
+  "/admin/variable-mapping/page": "app/admin/variable-mapping/page.js",
+  "/api/opportunities/route": "app/api/opportunities/route.js",
+  "/api/account-executive-role/route": "app/api/account-executive-role/route.js",
+  "/api/account-type/route": "app/api/account-type/route.js",
+  "/api/variable-mappings/route": "app/api/variable-mappings/route.js"
+}

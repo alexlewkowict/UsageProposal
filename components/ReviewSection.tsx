@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 interface ReviewSectionProps {
   formData: any
+  onContinueEditing?: () => void
+  onBack?: () => void
 }
 
-export function ReviewSection({ formData }: ReviewSectionProps) {
+export function ReviewSection({ formData, onContinueEditing, onBack }: ReviewSectionProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value)
   }
@@ -236,6 +239,22 @@ export function ReviewSection({ formData }: ReviewSectionProps) {
           )}
         </CardContent>
       </Card>
+
+      <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 mt-8">
+        <Button 
+          variant="outline"
+          onClick={onBack}
+        >
+          Back
+        </Button>
+        <Button 
+          variant="default"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+          onClick={onContinueEditing}
+        >
+          Continue Editing
+        </Button>
+      </div>
     </div>
   )
 }
