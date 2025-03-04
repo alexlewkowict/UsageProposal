@@ -375,96 +375,61 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         
         {/* Integrations - only show if we've reached or passed this step */}
         {currentStep >= INTEGRATIONS_STEP && (formData.spsIntegration.enabled || formData.crstlIntegration.enabled) && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-semibold">Integrations</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 px-2"
-                onClick={() => setShowIntegrationBreakdown(!showIntegrationBreakdown)}
-              >
-                {showIntegrationBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </Button>
+          <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b">
+              <h3 className="text-lg font-semibold">Integrations</h3>
             </div>
-            <div className="space-y-1 text-sm">
-              {showIntegrationBreakdown && (
-                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-2">
-                  {formData.spsIntegration.enabled && (
-                    <div>
-                      <div className="font-medium">SPS Commerce:</div>
-                      <div className="pl-2 border-l-2 border-gray-200 space-y-1">
-                        <div className="flex justify-between">
-                          <span>Setup Fee:</span>
-                          <span>${formatNumber(formData.spsIntegration.setupFee)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Retailer Setup:</span>
-                          <span>${formatNumber(formData.spsIntegration.retailerSetupFee)} × {formData.spsIntegration.retailerCount}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Total Setup:</span>
-                          <span>${formatNumber(formData.spsIntegration.setupFee + formData.spsIntegration.retailerSetupFee * formData.spsIntegration.retailerCount)}</span>
-                        </div>
-                        
-                        <div className="mt-1 pt-1 border-t border-gray-200">
-                          <div className="font-medium">Support Tiers:</div>
-                          {getSpsRetailerSupportBreakdown().map((item, index) => (
-                            <div key={index} className="pl-2 border-l-2 border-gray-200 mt-1">
-                              <div className="flex justify-between">
-                                <span>{item.tier}:</span>
-                                <span>{item.retailersInTier} × ${item.pricePerRetailer}/quarter</span>
-                              </div>
-                              <div className="flex justify-between text-gray-500">
-                                <span>Annual:</span>
-                                <span>${formatNumber(item.annualCost)}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {formData.crstlIntegration.enabled && (
-                    <div className={formData.spsIntegration.enabled ? "mt-2 pt-2 border-t border-gray-200" : ""}>
-                      <div className="font-medium">Crstl:</div>
-                      <div className="pl-2 border-l-2 border-gray-200 space-y-1">
-                        <div className="flex justify-between">
-                          <span>Setup Fee:</span>
-                          <span>${formatNumber(formData.crstlIntegration.setupFee)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Support Fee:</span>
-                          <span>${formatNumber(formData.crstlIntegration.supportFee)} × {formData.crstlIntegration.retailerCount} × 4 quarters</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Annual Support:</span>
-                          <span>${formatNumber(formData.crstlIntegration.supportFee * 4 * formData.crstlIntegration.retailerCount)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+            
+            <div className="p-4 space-y-4">
+              {formData.spsIntegration.enabled && (
+                <div className="flex items-center space-x-4">
+                  <div className="bg-gray-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                  </div>
+                  <div className="flex-1">SPS Commerce</div>
+                  <div className="text-xl font-bold">{formData.spsIntegration.retailerCount} retailers</div>
                 </div>
               )}
               
-              {formData.spsIntegration.enabled && (
-                <div className="ml-2">
-                  <p>SPS Commerce ({formData.spsIntegration.retailerCount} retailers)</p>
-                </div>
-              )}
               {formData.crstlIntegration.enabled && (
-                <div className="ml-2">
-                  <p>Crstl ({formData.crstlIntegration.retailerCount} retailers)</p>
+                <div className="flex items-center space-x-4">
+                  <div className="bg-gray-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                      <polyline points="2 17 12 22 22 17"></polyline>
+                      <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                  </div>
+                  <div className="flex-1">Crstl</div>
+                  <div className="text-xl font-bold">{formData.crstlIntegration.retailerCount} retailers</div>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span>Setup Cost:</span>
-                <span>{formatCurrency(integrationCosts.setupCost)}</span>
+              
+              <div className="flex items-center space-x-4">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="5" rx="2"></rect>
+                    <path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"></path>
+                    <path d="M10 13h4"></path>
+                  </svg>
+                </div>
+                <div className="flex-1">Setup Cost</div>
+                <div className="text-xl font-bold">${formatNumber(integrationCosts.setupCost)}</div>
               </div>
-              <div className="flex justify-between">
-                <span>Annual Cost:</span>
-                <span>{formatCurrency(integrationCosts.annualCost)}</span>
+              
+              <div className="flex items-center space-x-4">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </div>
+                <div className="flex-1">Annual Cost</div>
+                <div className="text-xl font-bold">${formatNumber(integrationCosts.annualCost)}</div>
               </div>
             </div>
           </div>
@@ -472,61 +437,56 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         
         {/* Implementation - only show if we've reached or passed this step */}
         {currentStep >= IMPLEMENTATION_STEP && formData.implementationPackage && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-semibold">Implementation</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 px-2"
-                onClick={() => setShowImplementationBreakdown(!showImplementationBreakdown)}
-              >
-                {showImplementationBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </Button>
+          <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b">
+              <h3 className="text-lg font-semibold">Implementation</h3>
             </div>
-            <div className="space-y-1 text-sm">
-              {showImplementationBreakdown && (
-                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-1">
-                  {formData.implementationPackage === "custom" && (
-                    <>
-                      <div className="flex justify-between">
-                        <span>Virtual Training:</span>
-                        <span>{formData.virtualTrainingHours} hours × $250</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Onsite Support:</span>
-                        <span>{formData.onsiteSupportDays} days × ${formatNumber(parseFloat(formData.onsiteSupportFee || 0))}</span>
-                      </div>
-                      <div className="flex justify-between font-medium">
-                        <span>Calculation:</span>
-                        <span>
-                          ${formatNumber(formData.virtualTrainingHours * 250)} + 
-                          ${formatNumber(formData.onsiteSupportDays * parseFloat(formData.onsiteSupportFee || 0))}
-                        </span>
-                      </div>
-                    </>
-                  )}
+            
+            <div className="p-4 space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                  </svg>
+                </div>
+                <div className="flex-1">Package</div>
+                <div className="text-xl font-bold">{getImplementationPackageName(formData.implementationPackage)}</div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="5" rx="2"></rect>
+                    <path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"></path>
+                    <path d="M10 13h4"></path>
+                  </svg>
+                </div>
+                <div className="flex-1">Onboarding Fee</div>
+                <div className="text-xl font-bold">${formatNumber(parseFloat(formData.onboardingFee || 0))}</div>
+              </div>
+              
+              {formData.virtualTrainingHours > 0 && (
+                <div className="flex items-center space-x-4">
+                  <div className="bg-gray-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                  <div className="flex-1">Virtual Training</div>
+                  <div className="text-xl font-bold">{formData.virtualTrainingHours} hours</div>
                 </div>
               )}
               
-              <div className="flex justify-between">
-                <span>Package:</span>
-                <span>{getImplementationPackageName(formData.implementationPackage)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Onboarding Fee:</span>
-                <span>{formatCurrency(parseFloat(formData.onboardingFee || 0))}</span>
-              </div>
-              {formData.virtualTrainingHours > 0 && (
-                <div className="flex justify-between">
-                  <span>Virtual Training:</span>
-                  <span>{formData.virtualTrainingHours} hours</span>
-                </div>
-              )}
               {formData.onsiteSupportDays > 0 && (
-                <div className="flex justify-between">
-                  <span>Onsite Support:</span>
-                  <span>{formData.onsiteSupportDays} days</span>
+                <div className="flex items-center space-x-4">
+                  <div className="bg-gray-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </div>
+                  <div className="flex-1">Onsite Support</div>
+                  <div className="text-xl font-bold">{formData.onsiteSupportDays} days</div>
                 </div>
               )}
             </div>
