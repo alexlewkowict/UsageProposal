@@ -43,6 +43,7 @@ export default function VariableMappingPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [totalVariables, setTotalVariables] = useState(0)
   const [mappedCount, setMappedCount] = useState(0)
+  const [allCodeElements, setAllCodeElements] = useState<string[]>([])
 
   useEffect(() => {
     fetchVariableMappings()
@@ -59,44 +60,86 @@ export default function VariableMappingPage() {
       
       const data: VariableMappingData[] = await response.json()
       
-      // Process the data into categories
+      // Process the data into categories based on template_name
       const categoriesMap: Record<string, VariableCategory> = {}
       const mappingsRecord: Record<string, string> = {}
+      const codeElementsSet = new Set<string>()
       let mapped = 0
+      
+      // Create an "Uncategorized" category for variables without a template_name
+      categoriesMap["uncategorized"] = {
+        id: "uncategorized",
+        name: "Uncategorized",
+        count: 0,
+        variables: []
+      }
       
       data.forEach(item => {
         const variableName = item.variable_name.replace(/{{|}}/g, '')
-        const categoryName = getCategoryFromVariable(variableName)
-        const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-')
+        const templateName = item.template_name || "Uncategorized"
+        const categoryId = templateName.toLowerCase().replace(/\s+/g, '-')
         
-        if (!categoriesMap[categoryId]) {
+        if (!categoriesMap[categoryId] && templateName !== "Uncategorized") {
           categoriesMap[categoryId] = {
             id: categoryId,
-            name: categoryName,
+            name: templateName,
             count: 0,
             variables: []
           }
         }
         
-        categoriesMap[categoryId].variables.push({
+        const targetCategory = categoriesMap[categoryId] || categoriesMap["uncategorized"]
+        
+        targetCategory.variables.push({
           id: variableName,
           name: variableName,
           description: getDescriptionFromVariable(variableName),
-          template: item.template_name || undefined
+          template: templateName !== "Uncategorized" ? templateName : undefined
         })
         
-        categoriesMap[categoryId].count++
+        targetCategory.count++
         
         if (item.code_element) {
           mappingsRecord[variableName] = item.code_element
+          codeElementsSet.add(item.code_element)
           mapped++
         }
       })
       
-      setCategories(Object.values(categoriesMap))
+      // Add common code elements to the set
+      const commonCodeElements = [
+        "formData.friendlyBusinessName",
+        "formData.contractTerm",
+        "formData.paymentTerms",
+        "formData.paymentType",
+        "formData.storeConnections",
+        "formData.saasFee.frequency",
+        "calculateAnnualSaasFee()",
+        "calculateStoreConnectionsCost()",
+        "formData.implementationFee",
+        "formData.quarterlyFee",
+        "formData.annualFee"
+      ]
+      
+      commonCodeElements.forEach(element => codeElementsSet.add(element))
+      
+      // Convert categories map to array and sort by name
+      const categoriesArray = Object.values(categoriesMap)
+        .filter(category => category.count > 0)
+        .sort((a, b) => a.name.localeCompare(b.name))
+      
+      // Move "Uncategorized" to the end if it exists and has variables
+      const uncategorizedIndex = categoriesArray.findIndex(c => c.id === "uncategorized")
+      if (uncategorizedIndex !== -1 && categoriesArray[uncategorizedIndex].count > 0) {
+        const uncategorized = categoriesArray.splice(uncategorizedIndex, 1)[0]
+        categoriesArray.push(uncategorized)
+      }
+      
+      setCategories(categoriesArray)
       setMappings(mappingsRecord)
       setTotalVariables(data.length)
       setMappedCount(mapped)
+      setAllCodeElements(Array.from(codeElementsSet).sort())
     } catch (error) {
       console.error('Error fetching variable mappings:', error)
       toast({
@@ -123,6 +166,11 @@ export default function VariableMappingPage() {
       const newMappings = { ...mappings }
       if (codeElement) {
         newMappings[selectedVariable.id] = codeElement
+        
+        // Add to code elements if it's new
+        if (!allCodeElements.includes(codeElement)) {
+          setAllCodeElements([...allCodeElements, codeElement].sort())
+        }
       } else {
         delete newMappings[selectedVariable.id]
       }
@@ -166,56 +214,63 @@ export default function VariableMappingPage() {
 
   const handleSaveAllMappings = async () => {
     try {
+      // Show loading toast
+      toast({
+        title: 'Saving...',
+        description: 'Saving all variable mappings to database',
+      });
+      
+      // Prepare the mappings data for saving
       const mappingsToSave = Object.entries(mappings).map(([variableName, codeElement]) => ({
         variable_name: `{{${variableName}}}`,
         code_element: codeElement
-      }))
+      }));
       
+      // Add unmapped variables with null code_element
+      categories.forEach(category => {
+        category.variables.forEach(variable => {
+          if (!mappings[variable.id]) {
+            mappingsToSave.push({
+              variable_name: `{{${variable.id}}}`,
+              code_element: null
+            });
+          }
+        });
+      });
+      
+      // Send the data to the API
       const response = await fetch('/api/variable-mappings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(mappingsToSave),
-      })
+      });
       
       if (!response.ok) {
-        throw new Error('Failed to save mappings')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save mappings');
       }
       
+      // Show success toast
       toast({
         title: 'Success',
-        description: 'All variable mappings saved successfully',
-      })
+        description: `${mappingsToSave.length} variable mappings saved successfully`,
+      });
+      
+      // Refresh the data
+      fetchVariableMappings();
     } catch (error) {
-      console.error('Error saving all mappings:', error)
+      console.error('Error saving all mappings:', error);
       toast({
         title: 'Error',
-        description: 'Failed to save all mappings',
+        description: error instanceof Error ? error.message : 'Failed to save all mappings',
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
-  // Helper functions
-  function getCategoryFromVariable(variableName: string): string {
-    if (variableName.includes('payment') || variableName.includes('Fee')) {
-      return 'Payment Information'
-    } else if (variableName.includes('store') || variableName.includes('connections')) {
-      return 'Connections'
-    } else if (variableName.includes('tier') || variableName.includes('p1') || variableName.includes('p2')) {
-      return 'Pricing Tiers'
-    } else if (variableName.includes('unit') || variableName.includes('overage')) {
-      return 'Units'
-    } else if (variableName.includes('friendly') || variableName.includes('term') || variableName.includes('contract')) {
-      return 'General Information'
-    } else if (variableName.includes('portal') || variableName.includes('billing') || variableName.includes('EDI')) {
-      return 'Features'
-    } else {
-      return 'Other'
-    }
-  }
-
+  // Helper function for variable descriptions
   function getDescriptionFromVariable(variableName: string): string {
     // You can add more detailed descriptions here
     const descriptions: Record<string, string> = {
@@ -223,7 +278,15 @@ export default function VariableMappingPage() {
       'term_months': 'Contract term in months',
       'payment_terms': 'Payment terms (Net 30, etc.)',
       'store_connections': 'Number of store connections',
-      // Add more as needed
+      'contractLength': 'Length of the contract in months',
+      'quarterlyFee': 'Quarterly SaaS fee amount',
+      'annualFee': 'Annual SaaS fee amount',
+      'implementationCost': 'One-time implementation cost',
+      'storeConnectionsCount': 'Number of store connections',
+      'annualUnitTotal': 'Total annual units',
+      'PAYGO_overage_rate': 'Pay-as-you-go overage rate',
+      'AP_overage_rate': 'Annual plan overage rate',
+      'saasFrequency': 'SaaS billing frequency (monthly, quarterly, annual)'
     }
     
     return descriptions[variableName] || `Variable for ${variableName.replace(/_/g, ' ')}`
@@ -260,6 +323,9 @@ export default function VariableMappingPage() {
                 {selectedVariable.description && (
                   <p className="text-sm text-gray-500 mt-1">{selectedVariable.description}</p>
                 )}
+                {selectedVariable.template && (
+                  <p className="text-sm text-blue-500 mt-1">Used in: {selectedVariable.template}</p>
+                )}
               </div>
               
               <div>
@@ -276,20 +342,17 @@ export default function VariableMappingPage() {
               </div>
               
               <div>
-                <Label>Common Code Elements</Label>
+                <Label>Available Code Elements</Label>
                 <Select onValueChange={(value) => setCodeElement(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a code element" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="formData.friendlyBusinessName">formData.friendlyBusinessName</SelectItem>
-                    <SelectItem value="formData.contractTerm">formData.contractTerm</SelectItem>
-                    <SelectItem value="formData.paymentTerms">formData.paymentTerms</SelectItem>
-                    <SelectItem value="formData.paymentType">formData.paymentType</SelectItem>
-                    <SelectItem value="formData.storeConnections">formData.storeConnections</SelectItem>
-                    <SelectItem value="formData.saasFee.frequency">formData.saasFee.frequency</SelectItem>
-                    <SelectItem value="calculateAnnualSaasFee()">calculateAnnualSaasFee()</SelectItem>
-                    <SelectItem value="calculateStoreConnectionsCost()">calculateStoreConnectionsCost()</SelectItem>
+                  <SelectContent className="max-h-[200px]">
+                    {allCodeElements.map(element => (
+                      <SelectItem key={element} value={element}>
+                        {element}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

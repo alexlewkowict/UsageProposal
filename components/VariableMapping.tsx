@@ -39,6 +39,9 @@ export function VariableMapping({
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [activeFilter, setActiveFilter] = useState("All Variables");
   
+  // Get unique category names for the filter buttons
+  const categoryNames = ["All Variables", ...categories.map(c => c.name), "Unmapped"];
+  
   // Initialize expandedCategories with all categories collapsed by default
   useEffect(() => {
     const initialState: Record<string, boolean> = {};
@@ -101,7 +104,7 @@ export function VariableMapping({
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Save Mappings
+            Save All to Database
           </Button>
         </div>
       </div>
@@ -120,7 +123,7 @@ export function VariableMapping({
         </div>
         <div className="flex justify-between mt-2">
           <div className="flex space-x-2 overflow-x-auto pb-2">
-            {["All Variables", "General", "Payment", "Connections", "Units", "Features", "Unmapped"].map(filter => (
+            {categoryNames.map(filter => (
               <Button
                 key={filter}
                 variant={activeFilter === filter ? "default" : "outline"}

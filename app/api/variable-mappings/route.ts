@@ -32,20 +32,32 @@ export async function POST(request: Request) {
     // If it's a single mapping, wrap it in an array
     const mappingsArray = Array.isArray(mappings) ? mappings : [mappings];
     
+    // Process each mapping to ensure it has the required fields
+    const processedMappings = mappingsArray.map(mapping => ({
+      variable_name: mapping.variable_name,
+      code_element: mapping.code_element,
+      // Preserve template_name if it exists in the database
+      // This will be handled by the onConflict option
+    }));
+    
     // For each mapping, upsert it (update if exists, insert if not)
     const { data, error } = await supabase
       .from('variable_mapping')
-      .upsert(mappingsArray, { 
+      .upsert(processedMappings, { 
         onConflict: 'variable_name',
         ignoreDuplicates: false
       });
       
     if (error) {
       console.error('Error saving variable mappings:', error);
-      return NextResponse.json({ error: 'Failed to save variable mappings' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to save variable mappings: ' + error.message }, { status: 500 });
     }
     
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ 
+      success: true, 
+      data,
+      message: `Successfully saved ${processedMappings.length} variable mappings`
+    });
   } catch (err) {
     console.error('Unexpected error:', err);
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
