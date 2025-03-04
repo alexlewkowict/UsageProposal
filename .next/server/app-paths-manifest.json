@@ -1,5 +1,6 @@
 {
   "/page": "app/page.js",
   "/admin/variable-mapping/page": "app/admin/variable-mapping/page.js",
-  "/auth/signin/page": "app/auth/signin/page.js"
+  "/auth/signin/page": "app/auth/signin/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js"
 }
