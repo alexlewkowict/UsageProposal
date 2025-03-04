@@ -229,10 +229,10 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Business Info - only show if we've reached or passed this step */}
-        {currentStep >= BUSINESS_INFO_STEP && formData.opportunityName && (
+        {currentStep >= BUSINESS_INFO_STEP && formData.friendlyBusinessName && (
           <div>
-            <h3 className="font-semibold mb-2">Business</h3>
-            <p className="text-sm">{formData.opportunityName}</p>
+            <h3 className="font-semibold mb-2">Prepared for:</h3>
+            <p className="text-sm">{formData.friendlyBusinessName}</p>
           </div>
         )}
         
