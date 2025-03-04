@@ -43,9 +43,9 @@ export function ImplementationSection({
     // Mock implementation packages data based on Supabase table structure
     const mockPackages = [
       {
-        id: "standard",
-        name: "Standard Implementation",
-        description: "Basic setup with standard training",
+        id: "quickstart_brand",
+        name: "QuickStart Brand",
+        description: "Basic implementation for brand owners",
         onboarding_fee: 5000,
         virtual_training_hours: 4,
         onsite_support_days: 0,
@@ -53,9 +53,9 @@ export function ImplementationSection({
         optional_prof_services_rate: 300
       },
       {
-        id: "professional",
-        name: "Professional Implementation",
-        description: "Enhanced setup with additional training and support",
+        id: "quickstart_3pl",
+        name: "QuickStart 3PL",
+        description: "Basic implementation for 3PL providers",
         onboarding_fee: 10000,
         virtual_training_hours: 8,
         onsite_support_days: 1,
@@ -64,12 +64,12 @@ export function ImplementationSection({
       },
       {
         id: "enterprise",
-        name: "Enterprise Implementation",
+        name: "Enterprise",
         description: "Comprehensive implementation with extensive training and onsite support",
         onboarding_fee: 15000,
         virtual_training_hours: 12,
         onsite_support_days: 3,
-        onsite_support_fee: 7500,
+        onsite_support_fee: 2500,
         optional_prof_services_rate: 300
       },
       {
@@ -227,112 +227,102 @@ export function ImplementationSection({
     <div className="space-y-6">
       <div>
         <Label className="text-lg font-semibold">Implementation Package</Label>
-        <div className="mt-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {packages.map((pkg) => (
-              <div key={pkg.id} className="border rounded-lg p-4 hover:border-primary cursor-pointer">
-                <RadioGroup
-                  value={formData.implementationPackage}
-                  onValueChange={(value) => {
-                    handleInputChange("implementationPackage", value);
-                    if (value !== "custom") {
-                      const selectedPackage = packages.find(p => p.id === value);
-                      if (selectedPackage) {
-                        handleInputChange("onboardingFee", selectedPackage.onboarding_fee);
-                        handleInputChange("virtualTrainingHours", selectedPackage.virtual_training_hours);
-                        handleInputChange("onsiteSupportDays", selectedPackage.onsite_support_days);
-                        handleInputChange("onsiteSupportFee", selectedPackage.onsite_support_fee);
-                      }
-                    }
-                  }}
-                >
-                  <div className="flex items-start space-x-2">
-                    <RadioGroupItem value={pkg.id} id={`package-${pkg.id}`} />
-                    <div>
-                      <Label htmlFor={`package-${pkg.id}`} className="font-medium">{pkg.name}</Label>
-                      <p className="text-sm text-gray-500">{pkg.description}</p>
-                      {pkg.id !== "custom" && (
-                        <div className="mt-2 text-sm">
-                          <p>Onboarding Fee: ${pkg.onboarding_fee}</p>
-                          <p>Virtual Training: {pkg.virtual_training_hours} hours</p>
-                          <p>Onsite Support: {pkg.onsite_support_days} days</p>
+        
+        {packages.map((pkg) => (
+          <div key={pkg.id} className="border rounded-lg p-4 mt-4">
+            <RadioGroup
+              value={formData.implementationPackage}
+              onValueChange={handlePackageSelect}
+            >
+              <div className="flex items-start space-x-2">
+                <RadioGroupItem value={pkg.id} id={`package-${pkg.id}`} />
+                <div className="w-full">
+                  <Label htmlFor={`package-${pkg.id}`} className="font-medium">{pkg.name}</Label>
+                  <p className="text-sm text-gray-500 mb-4">{pkg.description}</p>
+                  
+                  {formData.implementationPackage === pkg.id && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="onboardingFee">Onboarding Fee</Label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                          <Input
+                            id="onboardingFee"
+                            type="text"
+                            value={formData.onboardingFee}
+                            onChange={(e) => handleCustomValueChange("onboardingFee", e.target.value)}
+                            className="pl-8"
+                            disabled={pkg.id !== "custom"}
+                          />
                         </div>
-                      )}
+                        <p className="text-sm text-gray-500 mt-1">
+                          Calculated: ${calculatedFee.toLocaleString()} (Virtual: ${(250 * Number(formData.virtualTrainingHours)).toLocaleString()} + Onsite: ${(Number(formData.onsiteSupportDays) * Number(formData.onsiteSupportFee)).toLocaleString()})
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="virtualTrainingHours">Virtual Training Hours</Label>
+                        <Input
+                          id="virtualTrainingHours"
+                          type="text"
+                          value={formData.virtualTrainingHours}
+                          onChange={(e) => handleCustomValueChange("virtualTrainingHours", e.target.value)}
+                          className={invalidFields.includes("virtualTrainingHours") ? "border-red-500" : ""}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="onsiteSupportDays">Onsite Support Days</Label>
+                        <Input
+                          id="onsiteSupportDays"
+                          type="text"
+                          value={formData.onsiteSupportDays}
+                          onChange={(e) => handleCustomValueChange("onsiteSupportDays", e.target.value)}
+                          className={invalidFields.includes("onsiteSupportDays") ? "border-red-500" : ""}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="onsiteSupportFee">Onsite Support Fee</Label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                          <Input
+                            id="onsiteSupportFee"
+                            type="text"
+                            value={formData.onsiteSupportFee}
+                            onChange={(e) => handleCustomValueChange("onsiteSupportFee", e.target.value)}
+                            className={`pl-8 ${invalidFields.includes("onsiteSupportFee") ? "border-red-500" : ""}`}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="optionalProfServicesRate">Optional Prof. Services Rate</Label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                          <Input
+                            id="optionalProfServicesRate"
+                            type="text"
+                            value={formData.optionalProfServicesRate}
+                            onChange={(e) => handleCustomValueChange("optionalProfServicesRate", e.target.value)}
+                            className={`pl-8 ${invalidFields.includes("optionalProfServicesRate") ? "border-red-500" : ""}`}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </RadioGroup>
+                  )}
+                  
+                  {formData.implementationPackage === pkg.id && isCustomized && (
+                    <div className="mt-4 p-4 bg-blue-50 text-blue-700 rounded-md">
+                      <p>This package has been customized from the default values.</p>
+                      <p>Onboarding Fee = $250 × {formData.virtualTrainingHours} Virtual Hours + {formData.onsiteSupportDays} Onsite Days × ${formData.onsiteSupportFee}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
+            </RadioGroup>
           </div>
-        </div>
-      </div>
-
-      {formData.implementationPackage === "custom" && (
-        <div className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="virtualTrainingHours">Virtual Training Hours</Label>
-                  <Input
-                    id="virtualTrainingHours"
-                    type="text"
-                    value={formData.virtualTrainingHours}
-                    onChange={(e) => handleCustomValueChange("virtualTrainingHours", e.target.value)}
-                    className={invalidFields.includes("virtualTrainingHours") ? "border-red-500" : ""}
-                  />
-                  <p className="text-sm text-gray-500 mt-1">$250 per hour</p>
-                </div>
-                <div>
-                  <Label htmlFor="onsiteSupportDays">Onsite Support Days</Label>
-                  <Input
-                    id="onsiteSupportDays"
-                    type="text"
-                    value={formData.onsiteSupportDays}
-                    onChange={(e) => handleCustomValueChange("onsiteSupportDays", e.target.value)}
-                    className={invalidFields.includes("onsiteSupportDays") ? "border-red-500" : ""}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="onsiteSupportFee">Onsite Support Fee (per day)</Label>
-                  <Input
-                    id="onsiteSupportFee"
-                    type="text"
-                    value={formData.onsiteSupportFee}
-                    onChange={(e) => handleCustomValueChange("onsiteSupportFee", e.target.value)}
-                    className={invalidFields.includes("onsiteSupportFee") ? "border-red-500" : ""}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="optionalProfServicesRate">Optional Prof. Services Rate (per hour)</Label>
-                  <Input
-                    id="optionalProfServicesRate"
-                    type="text"
-                    value={formData.optionalProfServicesRate}
-                    onChange={(e) => handleCustomValueChange("optionalProfServicesRate", e.target.value)}
-                    className={invalidFields.includes("optionalProfServicesRate") ? "border-red-500" : ""}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div>
-        <Label htmlFor="onboardingFee">Total Onboarding Fee</Label>
-        <Input
-          id="onboardingFee"
-          type="text"
-          value={`$${Number(formData.onboardingFee).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-          disabled
-          className="bg-gray-50"
-        />
-        {isCustomized && formData.implementationPackage !== "custom" && (
-          <p className="text-sm text-amber-600 mt-1">
-            This package has been customized from the default values.
-          </p>
-        )}
+        ))}
       </div>
     </div>
   )
