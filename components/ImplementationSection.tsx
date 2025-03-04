@@ -23,6 +23,7 @@ interface ImplementationSectionProps {
 interface ImplementationPackage {
   id: string;
   package: string;
+  description?: string;
   onboarding_fee: number;
   virtual_training_sessions: number;
   onsite_support_days: number;
