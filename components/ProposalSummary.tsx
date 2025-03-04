@@ -578,35 +578,39 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
               {formData.calculatedTiers.map((tier, index) => {
                 if (tier.isPlatformFee) {
                   return (
-                    <div key={index} className="mb-6">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-lg font-semibold">Base fee (up to {formatNumber(tier.unitsInTier)} units)</span>
-                        <span className="text-xl font-bold">${formatNumber(tier.discountedFee || 0)}</span>
+                    <div key={index} className="mb-4">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold">Base fee (up to {formatNumber(tier.unitsInTier)} units)</span>
+                        <span className="font-bold">${formatNumber(formData.saasFeeDiscount > 0 ? (tier.discountedFee || 0) : (tier.originalFee || 0))}</span>
                       </div>
-                      <div className="text-gray-500">
-                        ${formatNumber(tier.originalFee || 0)} → <span className="text-blue-600 font-medium">${formatNumber(tier.discountedFee || 0)}</span> after discount
-                      </div>
+                      {formData.saasFeeDiscount > 0 && (
+                        <div className="text-gray-500 text-sm">
+                          ${formatNumber(tier.originalFee || 0)} → <span className="text-blue-600 font-medium">${formatNumber(tier.discountedFee || 0)}</span> after discount
+                        </div>
+                      )}
                     </div>
                   );
                 } else {
                   return (
-                    <div key={index} className="mb-6">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-lg font-semibold">{formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0}</span>
-                        <span className="text-xl font-bold">${formatNumber(tier.tierTotal)}</span>
+                    <div key={index} className="mb-4">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold">{formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0}</span>
+                        <span className="font-bold">${formatNumber(tier.tierTotal)}</span>
                       </div>
-                      <div className="text-gray-500">
-                        → <span className="text-blue-600 font-medium">${tier.discountedRate?.toFixed(3) || 0}</span> after discount
-                      </div>
+                      {formData.saasFeeDiscount > 0 && (
+                        <div className="text-gray-500 text-sm">
+                          → <span className="text-blue-600 font-medium">${tier.discountedRate?.toFixed(3) || 0}</span> after discount
+                        </div>
+                      )}
                     </div>
                   );
                 }
               })}
               
-              <div className="border-t border-blue-200 pt-6 mt-6">
+              <div className="border-t border-blue-200 pt-4 mt-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold text-blue-900">Total Annual Investment</span>
-                  <span className="text-2xl font-bold text-blue-600">${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0))}</span>
+                  <span className="text-lg font-bold text-blue-900">Total Annual Investment</span>
+                  <span className="text-xl font-bold text-blue-600">${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0))}</span>
                 </div>
               </div>
             </>
