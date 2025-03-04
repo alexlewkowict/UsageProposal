@@ -16,6 +16,10 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
+    async signIn({ user, account }) {
+      // Only allow shiphero.com email addresses
+      return user.email?.endsWith('@shiphero.com') ?? false;
+    },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub;

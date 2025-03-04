@@ -1,6 +1,9 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { FileText, Package, Zap, Lightbulb, Box, Truck } from "lucide-react"
+import { useAccountExecutive } from "@/hooks/useAccountExecutive"
+import { ACCOUNT_EXECUTIVES } from "@/data/account-executives"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 
 interface ProposalOptionsSectionProps {
   selectedOptions: {
@@ -13,13 +16,26 @@ interface ProposalOptionsSectionProps {
   };
   handleOptionSelect: (option: string, value: boolean) => void;
   invalidFields: string[];
+  formData: any;
+  handleInputChange: (field: string, value: any) => void;
 }
 
 export function ProposalOptionsSection({
   selectedOptions,
   handleOptionSelect,
   invalidFields,
+  formData,
+  handleInputChange,
 }: ProposalOptionsSectionProps) {
+  const autoSelectedAccountExec = useAccountExecutive();
+  
+  // Use the auto-selected account exec when the component mounts
+  useEffect(() => {
+    if (autoSelectedAccountExec && !formData.accountExec) {
+      handleInputChange("accountExec", autoSelectedAccountExec);
+    }
+  }, [autoSelectedAccountExec, formData.accountExec, handleInputChange]);
+
   // Update the handler to toggle the boolean value
   const handleOptionToggle = (option: string) => {
     // Get the current value and toggle it
@@ -67,6 +83,29 @@ export function ProposalOptionsSection({
           selected={selectedOptions.attainableAutomationPricing}
           onClick={() => handleOptionToggle("attainableAutomationPricing")}
         />
+      </div>
+      <div className="mb-4">
+        <Label htmlFor="accountExec">Account Executive</Label>
+        <Select
+          value={formData.accountExec || ""}
+          onValueChange={(value) => handleInputChange("accountExec", value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Account Executive" />
+          </SelectTrigger>
+          <SelectContent>
+            {ACCOUNT_EXECUTIVES.map((exec) => (
+              <SelectItem key={exec.name} value={exec.name}>
+                {exec.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {autoSelectedAccountExec && formData.accountExec !== autoSelectedAccountExec && (
+          <p className="text-xs text-blue-600 mt-1">
+            Suggested: {autoSelectedAccountExec} (based on your Google account)
+          </p>
+        )}
       </div>
     </div>
   )
