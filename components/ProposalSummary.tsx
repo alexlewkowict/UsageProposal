@@ -302,25 +302,6 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           </div>
         </div>
         
-        {/* Investment Overview section */}
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">Investment Overview</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span>One-Time Setup</span>
-              <span className="font-bold">${formatNumber(totalCosts.oneTimeCosts)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Annual Recurring</span>
-              <span className="font-bold">${formatNumber(totalCosts.annualRecurringCosts)}</span>
-            </div>
-            <div className="flex justify-between items-center text-blue-600">
-              <span>Monthly Equivalent</span>
-              <span className="font-bold">${formatNumber(totalCosts.monthlyRecurringCosts)}</span>
-            </div>
-          </div>
-        </div>
-        
         {/* Store Connections - only show if we've reached or passed this step */}
         {currentStep >= SAAS_FEE_STEP && formData.storeConnections > 0 && (
           <div>
@@ -541,25 +522,6 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           </div>
         )}
         
-        {/* Total Costs - always show, but values will be 0 until relevant steps are reached */}
-        <div className="pt-4 border-t">
-          <h3 className="font-semibold mb-2">Total Costs</h3>
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span>One-Time Costs:</span>
-              <span>{formatCurrency(totalCosts.oneTimeCosts)}</span>
-            </div>
-            <div className="flex justify-between font-medium">
-              <span>Annual Recurring:</span>
-              <span>{formatCurrency(totalCosts.annualRecurringCosts)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-gray-500">
-              <span>Monthly Equivalent:</span>
-              <span>{formatCurrency(totalCosts.monthlyRecurringCosts)}</span>
-            </div>
-          </div>
-        </div>
-
         <div className="bg-blue-50 p-6 rounded-md mt-4">
           <h3 className="text-xl font-semibold text-blue-900 mb-4">Fee Calculation Breakdown</h3>
           
