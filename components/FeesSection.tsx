@@ -627,58 +627,6 @@ export function FeesSection({
                   </div>
                 </div>
               </div>
-              
-              <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
-                <div className="font-semibold mb-1">Fee Calculation Breakdown:</div>
-                
-                {formData.saasFeeDiscount > 0 && (
-                  <div className="mb-2 text-blue-600">
-                    Applying {formData.saasFeeDiscount}% discount to all SaaS fees
-                  </div>
-                )}
-                
-                {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
-                  formData.calculatedTiers.map((tier, index) => (
-                    <div key={index} className="mb-1">
-                      <p>
-                        {tier.name}: {formatNumber(tier.unitsInTier)} units 
-                        {tier.isPlatformFee ? 
-                          ` at platform fee $${formatNumber(tier.originalFee)}` : 
-                          ` at $${tier.originalRate} per unit`}
-                        {formData.saasFeeDiscount > 0 && ` with ${formData.saasFeeDiscount}% discount`} 
-                        {!tier.isPlatformFee && ` = $${tier.discountedRate} per unit`} 
-                        = ${formatNumber(tier.tierTotal)}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p>No pricing tiers available</p>
-                )}
-                
-                {/* Store connections breakdown */}
-                {formData.storeConnections > 0 && (
-                  <div className="mt-2 border-t pt-2">
-                    <div className="font-semibold mb-1">Store Connections Breakdown:</div>
-                    
-                    {getStoreConnectionsBreakdown().map((item, index) => (
-                      <div key={index} className="mb-1">
-                        {item.tier}: {formatNumber(item.storesInTier)} stores × ${item.pricePerStore.toFixed(2)} × 12 months = ${formatNumber(item.annualCost)}
-                        {item.hasDiscount && (
-                          <span className="text-blue-600"> → ${formatNumber(item.discountedCost)} after {formData.saasFeeDiscount}% discount</span>
-                        )}
-                      </div>
-                    ))}
-                    
-                    <div className="font-semibold mt-1">
-                      Total Store Connections Cost: ${formatNumber(calculateStoreConnectionsCost())}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="mt-2 pt-2 border-t font-semibold">
-                  Total Annual Fee: ${formatNumber(calculateAnnualFee())}
-                </div>
-              </div>
             </CardContent>
           </Card>
         ) : (
