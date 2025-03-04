@@ -293,7 +293,11 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                   <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
                 </svg>
               </div>
-              <div className="text-lg font-medium">{formData.billingFrequency || "Quarterly"}</div>
+              <div className="text-lg font-medium">
+                {formData.billingFrequency ? 
+                  formData.billingFrequency.charAt(0).toUpperCase() + formData.billingFrequency.slice(1) : 
+                  "Quarterly"}
+              </div>
             </div>
           </div>
         </div>
@@ -316,103 +320,6 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
             </div>
           </div>
         </div>
-        
-        {/* Business Info - only show if we've reached or passed this step */}
-        {/* Remove this section since it's now in the header */}
-        {/* {currentStep >= BUSINESS_INFO_STEP && formData.friendlyBusinessName && (
-          <div>
-            <h3 className="font-semibold mb-2">Prepared for:</h3>
-            <p className="text-sm">{formData.friendlyBusinessName}</p>
-          </div>
-        )} */}
-        
-        {/* Contract Terms - only show if we've reached or passed this step */}
-        {currentStep >= PAYMENT_DETAILS_STEP && formData.contractTerm && (
-          <div>
-            <h3 className="font-semibold mb-2">Contract</h3>
-            <p className="text-sm">{formData.contractTerm} months, billed {formData.billingFrequency}</p>
-          </div>
-        )}
-        
-        {/* SaaS Fee - only show if we've reached or passed this step */}
-        {currentStep >= SAAS_FEE_STEP && (formData.saasFee.pallets.value > 0 || 
-          formData.saasFee.cases.value > 0 || 
-          formData.saasFee.eaches.value > 0) && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-semibold">SaaS Fee</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 px-2"
-                onClick={() => setShowSaasBreakdown(!showSaasBreakdown)}
-              >
-                {showSaasBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </Button>
-            </div>
-            <div className="space-y-1 text-sm">
-              {showSaasBreakdown && (
-                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-2">
-                  <div className="font-medium">Fee Calculation Breakdown:</div>
-                  
-                  {formData.saasFeeDiscount > 0 && (
-                    <div className="text-blue-600 text-xs mb-1">
-                      Applying {formData.saasFeeDiscount}% discount to all SaaS fees
-                    </div>
-                  )}
-                  
-                  {/* Display tier breakdown */}
-                  {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
-                    formData.calculatedTiers.map((tier, index) => (
-                      <div key={index} className="text-xs pl-2 border-l-2 border-gray-200">
-                        <div>
-                          {tier.name}: {formatNumber(tier.unitsInTier)} units 
-                          {tier.isPlatformFee ? 
-                            ` at platform fee $${formatNumber(tier.originalFee || 0)}` : 
-                            ` at $${tier.originalRate?.toFixed(3) || 0} per unit`}
-                        </div>
-                        <div className="text-gray-500">
-                          {formData.saasFeeDiscount > 0 && `${formData.saasFeeDiscount}% discount applied`}
-                          {!tier.isPlatformFee && tier.discountedRate && ` = $${tier.discountedRate.toFixed(3)} per unit`} 
-                          = ${formatNumber(tier.tierTotal)}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-xs text-gray-500">No tier breakdown available</div>
-                  )}
-                </div>
-              )}
-              
-              {formData.saasFee.pallets.value > 0 && (
-                <div className="flex justify-between">
-                  <span>Pallets:</span>
-                  <span>{formatNumber(formData.saasFee.pallets.value)}</span>
-                </div>
-              )}
-              {formData.saasFee.cases.value > 0 && (
-                <div className="flex justify-between">
-                  <span>Cases:</span>
-                  <span>{formatNumber(formData.saasFee.cases.value)}</span>
-                </div>
-              )}
-              {formData.saasFee.eaches.value > 0 && (
-                <div className="flex justify-between">
-                  <span>Eaches:</span>
-                  <span>{formatNumber(formData.saasFee.eaches.value)}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>Discount:</span>
-                <span>{formData.saasFeeDiscount}%</span>
-              </div>
-              <div className="flex justify-between font-medium">
-                <span>Annual SaaS Fee:</span>
-                <span>{formatCurrency(calculateAnnualSaasFee())}</span>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Store Connections - only show if we've reached or passed this step */}
         {currentStep >= SAAS_FEE_STEP && formData.storeConnections > 0 && (
