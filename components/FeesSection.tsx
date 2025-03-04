@@ -155,23 +155,24 @@ export function FeesSection({
     return value * unitValue
   }
 
-  const calculateAnnualUnits = (units: number) => {
-    const frequencyMultiplier =
-      formData.saasFee.frequency === "daily"
-        ? 365
-        : formData.saasFee.frequency === "weekly"
-          ? 52
-          : formData.saasFee.frequency === "monthly"
-            ? 12
-            : 1
-    return units * frequencyMultiplier
-  }
+  const calculateAnnualUnits = () => {
+    const palletsValue = formData.saasFee.pallets.value || 0;
+    const casesValue = formData.saasFee.cases.value || 0;
+    const eachesValue = formData.saasFee.eaches.value || 0;
+    
+    // Calculate based on frequency
+    const multiplier = formData.saasFee.frequency === 'monthly' ? 12 :
+                       formData.saasFee.frequency === 'weekly' ? 52 :
+                       formData.saasFee.frequency === 'daily' ? 365 : 1;
+    
+    return (palletsValue * 5 + casesValue * 2 + eachesValue) * multiplier;
+  };
 
   const totalPallets = calculateTotalUnits("pallets")
   const totalCases = calculateTotalUnits("cases")
   const totalEaches = calculateTotalUnits("eaches")
   const grandTotal = totalPallets + totalCases + totalEaches
-  const annualGrandTotal = calculateAnnualUnits(grandTotal)
+  const annualGrandTotal = calculateAnnualUnits()
 
   useEffect(() => {
     console.log("Calculating tier for annual grand total:", annualGrandTotal)
@@ -456,6 +457,24 @@ export function FeesSection({
   const handleTierCalculation = (calculatedTiers: CalculatedTier[]) => {
     handleInputChange("calculatedTiers", calculatedTiers);
   };
+
+  // Add this useEffect to calculate tiers whenever relevant values change
+  useEffect(() => {
+    // Calculate annual units
+    const annualUnits = calculateAnnualUnits();
+    
+    // Only proceed if we have pricing tiers and annual units
+    if (pricingTiers.length > 0 && annualUnits > 0) {
+      console.log('Calculating tiers for', annualUnits, 'units with discount', formData.saasFeeDiscount);
+      
+      // Calculate the tier breakdown
+      const tiers = calculateTierBreakdown(annualUnits, pricingTiers, formData.saasFeeDiscount);
+      
+      // Update the form data with calculated tiers
+      handleInputChange("calculatedTiers", tiers);
+    }
+  }, [formData.saasFee.pallets.value, formData.saasFee.cases.value, formData.saasFee.eaches.value, 
+      formData.saasFeeDiscount, pricingTiers]);
 
   return (
     <div className="space-y-6" onSubmit={handleFormSubmit}>

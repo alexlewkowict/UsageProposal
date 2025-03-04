@@ -262,27 +262,35 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
             </div>
             <div className="space-y-1 text-sm">
               {showSaasBreakdown && (
-                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-1">
-                  <div className="flex justify-between font-medium">
-                    <span>Base Units:</span>
-                    <span>{formatNumber(
-                      (formData.saasFee.pallets.value || 0) + 
-                      (formData.saasFee.cases.value || 0) + 
-                      (formData.saasFee.eaches.value || 0)
-                    )}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Discount:</span>
-                    <span>{formData.saasFeeDiscount}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Calculation:</span>
-                    <span>{formatNumber(
-                      (formData.saasFee.pallets.value || 0) + 
-                      (formData.saasFee.cases.value || 0) + 
-                      (formData.saasFee.eaches.value || 0)
-                    )} × (1 - {formData.saasFeeDiscount}%)</span>
-                  </div>
+                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-2">
+                  <div className="font-medium">Fee Calculation Breakdown:</div>
+                  
+                  {formData.saasFeeDiscount > 0 && (
+                    <div className="text-blue-600 text-xs mb-1">
+                      Applying {formData.saasFeeDiscount}% discount to all SaaS fees
+                    </div>
+                  )}
+                  
+                  {/* Display tier breakdown */}
+                  {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
+                    formData.calculatedTiers.map((tier, index) => (
+                      <div key={index} className="text-xs pl-2 border-l-2 border-gray-200">
+                        <div>
+                          {tier.name}: {formatNumber(tier.unitsInTier)} units 
+                          {tier.isPlatformFee ? 
+                            ` at platform fee $${formatNumber(tier.originalFee || 0)}` : 
+                            ` at $${tier.originalRate?.toFixed(3) || 0} per unit`}
+                        </div>
+                        <div className="text-gray-500">
+                          {formData.saasFeeDiscount > 0 && `${formData.saasFeeDiscount}% discount applied`}
+                          {!tier.isPlatformFee && tier.discountedRate && ` = $${tier.discountedRate.toFixed(3)} per unit`} 
+                          = ${formatNumber(tier.tierTotal)}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-gray-500">No tier breakdown available</div>
+                  )}
                 </div>
               )}
               
