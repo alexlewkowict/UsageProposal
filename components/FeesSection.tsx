@@ -72,6 +72,7 @@ interface CalculatedTier {
   isPlatformFee: boolean;
   originalFee: number | null;
   originalRate: number | null;
+  discountedFee: number | null;
   discountedRate: number | null;
   tierTotal: number;
 }
@@ -438,12 +439,14 @@ export function FeesSection({
       
       const discountMultiplier = (100 - discount) / 100;
       
+      // Calculate the discounted values
+      const discountedFee = isPlatformFee ? originalFee * discountMultiplier : null;
+      const discountedRate = isPlatformFee ? null : (originalRate || 0) * discountMultiplier;
+      
       // Calculate the total for this tier
       const tierTotal = isPlatformFee 
-        ? originalFee * discountMultiplier 
-        : unitsInTier * (originalRate || 0) * discountMultiplier;
-      
-      const discountedRate = isPlatformFee ? null : (originalRate || 0) * discountMultiplier;
+        ? discountedFee 
+        : unitsInTier * (discountedRate || 0);
       
       calculatedTiers.push({
         name: tier.tier,
@@ -451,12 +454,12 @@ export function FeesSection({
         isPlatformFee,
         originalFee,
         originalRate,
+        discountedFee,
         discountedRate,
         tierTotal,
       });
       
       remainingUnits -= unitsInTier;
-      console.log(`Tier ${tier.tier}: ${unitsInTier} units at ${isPlatformFee ? `platform fee $${originalFee}` : `$${originalRate}`} with ${discount}% discount = ${isPlatformFee ? '' : `$${discountedRate} per unit = `}$${tierTotal.toFixed(2)}, remaining: ${remainingUnits}`);
     }
     
     return calculatedTiers;
