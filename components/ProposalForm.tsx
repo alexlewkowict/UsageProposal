@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -144,7 +144,7 @@ export default function ProposalForm() {
   const handleInputChange = (field: string, value: string | number | boolean) => {
     console.log(`Updating field: ${field} with value:`, value);
     
-    setFormData((prev) => {
+    setFormData((prev: any) => {
       // Create a copy of the previous state
       const newState = { ...prev };
       
@@ -174,7 +174,7 @@ export default function ProposalForm() {
   }
 
   const handleSaasFeeChange = (type: "pallets" | "cases" | "eaches", value: number) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       saasFee: {
         ...prev.saasFee,
@@ -187,7 +187,7 @@ export default function ProposalForm() {
   }
 
   const handleFrequencyChange = (frequency: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       saasFee: {
         ...prev.saasFee,
@@ -197,7 +197,7 @@ export default function ProposalForm() {
   }
 
   const handleOptionSelect = (option: keyof typeof formData.selectedOptions) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       selectedOptions: {
         ...prev.selectedOptions,
@@ -207,14 +207,14 @@ export default function ProposalForm() {
   }
 
   const handleStoreConnectionPriceChange = (value: number) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       storeConnectionPrice: value,
     }));
   };
 
   const handleStoreConnectionTiersChange = (tiers: any[]) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       storeConnectionTiers: tiers,
     }))
@@ -273,7 +273,7 @@ export default function ProposalForm() {
   const handleContinue = () => {
     const { isValid, invalidFields } = validateStep()
     if (isValid) {
-      setCurrentStep((prev) => prev + 1)
+      setCurrentStep((prev: number) => prev + 1)
       setInvalidFields([])
     } else {
       setInvalidFields(invalidFields)
@@ -286,7 +286,7 @@ export default function ProposalForm() {
   }
 
   const handleBack = () => {
-    setCurrentStep((prev) => prev - 1)
+    setCurrentStep((prev: number) => prev - 1)
     setInvalidFields([])
   }
 
@@ -320,11 +320,11 @@ export default function ProposalForm() {
         title: 'Proposal Generated',
         description: 'Your proposal has been successfully generated.',
       })
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error generating proposal:', error)
       toast({
         title: 'Error',
-        description: error.message || 'Failed to generate proposal',
+        description: error instanceof Error ? error.message : 'Failed to generate proposal',
         variant: 'destructive',
       })
     } finally {
@@ -332,10 +332,10 @@ export default function ProposalForm() {
     }
   }
 
-  const handleExpand = useCallback((sectionId) => {
+  const handleExpand = useCallback((sectionId: string) => {
     if (!sectionId) return; // Guard against undefined values
     
-    setExpandedSections(prev => ({
+    setExpandedSections((prev: any) => ({
       ...prev,
       [sectionId]: !prev[sectionId]
     }));
@@ -343,7 +343,7 @@ export default function ProposalForm() {
 
   useEffect(() => {
     if (formData.opportunityName) {
-      setFormData((prev) => ({
+      setFormData((prev: any) => ({
         ...prev,
         friendlyBusinessName: formData.opportunityName,
       }))

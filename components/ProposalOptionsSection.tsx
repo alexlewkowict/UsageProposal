@@ -1,13 +1,14 @@
-import type React from "react"
+import React from "react"
 import { Label } from "@/components/ui/label"
 import { FileText, Package, Zap, Lightbulb, Box, Truck } from "lucide-react"
 
 interface ProposalOptionsSectionProps {
   selectedOptions: any
   handleOptionSelect: (option: string) => void
+  invalidFields?: string[]
 }
 
-export function ProposalOptionsSection({ selectedOptions, handleOptionSelect }: ProposalOptionsSectionProps) {
+export function ProposalOptionsSection({ selectedOptions, handleOptionSelect, invalidFields = [] }: ProposalOptionsSectionProps) {
   return (
     <div className="space-y-4">
       <Label>Proposal Options</Label>
