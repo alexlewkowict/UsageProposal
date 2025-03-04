@@ -37,6 +37,7 @@ interface FeesSectionProps {
     freeStoreConnections: number;
     applyDiscountToStoreConnections: boolean;
     storeConnectionTiers: StoreConnectionTier[];
+    calculatedTiers: CalculatedTier[];
   };
   handleInputChange: (field: string, value: string | number) => void;
   handleSaasFeeChange: (type: "pallets" | "cases" | "eaches", value: number) => void;
@@ -63,6 +64,16 @@ interface StoreConnectionTier {
   fromQty: number;
   toQty: number;
   pricePerStore: number;
+}
+
+interface CalculatedTier {
+  name: string;
+  unitsInTier: number;
+  isPlatformFee: boolean;
+  originalFee: number | null;
+  originalRate: number | null;
+  discountedRate: number | null;
+  tierTotal: number;
 }
 
 export function FeesSection({
@@ -393,6 +404,59 @@ export function FeesSection({
     e.preventDefault(); // Prevent form submission
   };
 
+  const calculateTierBreakdown = (annualUnits, pricingTiers, discount) => {
+    if (!pricingTiers || pricingTiers.length === 0) {
+      console.log('No pricing tiers available');
+      return [];
+    }
+    
+    // Sort tiers by min_units
+    const sortedTiers = [...pricingTiers].sort((a, b) => a.min_units - b.min_units);
+    
+    let remainingUnits = annualUnits;
+    const calculatedTiers = [];
+    
+    for (const tier of sortedTiers) {
+      if (remainingUnits <= 0) break;
+      
+      const tierRange = tier.max_units - tier.min_units;
+      const unitsInTier = Math.min(remainingUnits, tierRange);
+      
+      if (unitsInTier <= 0) continue;
+      
+      const isPlatformFee = tier.pricing_model === 'platform_fee';
+      const originalFee = isPlatformFee ? tier.platform_fee : null;
+      const originalRate = isPlatformFee ? null : tier.per_unit_price;
+      const discountMultiplier = (100 - discount) / 100;
+      
+      const tierTotal = isPlatformFee 
+        ? originalFee * discountMultiplier 
+        : unitsInTier * originalRate * discountMultiplier;
+      
+      const discountedRate = isPlatformFee ? null : originalRate * discountMultiplier;
+      
+      calculatedTiers.push({
+        name: tier.name,
+        unitsInTier,
+        isPlatformFee,
+        originalFee,
+        originalRate,
+        discountedRate,
+        tierTotal,
+      });
+      
+      remainingUnits -= unitsInTier;
+      console.log(`Tier ${tier.name}: ${unitsInTier} units at ${isPlatformFee ? `platform fee $${originalFee}` : `$${originalRate}`} with ${discount}% discount = ${isPlatformFee ? '' : `$${discountedRate} per unit = `}$${tierTotal.toFixed(2)}, remaining: ${remainingUnits}`);
+    }
+    
+    return calculatedTiers;
+  };
+
+  // Then update your form data with the calculated tiers
+  const handleTierCalculation = (calculatedTiers: CalculatedTier[]) => {
+    handleInputChange("calculatedTiers", calculatedTiers);
+  };
+
   return (
     <div className="space-y-6" onSubmit={handleFormSubmit}>
       <div className="space-y-4">
@@ -524,12 +588,18 @@ export function FeesSection({
                   </div>
                 )}
                 
-                {pricingTiers && pricingTiers.length > 0 ? (
-                  pricingTiers.map((tier, index) => (
-                    <div key={tier.id || `tier-${index}`}>
-                      {/* Use optional chaining and nullish coalescing for safety */}
-                      <span>{tier?.name ?? 'Unnamed Tier'}</span>
-                      {/* Add similar safeguards for other properties */}
+                {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
+                  formData.calculatedTiers.map((tier, index) => (
+                    <div key={index} className="mb-1">
+                      <p>
+                        {tier.name}: {formatNumber(tier.unitsInTier)} units 
+                        {tier.isPlatformFee ? 
+                          ` at platform fee $${formatNumber(tier.originalFee)}` : 
+                          ` at $${tier.originalRate} per unit`}
+                        {formData.saasFeeDiscount > 0 && ` with ${formData.saasFeeDiscount}% discount`} 
+                        {!tier.isPlatformFee && ` = $${tier.discountedRate} per unit`} 
+                        = ${formatNumber(tier.tierTotal)}
+                      </p>
                     </div>
                   ))
                 ) : (
