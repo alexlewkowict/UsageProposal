@@ -504,10 +504,24 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
               })}
               
               <div className="border-t border-blue-200 pt-4 mt-4">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-3">
                   <span className="text-lg font-bold text-blue-900">Total Annual Investment</span>
                   <span className="text-xl font-bold text-blue-600">
-                    ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + (formData.storeConnectionsCost || 0))}
+                    ${formatNumber(
+                      formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + 
+                      (formData.storeConnectionsCost || 0) + 
+                      (integrationCosts.annualCost || 0)
+                    )}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold text-blue-900">Total Upfront Cost</span>
+                  <span className="text-xl font-bold text-blue-600">
+                    ${formatNumber(
+                      (integrationCosts.setupCost || 0) + 
+                      (parseFloat(formData.onboardingFee || 0))
+                    )}
                   </span>
                 </div>
               </div>
