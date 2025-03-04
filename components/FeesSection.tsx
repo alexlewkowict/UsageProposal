@@ -260,21 +260,21 @@ export function FeesSection({
         // First tier - use platform fee for all units up to upper limit
         const unitsInTier = Math.min(remainingUnits, Number(tier.upper_limit));
         // Apply discount to platform fee list price
-        const discountedPlatformFee = Number(tier.platform_fee_list_price) * discountMultiplier;
+        const discountedPlatformFee = Number(tier.platform_fee_sales_price) * discountMultiplier;
         totalFee += discountedPlatformFee;
         remainingUnits -= unitsInTier;
-        console.log(`Tier ${tier.tier}: ${unitsInTier} units at platform fee $${tier.platform_fee_list_price} with ${formData.saasFeeDiscount}% discount = $${discountedPlatformFee.toFixed(2)}, remaining: ${remainingUnits}`);
+        console.log(`Tier ${tier.tier}: ${unitsInTier} units at platform fee $${tier.platform_fee_sales_price} with ${formData.saasFeeDiscount}% discount = $${discountedPlatformFee.toFixed(2)}, remaining: ${remainingUnits}`);
       } 
       
       if (i > 0 && remainingUnits > 0) {
-        // Subsequent tiers - use shipped_unit_list_price for units in this tier's range
+        // Subsequent tiers - use shipped_unit_sales_price for units in this tier's range
         const tierLimit = nextTier 
           ? Number(nextTier.lower_limit) - Number(tier.lower_limit)
           : Number.MAX_SAFE_INTEGER;
         
         const unitsInTier = Math.min(remainingUnits, tierLimit);
         // Apply discount to unit list price
-        const tierUnitPrice = Number(tier.shipped_unit_list_price) || 0;
+        const tierUnitPrice = Number(tier.shipped_unit_sales_price) || 0;
         const discountedUnitPrice = tierUnitPrice * discountMultiplier;
         
         totalFee += unitsInTier * discountedUnitPrice;
@@ -405,14 +405,14 @@ export function FeesSection({
     e.preventDefault(); // Prevent form submission
   };
 
-  const calculateTierBreakdown = (annualUnits, pricingTiers, discount) => {
+  const calculateTierBreakdown = (annualUnits: number, pricingTiers: PricingTier[], discount: number) => {
     if (!pricingTiers || pricingTiers.length === 0) {
       console.log('No pricing tiers available');
       return [];
     }
     
-    // Sort tiers by min_units
-    const sortedTiers = [...pricingTiers].sort((a, b) => a.min_units - b.min_units);
+    // Sort tiers by lower_limit
+    const sortedTiers = [...pricingTiers].sort((a, b) => a.lower_limit - b.lower_limit);
     
     let remainingUnits = annualUnits;
     const calculatedTiers = [];
@@ -420,24 +420,29 @@ export function FeesSection({
     for (const tier of sortedTiers) {
       if (remainingUnits <= 0) break;
       
-      const tierRange = tier.max_units - tier.min_units;
+      // Calculate how many units fall into this tier
+      const lowerLimit = Number(tier.lower_limit);
+      const upperLimit = Number(tier.upper_limit);
+      const tierRange = upperLimit - lowerLimit + 1;
       const unitsInTier = Math.min(remainingUnits, tierRange);
       
       if (unitsInTier <= 0) continue;
       
-      const isPlatformFee = tier.pricing_model === 'platform_fee';
-      const originalFee = isPlatformFee ? tier.platform_fee : null;
-      const originalRate = isPlatformFee ? null : tier.per_unit_price;
+      // Determine if this is a platform fee tier or per-unit pricing
+      const isPlatformFee = tier.platform_fee_list_price !== null && tier.platform_fee_list_price > 0;
+      const originalFee = isPlatformFee ? tier.platform_fee_sales_price : null;
+      const originalRate = isPlatformFee ? null : tier.shipped_unit_sales_price;
       const discountMultiplier = (100 - discount) / 100;
       
+      // Calculate the total for this tier
       const tierTotal = isPlatformFee 
         ? originalFee * discountMultiplier 
-        : unitsInTier * originalRate * discountMultiplier;
+        : unitsInTier * (originalRate || 0) * discountMultiplier;
       
-      const discountedRate = isPlatformFee ? null : originalRate * discountMultiplier;
+      const discountedRate = isPlatformFee ? null : (originalRate || 0) * discountMultiplier;
       
       calculatedTiers.push({
-        name: tier.name,
+        name: tier.tier,
         unitsInTier,
         isPlatformFee,
         originalFee,
@@ -447,7 +452,7 @@ export function FeesSection({
       });
       
       remainingUnits -= unitsInTier;
-      console.log(`Tier ${tier.name}: ${unitsInTier} units at ${isPlatformFee ? `platform fee $${originalFee}` : `$${originalRate}`} with ${discount}% discount = ${isPlatformFee ? '' : `$${discountedRate} per unit = `}$${tierTotal.toFixed(2)}, remaining: ${remainingUnits}`);
+      console.log(`Tier ${tier.tier}: ${unitsInTier} units at ${isPlatformFee ? `platform fee $${originalFee}` : `$${originalRate}`} with ${discount}% discount = ${isPlatformFee ? '' : `$${discountedRate} per unit = `}$${tierTotal.toFixed(2)}, remaining: ${remainingUnits}`);
     }
     
     return calculatedTiers;
@@ -471,10 +476,12 @@ export function FeesSection({
       const tiers = calculateTierBreakdown(annualUnits, pricingTiers, formData.saasFeeDiscount);
       
       // Update the form data with calculated tiers
-      handleInputChange("calculatedTiers", tiers);
+      if (tiers && tiers.length > 0) {
+        handleInputChange("calculatedTiers", tiers);
+      }
     }
   }, [formData.saasFee.pallets.value, formData.saasFee.cases.value, formData.saasFee.eaches.value, 
-      formData.saasFeeDiscount, pricingTiers]);
+      formData.saasFeeDiscount, pricingTiers, formData.saasFee.frequency]);
 
   return (
     <div className="space-y-6" onSubmit={handleFormSubmit}>
