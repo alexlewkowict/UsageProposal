@@ -47,6 +47,11 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
     fetchAccountType();
   }, [formData.opportunityName]);
 
+  // Add this near the useEffect for fetching account type
+  useEffect(() => {
+    console.log("Current account type:", accountType);
+  }, [accountType]);
+
   // Calculate SaaS fee
   const calculateAnnualSaasFee = () => {
     const baseUnits = 
@@ -336,8 +341,8 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                     <rect x="3" y="14" width="7" height="7"></rect>
                   </svg>
                 </div>
-                <div className="flex-1">Total Stores</div>
-                <div className="text-xl font-bold">{formData.storeConnections}</div>
+                <label htmlFor="total-stores" className="flex-1">Total Stores</label>
+                <div id="total-stores" className="text-xl font-bold">{formData.storeConnections}</div>
               </div>
               
               {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 && (
@@ -572,10 +577,47 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                 }
               })}
               
+              {/* Add Store Connections Breakdown */}
+              {formData.storeConnections > 0 && (
+                <div className="mt-6 bg-gray-50 p-4 rounded-md">
+                  <h4 className="font-semibold mb-2">Store Connections Breakdown:</h4>
+                  
+                  {formData.freeStoreConnections > 0 && (
+                    <div className="mb-1">
+                      Included: {formData.freeStoreConnections} stores × $0.00 × 12 months = $0
+                      {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 && (
+                        <span className="text-blue-600"> → $0 after {formData.saasFeeDiscount}% discount</span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {formData.storeConnections > formData.freeStoreConnections && (
+                    <div className="mb-1">
+                      Additional Stores: {formData.storeConnections - formData.freeStoreConnections} stores × 
+                      ${formData.storeConnectionTiers[0]?.pricePerStore.toFixed(2) || "0.00"} × 12 months = 
+                      ${formatNumber((formData.storeConnections - formData.freeStoreConnections) * 
+                        (formData.storeConnectionTiers[0]?.pricePerStore || 0) * 12)}
+                      
+                      {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 && (
+                        <span className="text-blue-600"> → ${formatNumber((formData.storeConnections - formData.freeStoreConnections) * 
+                          (formData.storeConnectionTiers[0]?.pricePerStore || 0) * 12 * 
+                          (1 - formData.saasFeeDiscount / 100))} after {formData.saasFeeDiscount}% discount</span>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="font-semibold mt-2">
+                    Total Store Connections Cost: ${formatNumber(calculateStoreConnectionsCost())}
+                  </div>
+                </div>
+              )}
+              
               <div className="border-t border-blue-200 pt-4 mt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-blue-900">Total Annual Investment</span>
-                  <span className="text-xl font-bold text-blue-600">${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0))}</span>
+                  <span className="text-xl font-bold text-blue-600">
+                    ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + calculateStoreConnectionsCost())}
+                  </span>
                 </div>
               </div>
             </>
