@@ -61,25 +61,37 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   
   // Calculate store connections cost
   const calculateStoreConnectionsCost = () => {
+    if (formData.storeConnections <= 0) return 0;
     let totalCost = 0;
-    const sortedTiers = [...formData.storeConnectionTiers].sort((a, b) => a.fromQty - b.fromQty);
     
+    // Sort tiers by fromQty
+    const sortedTiers = [...formData.storeConnectionTiers].sort(
+      (a, b) => a.fromQty - b.fromQty
+    );
+    
+    // Count stores in each tier
     let remainingStores = formData.storeConnections;
     
     for (const tier of sortedTiers) {
       if (remainingStores <= 0) break;
       
+      // Calculate how many stores fall into this tier
       const storesInTier = Math.min(
         remainingStores,
-        tier.toQty === Number.MAX_SAFE_INTEGER ? remainingStores : tier.toQty - tier.fromQty + 1
+        tier.toQty === Number.MAX_SAFE_INTEGER 
+          ? remainingStores 
+          : tier.toQty - tier.fromQty + 1
       );
       
-      totalCost += storesInTier * tier.pricePerStore;
+      // Add cost for this tier
+      totalCost += storesInTier * tier.pricePerStore * 12; // Annual cost
+      
+      // Subtract the stores we've counted
       remainingStores -= storesInTier;
     }
     
     // Apply discount if enabled
-    if (formData.applyDiscountToStoreConnections) {
+    if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
       const discountMultiplier = 1 - (formData.saasFeeDiscount / 100);
       totalCost *= discountMultiplier;
     }
