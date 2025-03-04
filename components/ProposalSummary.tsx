@@ -270,7 +270,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         {/* Agreement Terms section */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">Agreement Terms</h3>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-4">
             {/* Contract Term Tile */}
             <div className="bg-white border rounded-lg p-4 flex flex-col items-center justify-center">
               <div className="text-gray-500 mb-2">
@@ -288,35 +288,14 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
             <div className="bg-white border rounded-lg p-4 flex flex-col items-center justify-center">
               <div className="text-gray-500 mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                  <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                  <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                  <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
                 </svg>
               </div>
               <div className="text-lg font-medium">{formData.billingFrequency || "Quarterly"}</div>
             </div>
           </div>
-          
-          {/* Payment Method Tile */}
-          {formData.paymentMethods && formData.paymentMethods.length > 0 && (
-            <div className="bg-white border rounded-lg p-4 flex flex-col items-center justify-center">
-              <div className="text-gray-500 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                  <line x1="2" y1="10" x2="22" y2="10"></line>
-                </svg>
-              </div>
-              <div className="text-lg font-medium">
-                {formData.paymentMethods.map((method, index) => (
-                  <span key={index}>
-                    {method}
-                    {index < formData.paymentMethods.length - 1 && (
-                      <span className="mx-2 text-gray-400">or</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
         
         {/* Investment Overview section */}
