@@ -64,44 +64,30 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
     return baseUnits * discountMultiplier;
   };
   
-  // Calculate store connections cost
-  const calculateStoreConnectionsCost = () => {
-    if (formData.storeConnections <= 0) return 0;
-    let totalCost = 0;
-    
-    // Sort tiers by fromQty
-    const sortedTiers = [...formData.storeConnectionTiers].sort(
-      (a, b) => a.fromQty - b.fromQty
-    );
-    
-    // Count stores in each tier
-    let remainingStores = formData.storeConnections;
-    
-    for (const tier of sortedTiers) {
-      if (remainingStores <= 0) break;
-      
-      // Calculate how many stores fall into this tier
-      const storesInTier = Math.min(
-        remainingStores,
-        tier.toQty === Number.MAX_SAFE_INTEGER 
-          ? remainingStores 
-          : tier.toQty - tier.fromQty + 1
-      );
-      
-      // Add cost for this tier
-      totalCost += storesInTier * tier.pricePerStore * 12; // Annual cost
-      
-      // Subtract the stores we've counted
-      remainingStores -= storesInTier;
+  // Replace the calculateStoreConnectionsCost function with this simpler version
+  const getStoreConnectionsCost = () => {
+    // Use the pre-calculated value from FeesSection if available
+    if (formData.storeConnectionsAnnualCost !== undefined) {
+      return formData.storeConnectionsAnnualCost;
     }
     
-    // Apply discount if enabled
+    // Fallback calculation if the value isn't available
+    if (formData.storeConnections <= 0) return 0;
+    
+    const freeStoreConnections = formData.freeStoreConnections || 0;
+    const paidStoreConnections = Math.max(0, formData.storeConnections - freeStoreConnections);
+    
+    if (paidStoreConnections <= 0) return 0;
+    
+    const pricePerStore = formData.storeConnectionTiers[0]?.pricePerStore || 0;
+    let annualCost = pricePerStore * paidStoreConnections * 12;
+    
     if (formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0) {
       const discountMultiplier = 1 - (formData.saasFeeDiscount / 100);
-      totalCost *= discountMultiplier;
+      annualCost *= discountMultiplier;
     }
     
-    return totalCost;
+    return annualCost;
   };
   
   // Calculate integration costs
@@ -149,7 +135,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   // Calculate total costs
   const calculateTotalCosts = () => {
     const saasFee = currentStep >= SAAS_FEE_STEP ? calculateAnnualSaasFee() : 0;
-    const storeConnectionsCost = currentStep >= SAAS_FEE_STEP ? calculateStoreConnectionsCost() : 0;
+    const storeConnectionsCost = currentStep >= SAAS_FEE_STEP ? getStoreConnectionsCost() : 0;
     const integrationCosts = currentStep >= INTEGRATIONS_STEP ? calculateIntegrationCosts() : { setupCost: 0, annualCost: 0 };
     const implementationCost = currentStep >= IMPLEMENTATION_STEP ? calculateImplementationCosts() : 0;
     
@@ -367,7 +353,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                   </svg>
                 </div>
                 <div className="flex-1">Annual Cost</div>
-                <div className="text-xl font-bold">${formatNumber(calculateStoreConnectionsCost())}</div>
+                <div className="text-xl font-bold">${formatNumber(getStoreConnectionsCost())}</div>
               </div>
             </div>
           </div>
@@ -469,7 +455,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                 <div className="flex items-center space-x-4">
                   <div className="bg-gray-100 p-2 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path>
                     </svg>
                   </div>
                   <div className="flex-1">Virtual Training</div>
@@ -567,7 +553,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                   )}
                   
                   <div className="font-semibold mt-2">
-                    Total Store Connections Cost: ${formatNumber(calculateStoreConnectionsCost())}
+                    Total Store Connections Cost: ${formatNumber(getStoreConnectionsCost())}
                   </div>
                 </div>
               )}
@@ -576,7 +562,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-blue-900">Total Annual Investment</span>
                   <span className="text-xl font-bold text-blue-600">
-                    ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + calculateStoreConnectionsCost())}
+                    ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0) + getStoreConnectionsCost())}
                   </span>
                 </div>
               </div>
