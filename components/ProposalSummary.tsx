@@ -309,59 +309,48 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         
         {/* Store Connections - only show if we've reached or passed this step */}
         {currentStep >= SAAS_FEE_STEP && formData.storeConnections > 0 && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-semibold">Store Connections</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 px-2"
-                onClick={() => setShowStoreBreakdown(!showStoreBreakdown)}
-              >
-                {showStoreBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </Button>
+          <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b">
+              <h3 className="text-lg font-semibold">Store Connections</h3>
             </div>
-            <div className="space-y-1 text-sm">
-              {showStoreBreakdown && (
-                <div className="bg-gray-50 p-2 rounded-md mb-2 space-y-2">
-                  <div className="text-xs font-medium">Tier Breakdown:</div>
-                  {getStoreConnectionBreakdown().map((item, index) => (
-                    <div key={index} className="pl-2 border-l-2 border-gray-200">
-                      <div className="flex justify-between">
-                        <span>{item.tier}:</span>
-                        <span>{item.storesInTier} stores × ${item.pricePerStore}</span>
-                      </div>
-                      <div className="flex justify-between text-gray-500">
-                        <span></span>
-                        <span>${formatNumber(item.cost)}</span>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {formData.applyDiscountToStoreConnections && (
-                    <div className="mt-1 pt-1 border-t border-gray-200">
-                      <div className="flex justify-between">
-                        <span>Discount Applied:</span>
-                        <span>{formData.saasFeeDiscount}%</span>
-                      </div>
-                    </div>
-                  )}
+            
+            <div className="p-4 space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                </div>
+                <div className="flex-1">Total Stores</div>
+                <div className="text-xl font-bold">{formData.storeConnections}</div>
+              </div>
+              
+              {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 && (
+                <div className="flex items-center space-x-4">
+                  <div className="bg-gray-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="19" y1="5" x2="5" y2="19"></line>
+                      <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                      <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                    </svg>
+                  </div>
+                  <div className="flex-1">Discount Applied</div>
+                  <div className="text-xl font-bold text-green-600">{formData.saasFeeDiscount}%</div>
                 </div>
               )}
               
-              <div className="flex justify-between">
-                <span>Total Stores:</span>
-                <span>{formData.storeConnections}</span>
-              </div>
-              {formData.applyDiscountToStoreConnections && (
-                <div className="flex justify-between">
-                  <span>Discount Applied:</span>
-                  <span>{formData.saasFeeDiscount}%</span>
+              <div className="flex items-center space-x-4">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
                 </div>
-              )}
-              <div className="flex justify-between font-medium">
-                <span>Annual Cost:</span>
-                <span>{formatCurrency(calculateStoreConnectionsCost())}</span>
+                <div className="flex-1">Annual Cost</div>
+                <div className="text-xl font-bold">${formatNumber(calculateStoreConnectionsCost())}</div>
               </div>
             </div>
           </div>
