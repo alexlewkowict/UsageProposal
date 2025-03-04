@@ -565,36 +565,42 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
 
         <div className="bg-gray-100 p-4 rounded-md mt-4">
           <h3 className="font-semibold mb-2">Fee Calculation Breakdown:</h3>
-          {formData.discount > 0 && (
+          {formData.saasFeeDiscount > 0 && (
             <p className="text-blue-600 mb-2">
-              Applying {formData.discount}% discount to all SaaS fees
+              Applying {formData.saasFeeDiscount}% discount to all prices
             </p>
           )}
           
-          {/* Display tier breakdown */}
-          {formData.pricingTiers && formData.pricingTiers.length > 0 ? (
-            formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
-              formData.calculatedTiers.map((tier, index) => (
-                <div key={index} className="mb-1">
-                  <p>
-                    {tier.name}: {formatNumber(tier.unitsInTier)} units 
-                    {tier.isPlatformFee ? 
-                      ` at platform fee $${formatNumber(tier.originalFee)}` : 
-                      ` at $${tier.originalRate} per unit`}
-                    {formData.discount > 0 && ` with ${formData.discount}% discount`} 
-                    {!tier.isPlatformFee && ` = $${tier.discountedRate} per unit`} 
-                    = ${formatNumber(tier.tierTotal)}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p>Tier {formData.currentTier?.name || "0"}: {formatNumber(formData.annualUnits)} units</p>
-            )
+          {/* Display tier breakdown in the format from the screenshot */}
+          {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
+            <>
+              {formData.calculatedTiers.map((tier, index) => {
+                if (tier.isPlatformFee) {
+                  return (
+                    <p key={index} className="mb-1">
+                      Base fee (up to {formatNumber(tier.unitsInTier)} units): ${formatNumber(tier.originalFee || 0)} 
+                      {formData.saasFeeDiscount > 0 && (
+                        <span className="text-blue-600"> → ${formatNumber(tier.tierTotal)} after discount</span>
+                      )}
+                    </p>
+                  );
+                } else {
+                  return (
+                    <p key={index} className="mb-1">
+                      {formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0} 
+                      {formData.saasFeeDiscount > 0 && (
+                        <span className="text-blue-600"> → ${tier.discountedRate?.toFixed(3) || 0} after discount</span>
+                      )}: ${formatNumber(tier.tierTotal)}
+                    </p>
+                  );
+                }
+              })}
+              <p className="font-semibold mt-2">
+                Total Annual Fee: ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0))}
+              </p>
+            </>
           ) : (
-            // Fallback if no pricing tiers are loaded
-            Array(5).fill(0).map((_, i) => (
-              <p key={i}>Unnamed Tier</p>
-            ))
+            <p>No pricing tiers available</p>
           )}
           
           {/* Store Connections Breakdown */}
