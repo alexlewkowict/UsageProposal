@@ -563,41 +563,52 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           </div>
         </div>
 
-        <div className="bg-gray-100 p-4 rounded-md mt-4">
-          <h3 className="font-semibold mb-2">Fee Calculation Breakdown:</h3>
+        <div className="bg-blue-50 p-6 rounded-md mt-4">
+          <h3 className="text-xl font-semibold text-blue-900 mb-4">Fee Calculation Breakdown</h3>
+          
           {formData.saasFeeDiscount > 0 && (
-            <p className="text-blue-600 mb-2">
-              Applying {formData.saasFeeDiscount}% discount to all prices
-            </p>
+            <div className="bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-md mb-6 inline-block">
+              {formData.saasFeeDiscount}% Preferred Partner Discount Applied
+            </div>
           )}
           
-          {/* Display tier breakdown in the format from the screenshot */}
+          {/* Display tier breakdown in the improved format */}
           {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
             <>
               {formData.calculatedTiers.map((tier, index) => {
                 if (tier.isPlatformFee) {
                   return (
-                    <p key={index} className="mb-1">
-                      {tier.name} (up to {formatNumber(tier.unitsInTier)} units): ${formatNumber(tier.originalFee || 0)} 
-                      {formData.saasFeeDiscount > 0 && (
-                        <span className="text-blue-600"> → ${formatNumber(tier.discountedFee || 0)} after discount</span>
-                      )}
-                    </p>
+                    <div key={index} className="mb-6">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-lg font-semibold">Base fee (up to {formatNumber(tier.unitsInTier)} units)</span>
+                        <span className="text-xl font-bold">${formatNumber(tier.discountedFee || 0)}</span>
+                      </div>
+                      <div className="text-gray-500">
+                        ${formatNumber(tier.originalFee || 0)} → <span className="text-blue-600 font-medium">${formatNumber(tier.discountedFee || 0)}</span> after discount
+                      </div>
+                    </div>
                   );
                 } else {
                   return (
-                    <p key={index} className="mb-1">
-                      {formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0} 
-                      {formData.saasFeeDiscount > 0 && (
-                        <span className="text-blue-600"> → ${tier.discountedRate?.toFixed(3) || 0} after discount</span>
-                      )}: ${formatNumber(tier.tierTotal)}
-                    </p>
+                    <div key={index} className="mb-6">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-lg font-semibold">{formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0}</span>
+                        <span className="text-xl font-bold">${formatNumber(tier.tierTotal)}</span>
+                      </div>
+                      <div className="text-gray-500">
+                        → <span className="text-blue-600 font-medium">${tier.discountedRate?.toFixed(3) || 0}</span> after discount
+                      </div>
+                    </div>
                   );
                 }
               })}
-              <p className="font-semibold mt-2">
-                Total Annual Fee: ${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0))}
-              </p>
+              
+              <div className="border-t border-blue-200 pt-6 mt-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-bold text-blue-900">Total Annual Investment</span>
+                  <span className="text-2xl font-bold text-blue-600">${formatNumber(formData.calculatedTiers.reduce((sum, tier) => sum + tier.tierTotal, 0))}</span>
+                </div>
+              </div>
             </>
           ) : (
             <p>No pricing tiers available</p>
