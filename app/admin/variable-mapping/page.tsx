@@ -53,13 +53,20 @@ export default function VariableMappingPage() {
   const fetchVariableMappings = async () => {
     try {
       setIsLoading(true)
+      console.log('Fetching variable mappings...')
+      
       const response = await fetch('/api/variable-mappings')
+      const responseData = await response.json()
       
       if (!response.ok) {
-        throw new Error('Failed to fetch variable mappings')
+        console.error('API error response:', responseData)
+        throw new Error(responseData.error || 'Failed to fetch variable mappings')
       }
       
-      const data: VariableMappingData[] = await response.json()
+      console.log(`Fetched ${responseData.length} variable mappings`)
+      
+      // If no data was returned, initialize with empty array
+      const data = responseData || []
       
       // Process the data into categories based on template_name
       const categoriesMap: Record<string, VariableCategory> = {}
@@ -73,6 +80,21 @@ export default function VariableMappingPage() {
         name: "Uncategorized",
         count: 0,
         variables: []
+      }
+      
+      // If we have no data, add some default variables
+      if (data.length === 0) {
+        console.log('No data returned, adding default variables')
+        
+        // Add some default variables
+        const defaultVariables = [
+          { variable_name: '{{friendly_name}}', template_name: 'Cover' },
+          { variable_name: '{{term_months}}', template_name: 'General' },
+          { variable_name: '{{contractLength}}', template_name: 'Pricing Details' },
+          { variable_name: '{{payment_terms}}', template_name: 'Payment' }
+        ]
+        
+        data.push(...defaultVariables)
       }
       
       data.forEach(item => {
