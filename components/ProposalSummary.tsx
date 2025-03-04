@@ -18,6 +18,14 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   const [showIntegrationBreakdown, setShowIntegrationBreakdown] = useState(false)
   const [showImplementationBreakdown, setShowImplementationBreakdown] = useState(false)
 
+  // Define step numbers for each section
+  const BUSINESS_INFO_STEP = 1;
+  const PAYMENT_DETAILS_STEP = 2;
+  const SAAS_FEE_STEP = 3;
+  const INTEGRATIONS_STEP = 4;
+  const PROPOSAL_OPTIONS_STEP = 5;
+  const IMPLEMENTATION_STEP = 6;
+
   // Calculate SaaS fee
   const calculateAnnualSaasFee = () => {
     const baseUnits = 
@@ -102,10 +110,10 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   
   // Calculate total costs
   const calculateTotalCosts = () => {
-    const saasFee = calculateAnnualSaasFee();
-    const storeConnectionsCost = calculateStoreConnectionsCost();
-    const integrationCosts = calculateIntegrationCosts();
-    const implementationCost = calculateImplementationCosts();
+    const saasFee = currentStep >= SAAS_FEE_STEP ? calculateAnnualSaasFee() : 0;
+    const storeConnectionsCost = currentStep >= SAAS_FEE_STEP ? calculateStoreConnectionsCost() : 0;
+    const integrationCosts = currentStep >= INTEGRATIONS_STEP ? calculateIntegrationCosts() : { setupCost: 0, annualCost: 0 };
+    const implementationCost = currentStep >= IMPLEMENTATION_STEP ? calculateImplementationCosts() : 0;
     
     const oneTimeCosts = integrationCosts.setupCost + implementationCost;
     const annualRecurringCosts = saasFee + storeConnectionsCost + integrationCosts.annualCost;
@@ -122,7 +130,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
   };
   
   const totalCosts = calculateTotalCosts();
-  const integrationCosts = calculateIntegrationCosts();
+  const integrationCosts = currentStep >= INTEGRATIONS_STEP ? calculateIntegrationCosts() : { setupCost: 0, annualCost: 0 };
 
   // Add this function to get the package name from the ID
   const getImplementationPackageName = (packageId: string) => {
@@ -220,24 +228,24 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
         <CardTitle>Proposal Summary</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Business Info */}
-        {formData.opportunityName && (
+        {/* Business Info - only show if we've reached or passed this step */}
+        {currentStep >= BUSINESS_INFO_STEP && formData.opportunityName && (
           <div>
             <h3 className="font-semibold mb-2">Business</h3>
             <p className="text-sm">{formData.opportunityName}</p>
           </div>
         )}
         
-        {/* Contract Terms */}
-        {formData.contractTerm && (
+        {/* Contract Terms - only show if we've reached or passed this step */}
+        {currentStep >= PAYMENT_DETAILS_STEP && formData.contractTerm && (
           <div>
             <h3 className="font-semibold mb-2">Contract</h3>
             <p className="text-sm">{formData.contractTerm} months, billed {formData.billingFrequency}</p>
           </div>
         )}
         
-        {/* SaaS Fee */}
-        {(formData.saasFee.pallets.value > 0 || 
+        {/* SaaS Fee - only show if we've reached or passed this step */}
+        {currentStep >= SAAS_FEE_STEP && (formData.saasFee.pallets.value > 0 || 
           formData.saasFee.cases.value > 0 || 
           formData.saasFee.eaches.value > 0) && (
           <div>
@@ -264,12 +272,16 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
                     )}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Discount Applied:</span>
+                    <span>Discount:</span>
                     <span>{formData.saasFeeDiscount}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Calculation:</span>
-                    <span>Base Units × (1 - {formData.saasFeeDiscount}%)</span>
+                    <span>{formatNumber(
+                      (formData.saasFee.pallets.value || 0) + 
+                      (formData.saasFee.cases.value || 0) + 
+                      (formData.saasFee.eaches.value || 0)
+                    )} × (1 - {formData.saasFeeDiscount}%)</span>
                   </div>
                 </div>
               )}
@@ -304,8 +316,8 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           </div>
         )}
         
-        {/* Store Connections */}
-        {formData.storeConnections > 0 && (
+        {/* Store Connections - only show if we've reached or passed this step */}
+        {currentStep >= SAAS_FEE_STEP && formData.storeConnections > 0 && (
           <div>
             <div className="flex justify-between items-center mb-2">
               <h3 className="font-semibold">Store Connections</h3>
@@ -364,8 +376,8 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           </div>
         )}
         
-        {/* Integrations */}
-        {(formData.spsIntegration.enabled || formData.crstlIntegration.enabled) && (
+        {/* Integrations - only show if we've reached or passed this step */}
+        {currentStep >= INTEGRATIONS_STEP && (formData.spsIntegration.enabled || formData.crstlIntegration.enabled) && (
           <div>
             <div className="flex justify-between items-center mb-2">
               <h3 className="font-semibold">Integrations</h3>
@@ -461,8 +473,8 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           </div>
         )}
         
-        {/* Implementation */}
-        {formData.implementationPackage && (
+        {/* Implementation - only show if we've reached or passed this step */}
+        {currentStep >= IMPLEMENTATION_STEP && formData.implementationPackage && (
           <div>
             <div className="flex justify-between items-center mb-2">
               <h3 className="font-semibold">Implementation</h3>
@@ -524,7 +536,7 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           </div>
         )}
         
-        {/* Total Costs */}
+        {/* Total Costs - always show, but values will be 0 until relevant steps are reached */}
         <div className="pt-4 border-t">
           <h3 className="font-semibold mb-2">Total Costs</h3>
           <div className="space-y-1">
