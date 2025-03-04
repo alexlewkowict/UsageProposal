@@ -11,6 +11,10 @@ export const authOptions = {
   pages: {
     signIn: '/auth/signin',
   },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
@@ -23,7 +27,14 @@ export const authOptions = {
         token.id = user.id;
       }
       return token;
-    }
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
   },
   debug: process.env.NODE_ENV === "development",
 };
