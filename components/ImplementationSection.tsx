@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card, CardContent } from "@/components/ui/card"
+import { createClient } from '@supabase/supabase-js'
 
 interface ImplementationSectionProps {
   formData: {
@@ -40,51 +41,72 @@ export function ImplementationSection({
   const [isCustomized, setIsCustomized] = useState(false)
 
   useEffect(() => {
-    // Mock implementation packages data based on Supabase table structure
-    const mockPackages = [
-      {
-        id: "quickstart_brand",
-        name: "QuickStart Brand",
-        description: "Basic implementation for brand owners",
-        onboarding_fee: 5000,
-        virtual_training_hours: 4,
-        onsite_support_days: 0,
-        onsite_support_fee: 0,
-        optional_prof_services_rate: 300
-      },
-      {
-        id: "quickstart_3pl",
-        name: "QuickStart 3PL",
-        description: "Basic implementation for 3PL providers",
-        onboarding_fee: 10000,
-        virtual_training_hours: 8,
-        onsite_support_days: 1,
-        onsite_support_fee: 2500,
-        optional_prof_services_rate: 300
-      },
-      {
-        id: "enterprise",
-        name: "Enterprise",
-        description: "Comprehensive implementation with extensive training and onsite support",
-        onboarding_fee: 15000,
-        virtual_training_hours: 12,
-        onsite_support_days: 3,
-        onsite_support_fee: 2500,
-        optional_prof_services_rate: 300
-      },
-      {
-        id: "custom",
-        name: "Custom Implementation",
-        description: "Tailored implementation package with custom options",
-        onboarding_fee: 0,
-        virtual_training_hours: 0,
-        onsite_support_days: 0,
-        onsite_support_fee: 0,
-        optional_prof_services_rate: 300
+    // Initialize Supabase client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    async function fetchPackages() {
+      try {
+        const { data, error } = await supabase
+          .from('implementation_packages')
+          .select('*')
+          .order('id');
+
+        if (error) {
+          console.error('Error fetching implementation packages:', error);
+          // Fallback to mock data if there's an error
+          setPackages([
+            {
+              id: "quickstart_brand",
+              name: "QuickStart Brand",
+              description: "Basic implementation for brand owners",
+              onboarding_fee: 5000,
+              virtual_training_hours: 4,
+              onsite_support_days: 0,
+              onsite_support_fee: 0,
+              optional_prof_services_rate: 300
+            },
+            {
+              id: "quickstart_3pl",
+              name: "QuickStart 3PL",
+              description: "Basic implementation for 3PL providers",
+              onboarding_fee: 10000,
+              virtual_training_hours: 8,
+              onsite_support_days: 1,
+              onsite_support_fee: 2500,
+              optional_prof_services_rate: 300
+            },
+            {
+              id: "enterprise",
+              name: "Enterprise",
+              description: "Comprehensive implementation with extensive training and onsite support",
+              onboarding_fee: 15000,
+              virtual_training_hours: 12,
+              onsite_support_days: 3,
+              onsite_support_fee: 2500,
+              optional_prof_services_rate: 300
+            },
+            {
+              id: "custom",
+              name: "Custom Implementation",
+              description: "Tailored implementation package with custom options",
+              onboarding_fee: 0,
+              virtual_training_hours: 0,
+              onsite_support_days: 0,
+              onsite_support_fee: 0,
+              optional_prof_services_rate: 300
+            }
+          ]);
+        } else {
+          setPackages(data);
+        }
+      } catch (error) {
+        console.error('Error in fetchPackages:', error);
       }
-    ];
-    
-    setPackages(mockPackages);
+    }
+
+    fetchPackages();
   }, [])
 
   useEffect(() => {
@@ -117,26 +139,8 @@ export function ImplementationSection({
       handleInputChange("onsiteSupportFee", selected.onsite_support_fee);
       handleInputChange("optionalProfServicesRate", selected.optional_prof_services_rate);
       
-      // Calculate onboarding fee using the same logic as calculateOnboardingFee
-      const virtualHours = selected.virtual_training_hours || 0;
-      const onsiteDays = selected.onsite_support_days || 0;
-      const onsiteFee = selected.onsite_support_fee || 0;
-      
-      const virtualTrainingCost = 250 * virtualHours;
-      const onsiteSupportCost = onsiteFee * onsiteDays;
-      const totalFee = virtualTrainingCost + onsiteSupportCost;
-      
-      console.log('Package selected, calculated fee:', {
-        virtualHours,
-        onsiteDays,
-        onsiteFee,
-        virtualTrainingCost,
-        onsiteSupportCost,
-        totalFee
-      });
-      
-      // Update the onboarding fee
-      handleInputChange("onboardingFee", totalFee);
+      // Set the onboarding fee from the package
+      handleInputChange("onboardingFee", selected.onboarding_fee);
       setIsCustomized(false);
     }
   };
@@ -156,15 +160,6 @@ export function ImplementationSection({
     // Total fee is the sum of both costs
     const totalFee = virtualTrainingCost + onsiteSupportCost;
     
-    console.log('Calculating fee:', {
-      virtualHours,
-      onsiteDays,
-      onsiteFee,
-      virtualTrainingCost,
-      onsiteSupportCost,
-      totalFee
-    });
-    
     return totalFee;
   };
 
@@ -179,42 +174,14 @@ export function ImplementationSection({
       numericValue = parseFloat(cleanedValue) || 0;
     }
     
-    console.log(`Field ${field} changed to:`, { 
-      rawValue: value, 
-      cleanedValue: numericValue 
-    });
-    
     // Update the form data
     handleInputChange(field, numericValue);
     
-    // Mark as customized, but don't recalculate onboarding fee if that's what's being edited
-    if (field !== "onboardingFee") {
-      setIsCustomized(true);
-    } else {
-      // Only mark as customized if the onboarding fee differs from the calculated value
-      const calculatedValue = calculateOnboardingFee();
-      setIsCustomized(numericValue !== calculatedValue);
-    }
-    
-    // Don't auto-calculate onboarding fee here, let the useEffect handle it
+    // Mark as customized if any field is changed
+    setIsCustomized(true);
   };
 
-  // Update the useEffect to always update the onboarding fee when related fields change
-  useEffect(() => {
-    // Always recalculate when virtual hours, onsite days, or onsite fee changes
-    const newFee = calculateOnboardingFee();
-    console.log('Recalculating fee due to dependency changes:', newFee);
-    
-    // Update the onboarding fee to match the calculated value
-    handleInputChange("onboardingFee", newFee);
-    
-    // If this is due to a package selection, don't mark as customized
-    if (!isCustomized && formData.implementationPackage) {
-      setIsCustomized(false);
-    }
-  }, [formData.virtualTrainingHours, formData.onsiteSupportDays, formData.onsiteSupportFee]);
-
-  // In the component's render function, add a calculated fee variable
+  // Calculate the fee for display purposes
   const calculatedFee = (() => {
     const virtualHours = Number(formData.virtualTrainingHours) || 0;
     const onsiteDays = Number(formData.onsiteSupportDays) || 0;
@@ -252,7 +219,6 @@ export function ImplementationSection({
                             value={formData.onboardingFee}
                             onChange={(e) => handleCustomValueChange("onboardingFee", e.target.value)}
                             className="pl-8"
-                            disabled={pkg.id !== "custom"}
                           />
                         </div>
                         <p className="text-sm text-gray-500 mt-1">
