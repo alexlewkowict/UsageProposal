@@ -524,54 +524,17 @@ export function FeesSection({
                   </div>
                 )}
                 
-                {pricingTiers.map((tier, index) => {
-                  // Calculate discount multiplier
-                  const discountMultiplier = 1 - (Number(formData.saasFeeDiscount) / 100);
-                  
-                  if (index === 0) {
-                    const discountedPlatformFee = Number(tier.platform_fee_list_price) * discountMultiplier;
-                    // Round to 2 decimal places
-                    const roundedListPrice = Math.round(tier.platform_fee_list_price * 100) / 100;
-                    const roundedDiscountedPrice = Math.round(discountedPlatformFee * 100) / 100;
-                    
-                    return (
-                      <div key={tier.tier}>
-                        Base fee (up to {formatNumber(tier.upper_limit)} units): ${formatNumber(roundedListPrice)}
-                        {formData.saasFeeDiscount > 0 && (
-                          <span className="text-blue-600"> → ${formatNumber(roundedDiscountedPrice)} after discount</span>
-                        )}
-                      </div>
-                    );
-                  } else if (annualGrandTotal > Number(tier.lower_limit)) {
-                    const prevTier = pricingTiers[index - 1];
-                    const tierLimit = index < pricingTiers.length - 1 
-                      ? Number(pricingTiers[index + 1].lower_limit) - Number(tier.lower_limit)
-                      : annualGrandTotal - Number(tier.lower_limit);
-                    
-                    const unitsInTier = Math.min(
-                      annualGrandTotal - Number(tier.lower_limit),
-                      tierLimit
-                    );
-                    
-                    if (unitsInTier > 0) {
-                      const listPrice = Number(tier.shipped_unit_list_price) || 0;
-                      const discountedPrice = listPrice * discountMultiplier;
-                      // Round the total cost to 2 decimal places
-                      const totalCost = Math.round(unitsInTier * discountedPrice * 100) / 100;
-                      
-                      return (
-                        <div key={tier.tier}>
-                          {formatNumber(unitsInTier)} units at ${listPrice.toFixed(3)}
-                          {formData.saasFeeDiscount > 0 && (
-                            <span className="text-blue-600"> → ${discountedPrice.toFixed(3)} after discount</span>
-                          )}
-                          : ${formatNumber(totalCost)}
-                        </div>
-                      );
-                    }
-                  }
-                  return null;
-                })}
+                {pricingTiers && pricingTiers.length > 0 ? (
+                  pricingTiers.map((tier, index) => (
+                    <div key={tier.id || `tier-${index}`}>
+                      {/* Use optional chaining and nullish coalescing for safety */}
+                      <span>{tier?.name ?? 'Unnamed Tier'}</span>
+                      {/* Add similar safeguards for other properties */}
+                    </div>
+                  ))
+                ) : (
+                  <p>No pricing tiers available</p>
+                )}
                 
                 {/* Store connections breakdown */}
                 {formData.storeConnections > 0 && (

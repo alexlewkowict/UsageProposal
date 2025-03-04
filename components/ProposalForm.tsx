@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BusinessInfoSection } from "./BusinessInfoSection"
@@ -139,6 +139,7 @@ export default function ProposalForm() {
   const [invalidFields, setInvalidFields] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [proposalUrl, setProposalUrl] = useState<string | null>(null)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
     console.log(`Updating field: ${field} with value:`, value);
@@ -330,6 +331,15 @@ export default function ProposalForm() {
       setIsGenerating(false)
     }
   }
+
+  const handleExpand = useCallback((sectionId) => {
+    if (!sectionId) return; // Guard against undefined values
+    
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  }, []);
 
   useEffect(() => {
     if (formData.opportunityName) {
