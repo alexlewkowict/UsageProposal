@@ -571,16 +571,16 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
             </p>
           )}
           
-          {/* Display tier breakdown in the exact format from the screenshot */}
+          {/* Display tier breakdown in the format from the screenshot */}
           {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
             <>
               {formData.calculatedTiers.map((tier, index) => {
                 if (tier.isPlatformFee) {
                   return (
                     <p key={index} className="mb-1">
-                      Base fee (up to {formatNumber(tier.unitsInTier)} units): ${formatNumber(tier.originalFee || 0)} 
+                      {tier.name} (up to {formatNumber(tier.unitsInTier)} units): ${formatNumber(tier.originalFee || 0)} 
                       {formData.saasFeeDiscount > 0 && (
-                        <span className="text-blue-600"> → ${formatNumber(tier.discountedFee)} after discount</span>
+                        <span className="text-blue-600"> → ${formatNumber(tier.discountedFee || 0)} after discount</span>
                       )}
                     </p>
                   );
@@ -602,10 +602,6 @@ export function ProposalSummary({ formData, currentStep }: ProposalSummaryProps)
           ) : (
             <p>No pricing tiers available</p>
           )}
-          
-          {/* Store Connections Breakdown */}
-          <h3 className="font-semibold mt-4 mb-2">Store Connections Breakdown:</h3>
-          {/* ... rest of your store connections breakdown ... */}
         </div>
       </CardContent>
     </Card>
