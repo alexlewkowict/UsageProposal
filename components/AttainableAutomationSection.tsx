@@ -318,7 +318,7 @@ export function AttainableAutomationSection({
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <Label htmlFor="pickToLightConnections">Number of Connections</Label>
                       <Input
@@ -331,16 +331,10 @@ export function AttainableAutomationSection({
                     </div>
                     
                     <div>
-                      <Label htmlFor="pickToLightAnnualCost">
-                        Total Annual Cost
-                        {formData.attainableAutomation.pickToLight.annualCost !== undefined && (
-                          <span className="ml-2 text-xs text-blue-600">(Manual override)</span>
-                        )}
-                      </Label>
+                      <Label>Total Annual Cost</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
                         <Input
-                          id="pickToLightAnnualCost"
                           type="text"
                           value={formatNumber(formData.attainableAutomation.pickToLight.annualCost !== undefined 
                             ? formData.attainableAutomation.pickToLight.annualCost 
@@ -349,36 +343,33 @@ export function AttainableAutomationSection({
                           className="pl-7"
                         />
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Note: Manually entering a cost will disable the discount.
-                      </div>
+                      <p className="text-sm text-gray-500 mt-1">Note: Manually entering a cost will disable the discount.</p>
                     </div>
-                  </div>
-                  
-                  {/* Display current tiers */}
-                  <div className="mt-4">
-                    <h4 className="font-medium mb-2">Current Pricing Tiers (Monthly):</h4>
-                    <div className="bg-gray-50 p-3 rounded-md">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left pb-2">Tier</th>
-                            <th className="text-center pb-2">Range</th>
-                            <th className="text-right pb-2">Price/Month</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {formData.attainableAutomation.pickToLight.tiers.sort((a, b) => a.fromQty - b.fromQty).map((tier) => (
-                            <tr key={tier.id} className="border-b last:border-0">
-                              <td className="py-1">{tier.name}</td>
-                              <td className="py-1 text-center">
-                                {tier.fromQty} - {tier.toQty === Number.MAX_SAFE_INTEGER ? "∞" : tier.toQty}
-                              </td>
-                              <td className="py-1 text-right">${tier.pricePerConnection}</td>
+                    
+                    <div>
+                      <Label>Current Pricing Tiers (Monthly):</Label>
+                      <div className="bg-gray-50 rounded-md p-4 mt-2">
+                        <table className="w-full">
+                          <thead>
+                            <tr>
+                              <th className="text-left pb-2">Tier</th>
+                              <th className="text-center pb-2">Range</th>
+                              <th className="text-right pb-2">Price/Month</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {formData.attainableAutomation.pickToLight.tiers.map((tier) => (
+                              <tr key={tier.id} className="border-b border-gray-200">
+                                <td className="py-2">{tier.name}</td>
+                                <td className="py-2 text-center">
+                                  {tier.fromQty} - {tier.toQty === Number.MAX_SAFE_INTEGER ? "∞" : tier.toQty}
+                                </td>
+                                <td className="py-2 text-right">${tier.pricePerConnection}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -412,7 +403,7 @@ export function AttainableAutomationSection({
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <Label htmlFor="packToLightConnections">Number of Connections</Label>
                       <Input
@@ -425,16 +416,10 @@ export function AttainableAutomationSection({
                     </div>
                     
                     <div>
-                      <Label htmlFor="packToLightAnnualCost">
-                        Total Annual Cost
-                        {formData.attainableAutomation.packToLight.annualCost !== undefined && (
-                          <span className="ml-2 text-xs text-blue-600">(Manual override)</span>
-                        )}
-                      </Label>
+                      <Label>Total Annual Cost</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
                         <Input
-                          id="packToLightAnnualCost"
                           type="text"
                           value={formatNumber(formData.attainableAutomation.packToLight.annualCost !== undefined 
                             ? formData.attainableAutomation.packToLight.annualCost 
@@ -443,36 +428,33 @@ export function AttainableAutomationSection({
                           className="pl-7"
                         />
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Note: Manually entering a cost will disable the discount.
-                      </div>
+                      <p className="text-sm text-gray-500 mt-1">Note: Manually entering a cost will disable the discount.</p>
                     </div>
-                  </div>
-                  
-                  {/* Display current tiers */}
-                  <div className="mt-4">
-                    <h4 className="font-medium mb-2">Current Pricing Tiers (Monthly):</h4>
-                    <div className="bg-gray-50 p-3 rounded-md">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left pb-2">Tier</th>
-                            <th className="text-center pb-2">Range</th>
-                            <th className="text-right pb-2">Price/Month</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {formData.attainableAutomation.packToLight.tiers.sort((a, b) => a.fromQty - b.fromQty).map((tier) => (
-                            <tr key={tier.id} className="border-b last:border-0">
-                              <td className="py-1">{tier.name}</td>
-                              <td className="py-1 text-center">
-                                {tier.fromQty} - {tier.toQty === Number.MAX_SAFE_INTEGER ? "∞" : tier.toQty}
-                              </td>
-                              <td className="py-1 text-right">${tier.pricePerConnection}</td>
+                    
+                    <div>
+                      <Label>Current Pricing Tiers (Monthly):</Label>
+                      <div className="bg-gray-50 rounded-md p-4 mt-2">
+                        <table className="w-full">
+                          <thead>
+                            <tr>
+                              <th className="text-left pb-2">Tier</th>
+                              <th className="text-center pb-2">Range</th>
+                              <th className="text-right pb-2">Price/Month</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {formData.attainableAutomation.packToLight.tiers.map((tier) => (
+                              <tr key={tier.id} className="border-b border-gray-200">
+                                <td className="py-2">{tier.name}</td>
+                                <td className="py-2 text-center">
+                                  {tier.fromQty} - {tier.toQty === Number.MAX_SAFE_INTEGER ? "∞" : tier.toQty}
+                                </td>
+                                <td className="py-2 text-right">${tier.pricePerConnection}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -491,10 +473,10 @@ export function AttainableAutomationSection({
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-4">Setup Costs</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="remoteOnboardingFee">Remote Onboarding & Implementation Hardware Fee</Label>
-                  <div className="relative">
+                  <div className="relative mt-2">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
                     <Input
                       id="remoteOnboardingFee"
@@ -508,17 +490,19 @@ export function AttainableAutomationSection({
                 
                 <div>
                   <Label htmlFor="onsiteSupportDays">Onsite Support Days Included</Label>
-                  <Input
-                    id="onsiteSupportDays"
-                    type="text"
-                    value={formData.attainableAutomation.onsiteSupportDays}
-                    onChange={(e) => {
-                      const numericValue = e.target.value.replace(/[^0-9]/g, '');
-                      const parsedValue = numericValue ? parseInt(numericValue, 10) : 0;
-                      handleInputChange("attainableAutomation.onsiteSupportDays", parsedValue);
-                    }}
-                    className={invalidFields.includes("attainableAutomation.onsiteSupportDays") ? "border-red-500" : ""}
-                  />
+                  <div className="mt-2">
+                    <Input
+                      id="onsiteSupportDays"
+                      type="text"
+                      value={formData.attainableAutomation.onsiteSupportDays}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                        const parsedValue = numericValue ? parseInt(numericValue, 10) : 0;
+                        handleInputChange("attainableAutomation.onsiteSupportDays", parsedValue);
+                      }}
+                      className={invalidFields.includes("attainableAutomation.onsiteSupportDays") ? "border-red-500" : ""}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -571,7 +555,7 @@ export function AttainableAutomationSection({
                     <th className="text-left pb-2">Tier Name</th>
                     <th className="text-center pb-2">From</th>
                     <th className="text-center pb-2">To</th>
-                    <th className="text-center pb-2">Price Per Connection</th>
+                    <th className="text-center pb-2">Price/Hub/Month</th>
                     <th className="text-right pb-2">Action</th>
                   </tr>
                 </thead>
@@ -659,7 +643,7 @@ export function AttainableAutomationSection({
                     <th className="text-left pb-2">Tier Name</th>
                     <th className="text-center pb-2">From</th>
                     <th className="text-center pb-2">To</th>
-                    <th className="text-center pb-2">Price Per Connection</th>
+                    <th className="text-center pb-2">Price/Hub/Month</th>
                     <th className="text-right pb-2">Action</th>
                   </tr>
                 </thead>

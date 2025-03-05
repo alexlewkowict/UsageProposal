@@ -6,7 +6,6 @@ import { formatNumber } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronUp, Info, Pencil } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { getAccountExecutives, AccountExecutive } from "@/services/account-executives"
 
 interface ProposalSummaryProps {
   formData: any;
@@ -14,6 +13,17 @@ interface ProposalSummaryProps {
   isExpanded?: boolean;
   onEdit?: () => void;
 }
+
+// Define account executives with their initials and full names
+const ACCOUNT_EXECUTIVES = [
+  { initials: "AG", name: "Alex Gorney", color: "bg-green-200" },
+  { initials: "BO", name: "Brett Oliveira", color: "bg-yellow-200" },
+  { initials: "DL", name: "Daniel Lawson", color: "bg-purple-200" },
+  { initials: "MD", name: "Mark Davis", color: "bg-purple-200" },
+  { initials: "MR", name: "Marty Rodowsky", color: "bg-yellow-200" },
+  { initials: "MA", name: "Mike Azimi", color: "bg-green-200" },
+  { initials: "SO", name: "Stevie Oliveira", color: "bg-purple-200" },
+];
 
 export function ProposalSummary({ formData, currentStep, isExpanded = false, onEdit }: ProposalSummaryProps) {
   const [showSaasBreakdown, setShowSaasBreakdown] = useState(false)
@@ -23,8 +33,6 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
   const [accountType, setAccountType] = useState<string>("")
   const [highestStepReached, setHighestStepReached] = useState(currentStep)
   const [accountExecutiveRole, setAccountExecutiveRole] = useState<string | null>(null)
-  const [accountExecutives, setAccountExecutives] = useState<AccountExecutive[]>([])
-  const [loading, setLoading] = useState(true)
 
   // Update the step constants to match your application's actual step numbering
   const BUSINESS_INFO_STEP = 0;  // Instead of 1
@@ -34,31 +42,6 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
   const ATTAINABLE_AUTOMATION_STEP = 4; // Instead of 5
   const PROPOSAL_OPTIONS_STEP = 5; // Instead of 6
   const IMPLEMENTATION_STEP = 6;   // Instead of 7
-
-  // Fetch account executives from the API
-  useEffect(() => {
-    async function fetchAccountExecutives() {
-      try {
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/account-executives?t=${timestamp}`);
-        
-        if (!response.ok) {
-          console.error("Failed to fetch account executives for summary");
-          return;
-        }
-        
-        const data = await response.json();
-        console.log("Fetched account executives for summary:", data);
-        setAccountExecutives(data);
-      } catch (error) {
-        console.error("Error fetching account executives for summary:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    fetchAccountExecutives();
-  }, []);
 
   // Fetch account type from Supabase when opportunity name changes
   useEffect(() => {
@@ -427,27 +410,6 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
     maxWidth: 'none',
     width: '100%'
   } : {};
-
-  // Replace the hardcoded account executive lookup with the dynamic one
-  const getAccountExecutiveDetails = (name: string) => {
-    if (!name) return { initials: "??", color: "bg-gray-200" };
-    
-    // Find the account executive in the fetched data
-    const ae = accountExecutives.find(exec => exec.full_name === name);
-    
-    if (ae) {
-      return {
-        initials: ae.initials || name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2),
-        color: ae.color || "bg-blue-200"
-      };
-    }
-    
-    // Fallback if not found
-    return {
-      initials: name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2),
-      color: "bg-blue-200"
-    };
-  };
 
   return (
     <Card style={expandedStyles} className="sticky top-4">
@@ -901,13 +863,15 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
               {/* Account Executive Tile */}
               <div className="flex items-center space-x-3">
                 {(() => {
-                  // Get the AE details from the dynamic function
-                  const aeDetails = getAccountExecutiveDetails(formData.accountExec);
+                  // Find the AE in the list to get their color and initials
+                  const ae = ACCOUNT_EXECUTIVES.find(exec => exec.name === formData.accountExec);
+                  const initials = ae ? ae.initials : formData.accountExec.split(' ').map((part: string) => part[0]).join('').toUpperCase().slice(0, 2);
+                  const color = ae ? ae.color : "bg-blue-200";
                   
                   return (
                     <>
-                      <div className={`${aeDetails.color} h-10 w-10 rounded-full flex items-center justify-center font-bold text-gray-700`}>
-                        {aeDetails.initials}
+                      <div className={`${color} h-10 w-10 rounded-full flex items-center justify-center font-bold text-gray-700`}>
+                        {initials}
                       </div>
                       <div>
                         <div className="font-medium">{formData.accountExec}</div>

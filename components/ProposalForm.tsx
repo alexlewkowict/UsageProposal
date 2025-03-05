@@ -397,31 +397,13 @@ export default function ProposalForm() {
   }
 
   const handleContinue = () => {
-    const { isValid, invalidFields: newInvalidFields } = validateStep();
-    
-    if (isValid) {
-      const nextStep = currentStep + 1;
-      setCurrentStep(nextStep);
-      
-      // Update highest step reached if needed
-      if (nextStep > highestStepReached) {
-        setHighestStepReached(nextStep);
+    if (validateStep()) {
+      // Update the highest step reached if moving to a new step
+      if (currentStep + 1 > highestStepReached) {
+        setHighestStepReached(currentStep + 1);
       }
-      
+      setCurrentStep((prev) => prev + 1);
       setInvalidFields([]);
-    } else {
-      setInvalidFields(newInvalidFields);
-      toast({
-        title: "Please fix the following errors:",
-        description: (
-          <ul className="list-disc pl-5">
-            {newInvalidFields.map((field) => (
-              <li key={field}>{formatFieldName(field)}</li>
-            ))}
-          </ul>
-        ),
-        variant: "destructive",
-      });
     }
   };
 
@@ -511,20 +493,20 @@ export default function ProposalForm() {
   }, [session]);
 
   return (
-    <div className="relative">
-      <form onSubmit={handleSubmit}>
+    <div className="relative w-full">
+      <form onSubmit={handleSubmit} className="w-full">
         {/* Add the ProposalHero branded header */}
         <ProposalHeader />
         
-        <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
+        <div className="flex flex-col lg:flex-row gap-3 mt-3">
           {/* Left column - Form or expanded Summary */}
-          <Card className="w-full lg:w-2/3">
-            <CardHeader>
+          <Card className="w-full lg:w-[65%] p-3">
+            <CardHeader className="px-4 py-3">
               <CardTitle className="text-2xl font-bold">
-                {currentStep === STEPS.length - 1 ? "Review Proposal" : "Create a Usage Proposal"}
+                {STEPS[currentStep]}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4 pt-2">
               <div className="mb-6">
                 <ProgressBar 
                   currentStep={currentStep} 
@@ -613,6 +595,7 @@ export default function ProposalForm() {
                       selectedOptions={formData.selectedOptions}
                       handleOptionSelect={handleOptionSelect}
                       invalidFields={invalidFields}
+                      formData={formData}
                     />
                   )}
                   {currentStep === 6 && (
@@ -631,13 +614,37 @@ export default function ProposalForm() {
                       onBack={handleBack}
                     />
                   )}
+
+                  {/* Add the navigation buttons */}
+                  <div className="flex justify-between mt-8">
+                    {currentStep > 0 ? (
+                      <Button 
+                        type="button" 
+                        onClick={handleBack} 
+                        variant="outline" 
+                        className="px-6"
+                      >
+                        Back
+                      </Button>
+                    ) : (
+                      <div></div> // Empty div to maintain the space-between layout
+                    )}
+                    
+                    <Button 
+                      type="button" 
+                      onClick={handleContinue} 
+                      className="bg-gray-800 hover:bg-gray-900 text-white px-6"
+                    >
+                      Continue
+                    </Button>
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
 
           {/* Right column - Summary or Generate button */}
-          <div className="w-full lg:w-1/3 sticky top-4 self-start">
+          <div className="w-full lg:w-[35%] sticky top-3 self-start">
             {currentStep === STEPS.length - 1 ? (
               // Generate Proposal button card
               <Card>
