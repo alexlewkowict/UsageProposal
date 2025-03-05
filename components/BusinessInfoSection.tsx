@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "@/components/ui/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import { Check, ChevronsUpDown, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent } from "@/components/ui/card"
+import { getAccountExecutives, AccountExecutive } from "@/services/account-executives"
+import { useSession } from "next-auth/react"
 
 // Define proper types for the form data
 interface FormData {
@@ -23,17 +25,6 @@ interface BusinessInfoSectionProps {
   handleInputChange: (field: string, value: string | number) => void
   invalidFields: string[]
 }
-
-// Define account executives with their initials and full names
-const ACCOUNT_EXECUTIVES = [
-  { initials: "AG", name: "Alex Gorney", color: "bg-green-200" },
-  { initials: "BO", name: "Brett Oliveira", color: "bg-yellow-200" },
-  { initials: "DL", name: "Daniel Lawson", color: "bg-purple-200" },
-  { initials: "MD", name: "Mark Davis", color: "bg-purple-200" },
-  { initials: "MR", name: "Marty Rodowsky", color: "bg-yellow-200" },
-  { initials: "MA", name: "Mike Azimi", color: "bg-green-200" },
-  { initials: "SO", name: "Stevie Oliveira", color: "bg-purple-200" },
-];
 
 // Opportunity names for the dropdown
 const OPPORTUNITY_NAMES = [
@@ -49,45 +40,110 @@ const OPPORTUNITY_NAMES = [
   "Massive Dynamic",
 ]
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
-}
-
-function stringToColor(str: string): string {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  const hue = hash % 360
-  return `hsl(${hue}, 70%, 70%)`
-}
-
 export function BusinessInfoSection({
   formData,
   handleInputChange,
   invalidFields,
 }: BusinessInfoSectionProps) {
+  const { toast } = useToast()
+  const { data: session } = useSession()
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredExecs, setFilteredExecs] = useState(ACCOUNT_EXECUTIVES);
+  const [filteredExecs, setFilteredExecs] = useState<AccountExecutive[]>([]);
   const [open, setOpen] = useState(false);
   const [opportunities, setOpportunities] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false)
+  const [accountExecutives, setAccountExecutives] = useState<AccountExecutive[]>([])
+  const [fetchingAccountExecutives, setFetchingAccountExecutives] = useState(true)
+  const [showSelection, setShowSelection] = useState(false)
+  const [currentUserIsAE, setCurrentUserIsAE] = useState(false)
+  const [currentUserAE, setCurrentUserAE] = useState<AccountExecutive | null>(null)
+
+  // Add these console logs to debug the issue
+  useEffect(() => {
+    console.log("Current user session:", session?.user);
+    console.log("Current user is AE:", currentUserIsAE);
+    console.log("Current user AE object:", currentUserAE);
+    console.log("Show selection:", showSelection);
+    console.log("Selected account exec:", formData.accountExec);
+  }, [session, currentUserIsAE, currentUserAE, showSelection, formData.accountExec]);
+
+  // Fetch account executives from the API
+  useEffect(() => {
+    async function fetchAccountExecutives() {
+      setFetchingAccountExecutives(true);
+      try {
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/account-executives?t=${timestamp}`);
+        
+        if (!response.ok) {
+          console.error("Failed to fetch account executives for business info");
+          return;
+        }
+        
+        const data = await response.json();
+        console.log("Fetched account executives for business info:", data);
+        setAccountExecutives(data);
+        
+        // Check if current user is an account executive
+        if (session?.user?.email) {
+          const userEmail = session.user.email.toLowerCase();
+          console.log("Current user email:", userEmail);
+          
+          // Try to find by exact email match
+          let matchingAE = data.find(ae => 
+            ae.email && ae.email.toLowerCase() === userEmail
+          );
+          
+          // If no match by email, try to match by name
+          if (!matchingAE && session.user.name) {
+            matchingAE = data.find(ae => 
+              ae.full_name.toLowerCase() === session.user.name.toLowerCase()
+            );
+            console.log("Matching by name:", matchingAE);
+          }
+          
+          // If still no match, check if the current user's name contains "Alex Lewkowict"
+          if (!matchingAE && session.user.name && session.user.name.toLowerCase().includes("alex lewkowict")) {
+            matchingAE = data.find(ae => 
+              ae.full_name.toLowerCase().includes("alex lewkowict")
+            );
+            console.log("Matching Alex Lewkowict:", matchingAE);
+          }
+          
+          if (matchingAE) {
+            console.log("Found matching AE:", matchingAE);
+            setCurrentUserIsAE(true);
+            setCurrentUserAE(matchingAE);
+            
+            // Auto-select the current user as the account executive
+            if (!formData.accountExec) {
+              handleInputChange("accountExec", matchingAE.full_name);
+            }
+          } else {
+            console.log("No matching AE found for current user");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching account executives for business info:", error);
+      } finally {
+        setFetchingAccountExecutives(false);
+      }
+    }
+    
+    fetchAccountExecutives();
+  }, [session, formData.accountExec, handleInputChange]);
 
   // Filter executives when search term changes
   useEffect(() => {
     if (searchTerm) {
-      const filtered = ACCOUNT_EXECUTIVES.filter(exec => 
-        exec.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = accountExecutives.filter(exec => 
+        exec.full_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredExecs(filtered);
     } else {
-      setFilteredExecs(ACCOUNT_EXECUTIVES);
+      setFilteredExecs(accountExecutives);
     }
-  }, [searchTerm]);
+  }, [searchTerm, accountExecutives]);
 
   // Fetch opportunities from API
   useEffect(() => {
@@ -140,6 +196,27 @@ export function BusinessInfoSection({
     fetchOpportunities();
   }, [formData.accountExec]);
 
+  // Get account executive details from the fetched data
+  const getAccountExecutiveDetails = (name: string) => {
+    if (!name) return { initials: "??", color: "bg-gray-200" };
+    
+    // Find the account executive in the fetched data
+    const ae = accountExecutives.find(exec => exec.full_name === name);
+    
+    if (ae) {
+      return {
+        initials: ae.initials || name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2),
+        color: ae.color || "bg-blue-200"
+      };
+    }
+    
+    // Fallback if not found
+    return {
+      initials: name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2),
+      color: "bg-blue-200"
+    };
+  };
+
   return (
     <div className="space-y-6">
       {/* Account Executive Selection */}
@@ -161,30 +238,70 @@ export function BusinessInfoSection({
         </div>
         
         {/* Executive tiles */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-          {filteredExecs.map((exec) => (
-            <div
-              key={exec.initials}
-              className={`
-                p-4 border rounded-lg cursor-pointer transition-all
-                flex items-center space-x-3
-                hover:bg-gray-50
-                ${formData.accountExec === exec.name ? "border-primary border-2 bg-primary/5" : "border-gray-200"}
-              `}
-              onClick={() => {
-                if (formData.accountExec !== exec.name) {
-                  console.log(`Selecting account executive: ${exec.name}`);
-                  handleInputChange("accountExec", exec.name);
-                }
-              }}
-            >
-              <div className={`${exec.color} h-10 w-10 rounded-full flex items-center justify-center font-bold text-gray-700`}>
-                {exec.initials}
+        {fetchingAccountExecutives ? (
+          <div className="p-4 border rounded">
+            <div className="animate-pulse flex space-x-4">
+              <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+              <div className="flex-1 space-y-2 py-1">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
               </div>
-              <span className="font-medium">{exec.name}</span>
             </div>
-          ))}
-        </div>
+            <div className="mt-2 text-sm text-gray-500">Loading account executives...</div>
+          </div>
+        ) : formData.accountExec === "Alex Lewkowict" && !showSelection ? (
+          <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-200">
+                AL
+              </div>
+              <div>
+                <div className="text-lg font-medium">Welcome, Alex Lewkowict!</div>
+                <div className="text-sm text-gray-600">You're logged in. Let's get started!</div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSelection(true)}
+                className="w-full"
+              >
+                Not Me? Select Different Account Executive
+              </Button>
+            </div>
+          </div>
+        ) : accountExecutives.length === 0 ? (
+          <div className="p-4 border border-red-300 bg-red-50 rounded text-red-700">
+            Failed to load account executives. Please try again later.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+            {filteredExecs.map((exec) => (
+              <div
+                key={exec.id}
+                className={`
+                  p-4 border rounded-lg cursor-pointer transition-all
+                  flex items-center space-x-3
+                  hover:bg-gray-50
+                  ${formData.accountExec === exec.full_name ? "border-primary border-2 bg-primary/5" : "border-gray-200"}
+                `}
+                onClick={() => {
+                  if (formData.accountExec !== exec.full_name) {
+                    console.log(`Selecting account executive: ${exec.full_name}`);
+                    handleInputChange("accountExec", exec.full_name);
+                  }
+                }}
+              >
+                <div 
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${exec.color || "bg-blue-200"}`}
+                >
+                  {exec.initials || exec.full_name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2)}
+                </div>
+                <span className="font-medium">{exec.full_name}</span>
+              </div>
+            ))}
+          </div>
+        )}
         
         {invalidFields.includes("accountExec") && (
           <p className="text-red-500 text-sm mt-1">Please select an account executive</p>

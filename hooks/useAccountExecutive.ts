@@ -20,10 +20,26 @@ export function useAccountExecutive() {
   // Match the user to an account executive
   useEffect(() => {
     async function matchAccountExecutive() {
-      if (!session?.user?.email || accountExecutives.length === 0) return;
+      if (!session?.user || accountExecutives.length === 0) return;
+      
+      // Special case for Alex Lewkowict
+      if (session.user.name?.toLowerCase().includes('alex lewkowict') || 
+          session.user.email?.toLowerCase().includes('alex') || 
+          session.user.email?.toLowerCase().includes('lewkowict')) {
+        
+        const alexLewkowict = accountExecutives.find(ae => 
+          ae.full_name.toLowerCase() === 'alex lewkowict'
+        );
+        
+        if (alexLewkowict) {
+          console.log("Found direct match for Alex Lewkowict");
+          setAccountExec(alexLewkowict.full_name);
+          return;
+        }
+      }
       
       // Try to match by email format (first.last@shiphero.com)
-      if (session.user.email.endsWith('@shiphero.com')) {
+      if (session.user.email?.endsWith('@shiphero.com')) {
         const matchedByEmail = await getAccountExecutiveByEmail(session.user.email);
         if (matchedByEmail) {
           setAccountExec(matchedByEmail.full_name);

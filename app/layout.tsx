@@ -1,6 +1,14 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from "@/components/AuthProvider";
+import dynamic from 'next/dynamic';
+import { AccountExecDebug } from "@/components/AccountExecDebug";
+
+// Dynamically import the debug component with no SSR
+const AccountExecDebugComponent = dynamic(
+  () => import('@/components/AccountExecDebug'),
+  { ssr: false }
+);
 
 export const metadata: Metadata = {
   title: 'ProposalHero',
@@ -28,7 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <AccountExecDebug />
+        </AuthProvider>
       </body>
     </html>
   )

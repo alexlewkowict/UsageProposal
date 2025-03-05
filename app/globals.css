@@ -92,3 +92,7 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.fixed.bottom-4.right-4.z-50 {
+  display: none !important;
+}

@@ -28,6 +28,7 @@ import {
   FileCheck 
 } from "lucide-react"
 import { ProposalHeader } from "./ProposalHeader"
+import { useSession } from "next-auth/react"
 
 const STEPS = [
   "Business Info",
@@ -46,6 +47,7 @@ function generateId() {
 }
 
 export default function ProposalForm() {
+  const { data: session } = useSession();
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
     accountExec: "",
@@ -500,183 +502,182 @@ export default function ProposalForm() {
     }
   }, [formData.opportunityName]);
 
+  useEffect(() => {
+    if (session?.user?.email?.toLowerCase().includes('alex') || 
+        session?.user?.name?.toLowerCase().includes('alex lewkowict')) {
+      console.log("Setting account exec to Alex Lewkowict directly");
+      handleInputChange("accountExec", "Alex Lewkowict");
+    }
+  }, [session]);
+
   return (
-    <>
-      {/* Add the ProposalHero branded header */}
-      <ProposalHeader />
-      
-      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
-        {/* Left column - Form or expanded Summary */}
-        <Card className="w-full lg:w-2/3">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">
-              {currentStep === STEPS.length - 1 ? "Review Proposal" : "Create a Usage Proposal"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-6">
-              <ProgressBar 
-                currentStep={currentStep} 
-                totalSteps={STEPS.length} 
-                onStepClick={handleStepClick}
-                highestStepReached={highestStepReached}
-              />
-            </div>
-
-            {currentStep === STEPS.length - 1 ? (
-              // Review step - show the expanded summary
-              <div className="space-y-6">
-                <ProposalSummary 
-                  formData={formData} 
+    <div className="relative">
+      <form onSubmit={handleSubmit}>
+        {/* Add the ProposalHero branded header */}
+        <ProposalHeader />
+        
+        <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
+          {/* Left column - Form or expanded Summary */}
+          <Card className="w-full lg:w-2/3">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold">
+                {currentStep === STEPS.length - 1 ? "Review Proposal" : "Create a Usage Proposal"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <ProgressBar 
                   currentStep={currentStep} 
-                  isExpanded={true} 
-                  onEdit={() => {
-                    setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
-                  }}
+                  totalSteps={STEPS.length} 
+                  onStepClick={handleStepClick}
+                  highestStepReached={highestStepReached}
                 />
-                
-                {/* Add a more prominent button container with a border and padding */}
-                <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 mt-8">
-                  <Button type="button" onClick={handleBackFromReview} variant="outline">
-                    Back
-                  </Button>
-                  <Button 
-                    type="button" 
-                    onClick={() => {
-                      setIsReviewExpanded(false);
-                      setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
-                    }}
-                    variant="default" // Use the primary button style
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-                  >
-                    Continue Editing
-                  </Button>
-                </div>
               </div>
-            ) : (
-              // Regular form steps
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {currentStep === 0 && (
-                  <BusinessInfoSection
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    invalidFields={invalidFields}
-                  />
-                )}
-                {currentStep === 1 && (
-                  <PaymentDetailsSection
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    invalidFields={invalidFields}
-                  />
-                )}
-                {currentStep === 2 && (
-                  <FeesSection
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    handleSaasFeeChange={handleSaasFeeChange}
-                    handleFrequencyChange={handleFrequencyChange}
-                    handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
-                    handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
-                    invalidFields={invalidFields}
-                  />
-                )}
-                {currentStep === 3 && (
-                  <IntegrationsSection
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    handleSpsRetailerCountChange={handleSpsRetailerCountChange}
-                    handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
-                    invalidFields={invalidFields}
-                  />
-                )}
-                {currentStep === 4 && (
-                  <AttainableAutomationSection
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    invalidFields={invalidFields}
-                  />
-                )}
-                {currentStep === 5 && (
-                  <ProposalOptionsSection
-                    selectedOptions={formData.selectedOptions}
-                    handleOptionSelect={handleOptionSelect}
-                    invalidFields={invalidFields}
-                  />
-                )}
-                {currentStep === 6 && (
-                  <ImplementationSection
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    invalidFields={invalidFields}
-                  />
-                )}
-                {currentStep === 7 && (
-                  <ReviewSection 
+
+              {currentStep === STEPS.length - 1 ? (
+                // Review step - show the expanded summary
+                <div className="space-y-6">
+                  <ProposalSummary 
                     formData={formData} 
-                    onContinueEditing={() => {
+                    currentStep={currentStep} 
+                    isExpanded={true} 
+                    onEdit={() => {
                       setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
                     }}
-                    onBack={handleBack}
                   />
-                )}
-
-                <div className="flex justify-between">
-                  {currentStep > 0 && (
-                    <Button type="button" onClick={handleBack} variant="outline">
+                  
+                  {/* Add a more prominent button container with a border and padding */}
+                  <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 mt-8">
+                    <Button type="button" onClick={handleBackFromReview} variant="outline">
                       Back
                     </Button>
-                  )}
-                  <Button type="button" onClick={handleContinue} className="ml-auto">
-                    {currentStep === STEPS.length - 2 ? "Review Proposal" : "Continue"}
-                  </Button>
+                    <Button 
+                      type="button" 
+                      onClick={() => {
+                        setIsReviewExpanded(false);
+                        setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
+                      }}
+                      variant="default" // Use the primary button style
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                    >
+                      Continue Editing
+                    </Button>
+                  </div>
                 </div>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+              ) : (
+                // Regular form steps
+                <>
+                  {currentStep === 0 && (
+                    <BusinessInfoSection
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      invalidFields={invalidFields}
+                    />
+                  )}
+                  {currentStep === 1 && (
+                    <PaymentDetailsSection
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      invalidFields={invalidFields}
+                    />
+                  )}
+                  {currentStep === 2 && (
+                    <FeesSection
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      handleSaasFeeChange={handleSaasFeeChange}
+                      handleFrequencyChange={handleFrequencyChange}
+                      handleStoreConnectionPriceChange={handleStoreConnectionPriceChange}
+                      handleStoreConnectionTiersChange={handleStoreConnectionTiersChange}
+                      invalidFields={invalidFields}
+                    />
+                  )}
+                  {currentStep === 3 && (
+                    <IntegrationsSection
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      handleSpsRetailerCountChange={handleSpsRetailerCountChange}
+                      handleCrstlRetailerCountChange={handleCrstlRetailerCountChange}
+                      invalidFields={invalidFields}
+                    />
+                  )}
+                  {currentStep === 4 && (
+                    <AttainableAutomationSection
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      invalidFields={invalidFields}
+                    />
+                  )}
+                  {currentStep === 5 && (
+                    <ProposalOptionsSection
+                      selectedOptions={formData.selectedOptions}
+                      handleOptionSelect={handleOptionSelect}
+                      invalidFields={invalidFields}
+                    />
+                  )}
+                  {currentStep === 6 && (
+                    <ImplementationSection
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      invalidFields={invalidFields}
+                    />
+                  )}
+                  {currentStep === 7 && (
+                    <ReviewSection 
+                      formData={formData} 
+                      onContinueEditing={() => {
+                        setCurrentStep(STEPS.length - 2); // Go back to the Implementation step
+                      }}
+                      onBack={handleBack}
+                    />
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Right column - Summary or Generate button */}
-        <div className="w-full lg:w-1/3 sticky top-4 self-start">
-          {currentStep === STEPS.length - 1 ? (
-            // Generate Proposal button card
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-center">Ready to Generate?</h3>
-                  <p className="text-gray-600 text-center">
-                    Review your proposal details on the left, then click the button below to generate your proposal.
-                  </p>
-                  <Button 
-                    onClick={handleGenerateProposal} 
-                    disabled={isGenerating}
-                    className="w-full py-6 text-lg"
-                  >
-                    {isGenerating ? 'Generating...' : 'Generate Proposal'}
-                  </Button>
-                  
-                  {proposalUrl && (
-                    <div className="mt-4 text-center">
-                      <a 
-                        href={proposalUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline text-lg"
-                      >
-                        View Generated Proposal
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            // Regular summary
-            <ProposalSummary formData={formData} currentStep={currentStep} isExpanded={false} />
-          )}
+          {/* Right column - Summary or Generate button */}
+          <div className="w-full lg:w-1/3 sticky top-4 self-start">
+            {currentStep === STEPS.length - 1 ? (
+              // Generate Proposal button card
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-center">Ready to Generate?</h3>
+                    <p className="text-gray-600 text-center">
+                      Review your proposal details on the left, then click the button below to generate your proposal.
+                    </p>
+                    <Button 
+                      onClick={handleGenerateProposal} 
+                      disabled={isGenerating}
+                      className="w-full py-6 text-lg"
+                    >
+                      {isGenerating ? 'Generating...' : 'Generate Proposal'}
+                    </Button>
+                    
+                    {proposalUrl && (
+                      <div className="mt-4 text-center">
+                        <a 
+                          href={proposalUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-lg"
+                        >
+                          View Generated Proposal
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              // Regular summary
+              <ProposalSummary formData={formData} currentStep={currentStep} isExpanded={false} />
+            )}
+          </div>
         </div>
-      </div>
-    </>
+      </form>
+    </div>
   )
 }
 

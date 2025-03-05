@@ -21,20 +21,6 @@ export async function GET(request: NextRequest) {
 
     console.log(`Looking up account executive for email: ${email}`);
 
-    // Extract the name part from the email (first.last@shiphero.com)
-    const namePart = email.split('@')[0];
-    if (!namePart) {
-      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
-    }
-
-    // Convert first.last to First Last format
-    const nameWords = namePart.split('.');
-    const formattedName = nameWords
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-
-    console.log(`Formatted name from email: ${formattedName}`);
-
     // Get all account executives
     const { data, error } = await supabase
       .from("Account Executives")
@@ -50,10 +36,42 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(null, { status: 404 });
     }
 
-    // Try to find a match by comparing the formatted name with full_name
-    console.log("Looking for match with formatted name:", formattedName);
     console.log("Available account executives:", data.map(ae => ae.full_name).join(", "));
 
+    // Special case for Alex Lewkowict
+    if (email.toLowerCase().includes('alex') || email.toLowerCase().includes('lewkowict')) {
+      const alexLewkowict = data.find(ae => 
+        ae.full_name.toLowerCase() === 'alex lewkowict'
+      );
+      
+      if (alexLewkowict) {
+        console.log("Found match for Alex Lewkowict via special case");
+        const enhancedAE = {
+          ...alexLewkowict,
+          initials: getInitials(alexLewkowict.full_name),
+          color: getColorForName(alexLewkowict.full_name)
+        };
+        return NextResponse.json(enhancedAE);
+      }
+    }
+
+    // Extract the name part from the email (first.last@shiphero.com)
+    const namePart = email.split('@')[0];
+    if (!namePart) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+    }
+
+    // Convert first.last to First Last format
+    const nameWords = namePart.split('.');
+    const formattedName = nameWords
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    console.log(`Formatted name from email: ${formattedName}`);
+
+    // Try to find a match by comparing the formatted name with full_name
+    console.log("Looking for match with formatted name:", formattedName);
+    
     const matchedAE = data.find(ae => 
       ae.full_name.toLowerCase().includes(formattedName.toLowerCase())
     );

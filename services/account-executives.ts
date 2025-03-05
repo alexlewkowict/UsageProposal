@@ -47,14 +47,18 @@ function enhanceAccountExecutive(ae: AccountExecutive): AccountExecutive {
 
 export async function getAccountExecutives(): Promise<AccountExecutive[]> {
   try {
-    const response = await fetch('/api/account-executives');
+    // Add timestamp to prevent caching
+    const timestamp = new Date().getTime();
+    const response = await fetch(`/api/account-executives?t=${timestamp}`);
+    
     if (!response.ok) {
-      throw new Error('Failed to fetch account executives');
+      throw new Error(`Failed to fetch account executives: ${response.statusText}`);
     }
+    
     return await response.json();
   } catch (error) {
-    console.error('Error fetching account executives:', error);
-    return [];
+    console.error("Error fetching account executives:", error);
+    throw error;
   }
 }
 
