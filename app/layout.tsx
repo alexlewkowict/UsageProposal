@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from "@/components/AuthProvider";
 import dynamic from 'next/dynamic';
 import { AccountExecDebug } from "@/components/AccountExecDebug";
+import { Providers } from './providers'
 
 // Dynamically import the debug component with no SSR
 const AccountExecDebugComponent = dynamic(
@@ -36,10 +37,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          {children}
-          <AccountExecDebug />
-        </AuthProvider>
+        <Providers>
+          <AuthProvider>
+            {children}
+            <AccountExecDebug />
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   )

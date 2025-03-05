@@ -40,6 +40,14 @@ const OPPORTUNITY_NAMES = [
   "Massive Dynamic",
 ]
 
+// Add this type for opportunities
+interface Opportunity {
+  opportunity_name: string;
+  opportunity_owner: string;
+  stage: string;
+  account_name: string;
+}
+
 export function BusinessInfoSection({
   formData,
   handleInputChange,
@@ -50,13 +58,14 @@ export function BusinessInfoSection({
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredExecs, setFilteredExecs] = useState<AccountExecutive[]>([]);
   const [open, setOpen] = useState(false);
-  const [opportunities, setOpportunities] = useState<string[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(false)
   const [accountExecutives, setAccountExecutives] = useState<AccountExecutive[]>([])
   const [fetchingAccountExecutives, setFetchingAccountExecutives] = useState(true)
   const [showSelection, setShowSelection] = useState(false)
   const [currentUserIsAE, setCurrentUserIsAE] = useState(false)
   const [currentUserAE, setCurrentUserAE] = useState<AccountExecutive | null>(null)
+  const [isLoadingOpportunities, setIsLoadingOpportunities] = useState(false);
 
   // Add these console logs to debug the issue
   useEffect(() => {
@@ -148,53 +157,38 @@ export function BusinessInfoSection({
   // Fetch opportunities from API
   useEffect(() => {
     async function fetchOpportunities() {
+      if (!formData.accountExec) return;
+      
+      setIsLoadingOpportunities(true);
       try {
-        // Only fetch opportunities if an account executive is selected
-        if (formData.accountExec) {
-          console.log(`Fetching opportunities for ${formData.accountExec}`);
-          
-          const response = await fetch(`/api/opportunities?accountExec=${encodeURIComponent(formData.accountExec)}`);
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Received opportunities:', data.opportunities);
-            
-            if (data.opportunities && data.opportunities.length > 0) {
-              setOpportunities(data.opportunities);
-            } else {
-              setOpportunities([]);
-              toast({
-                title: "No opportunities found",
-                description: `No open opportunities found for ${formData.accountExec}`,
-                variant: "warning",
-              });
-            }
-          } else {
-            console.error("API Error:", response.statusText);
-            setOpportunities([]);
-            toast({
-              title: "Error",
-              description: "Failed to fetch opportunities. Please try again.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          // Clear opportunities if no account executive is selected
-          setOpportunities([]);
+        console.log('Fetching opportunities for:', formData.accountExec);
+        
+        const response = await fetch(`/api/opportunities?owner=${encodeURIComponent(formData.accountExec)}`);
+        console.log('Response status:', response.status);
+        
+        const responseData = await response.json();
+        console.log('Response data:', responseData);
+        
+        if (!response.ok) {
+          throw new Error(responseData.details || responseData.error || 'Failed to fetch opportunities');
         }
+
+        console.log('Fetched opportunities:', responseData);
+        setOpportunities(responseData || []);
       } catch (error) {
-        console.error("Error fetching opportunities:", error);
-        setOpportunities([]);
+        console.error('Error fetching opportunities:', error);
         toast({
           title: "Error",
-          description: "An unexpected error occurred while fetching opportunities.",
+          description: error instanceof Error ? error.message : "Failed to load opportunities. Please try again.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoadingOpportunities(false);
       }
     }
-    
+
     fetchOpportunities();
-  }, [formData.accountExec]);
+  }, [formData.accountExec, toast]);
 
   // Get account executive details from the fetched data
   const getAccountExecutiveDetails = (name: string) => {
@@ -325,56 +319,56 @@ export function BusinessInfoSection({
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className={`w-full justify-between ${
-                invalidFields.includes("opportunityName") ? "border-red-500" : ""
-              }`}
-              disabled={!formData.accountExec}
+              className="w-full justify-between dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             >
-              {formData.opportunityName && formData.opportunityName.trim() !== ''
-                ? formData.opportunityName
-                : formData.accountExec 
-                  ? "Select Opportunity Name" 
-                  : "Select an Account Executive first"}
+              {formData.opportunityName || "Select Opportunity Name"}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0">
+          <PopoverContent 
+            className="w-full p-0 dark:bg-gray-800 dark:border-gray-700" 
+            align="start"
+            side="bottom"
+            sideOffset={5}
+            avoidCollisions={false}
+          >
             <Command>
-              <CommandInput placeholder="Search opportunity..." />
-              <CommandEmpty>
-                {formData.accountExec 
-                  ? "No opportunities found for this account executive." 
-                  : "Please select an account executive first."}
+              <CommandInput 
+                placeholder="Search opportunities..." 
+                className="dark:bg-gray-800 dark:text-white"
+              />
+              <CommandEmpty className="p-2 text-sm text-gray-500 dark:text-gray-400">
+                {isLoadingOpportunities ? "Loading opportunities..." : "No opportunities found."}
               </CommandEmpty>
-              <CommandGroup>
-                <CommandList>
-                  {opportunities.map((opportunity) => (
-                    <CommandItem
-                      key={opportunity}
-                      value={opportunity}
-                      onSelect={() => {
-                        handleInputChange("opportunityName", opportunity);
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          formData.opportunityName === opportunity
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {opportunity}
-                    </CommandItem>
-                  ))}
-                </CommandList>
+              <CommandGroup className="max-h-[200px] overflow-y-auto">
+                {opportunities.map((opportunity) => (
+                  <CommandItem
+                    key={opportunity.opportunity_name}
+                    onSelect={() => {
+                      handleInputChange("opportunityName", opportunity.opportunity_name);
+                      handleInputChange("friendlyBusinessName", opportunity.account_name);
+                      setOpen(false);
+                    }}
+                    className="cursor-pointer dark:text-white dark:hover:bg-gray-700"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        formData.opportunityName === opportunity.opportunity_name
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {opportunity.opportunity_name}
+                  </CommandItem>
+                ))}
               </CommandGroup>
             </Command>
           </PopoverContent>
         </Popover>
+        
         {invalidFields.includes("opportunityName") && (
-          <p className="text-red-500 text-sm mt-1">Please select an opportunity name</p>
+          <p className="text-red-500 text-sm mt-1">Please select an opportunity</p>
         )}
       </div>
 

@@ -33,6 +33,116 @@ module.exports = require("next/dist/compiled/next-server/app-route.runtime.dev.j
 
 /***/ }),
 
+/***/ "buffer":
+/*!*************************!*\
+  !*** external "buffer" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = require("buffer");
+
+/***/ }),
+
+/***/ "crypto":
+/*!*************************!*\
+  !*** external "crypto" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = require("crypto");
+
+/***/ }),
+
+/***/ "events":
+/*!*************************!*\
+  !*** external "events" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = require("events");
+
+/***/ }),
+
+/***/ "http":
+/*!***********************!*\
+  !*** external "http" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("http");
+
+/***/ }),
+
+/***/ "https":
+/*!************************!*\
+  !*** external "https" ***!
+  \************************/
+/***/ ((module) => {
+
+module.exports = require("https");
+
+/***/ }),
+
+/***/ "net":
+/*!**********************!*\
+  !*** external "net" ***!
+  \**********************/
+/***/ ((module) => {
+
+module.exports = require("net");
+
+/***/ }),
+
+/***/ "punycode":
+/*!***************************!*\
+  !*** external "punycode" ***!
+  \***************************/
+/***/ ((module) => {
+
+module.exports = require("punycode");
+
+/***/ }),
+
+/***/ "stream":
+/*!*************************!*\
+  !*** external "stream" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = require("stream");
+
+/***/ }),
+
+/***/ "tls":
+/*!**********************!*\
+  !*** external "tls" ***!
+  \**********************/
+/***/ ((module) => {
+
+module.exports = require("tls");
+
+/***/ }),
+
+/***/ "url":
+/*!**********************!*\
+  !*** external "url" ***!
+  \**********************/
+/***/ ((module) => {
+
+module.exports = require("url");
+
+/***/ }),
+
+/***/ "zlib":
+/*!***********************!*\
+  !*** external "zlib" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("zlib");
+
+/***/ }),
+
 /***/ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fopportunities%2Froute&page=%2Fapi%2Fopportunities%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fopportunities%2Froute.ts&appDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!":
 /*!***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fopportunities%2Froute&page=%2Fapi%2Fopportunities%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fopportunities%2Froute.ts&appDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D! ***!
@@ -49,7 +159,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \****************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   GET: () => (/* binding */ GET)\n/* harmony export */ });\n/* harmony import */ var next_server__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/server */ \"(rsc)/./node_modules/next/dist/api/server.js\");\n\nasync function GET(request) {\n    try {\n        // Get the account executive from the URL query parameters\n        const url = new URL(request.url);\n        const accountExec = url.searchParams.get(\"accountExec\");\n        console.log(\"API route called: /api/opportunities\");\n        console.log(\"Account Executive:\", accountExec);\n        if (!accountExec) {\n            return next_server__WEBPACK_IMPORTED_MODULE_0__.NextResponse.json({\n                error: \"Account executive is required\"\n            }, {\n                status: 400\n            });\n        }\n        // Generate mock opportunities for the selected account executive\n        const mockOpportunities = [\n            `${accountExec} - Acme Corp`,\n            `${accountExec} - Globex Corporation`,\n            `${accountExec} - Initech`,\n            `${accountExec} - Umbrella Corporation`,\n            `${accountExec} - Stark Industries`\n        ];\n        console.log(`Returning ${mockOpportunities.length} mock opportunities`);\n        return next_server__WEBPACK_IMPORTED_MODULE_0__.NextResponse.json({\n            opportunities: mockOpportunities,\n            isMock: true\n        });\n    } catch (error) {\n        console.error(\"Error in opportunities API:\", error);\n        return next_server__WEBPACK_IMPORTED_MODULE_0__.NextResponse.json({\n            error: \"Internal server error\",\n            details: error instanceof Error ? error.message : String(error)\n        }, {\n            status: 500\n        });\n    }\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9hcHAvYXBpL29wcG9ydHVuaXRpZXMvcm91dGUudHMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBMkM7QUFFcEMsZUFBZUMsSUFBSUMsT0FBZ0I7SUFDeEMsSUFBSTtRQUNGLDBEQUEwRDtRQUMxRCxNQUFNQyxNQUFNLElBQUlDLElBQUlGLFFBQVFDLEdBQUc7UUFDL0IsTUFBTUUsY0FBY0YsSUFBSUcsWUFBWSxDQUFDQyxHQUFHLENBQUM7UUFFekNDLFFBQVFDLEdBQUcsQ0FBQztRQUNaRCxRQUFRQyxHQUFHLENBQUMsc0JBQXNCSjtRQUVsQyxJQUFJLENBQUNBLGFBQWE7WUFDaEIsT0FBT0wscURBQVlBLENBQUNVLElBQUksQ0FBQztnQkFBRUMsT0FBTztZQUFnQyxHQUFHO2dCQUFFQyxRQUFRO1lBQUk7UUFDckY7UUFFQSxpRUFBaUU7UUFDakUsTUFBTUMsb0JBQW9CO1lBQ3hCLENBQUMsRUFBRVIsWUFBWSxZQUFZLENBQUM7WUFDNUIsQ0FBQyxFQUFFQSxZQUFZLHFCQUFxQixDQUFDO1lBQ3JDLENBQUMsRUFBRUEsWUFBWSxVQUFVLENBQUM7WUFDMUIsQ0FBQyxFQUFFQSxZQUFZLHVCQUF1QixDQUFDO1lBQ3ZDLENBQUMsRUFBRUEsWUFBWSxtQkFBbUIsQ0FBQztTQUNwQztRQUVERyxRQUFRQyxHQUFHLENBQUMsQ0FBQyxVQUFVLEVBQUVJLGtCQUFrQkMsTUFBTSxDQUFDLG1CQUFtQixDQUFDO1FBRXRFLE9BQU9kLHFEQUFZQSxDQUFDVSxJQUFJLENBQUM7WUFDdkJLLGVBQWVGO1lBQ2ZHLFFBQVE7UUFDVjtJQUVGLEVBQUUsT0FBT0wsT0FBTztRQUNkSCxRQUFRRyxLQUFLLENBQUMsK0JBQStCQTtRQUM3QyxPQUFPWCxxREFBWUEsQ0FBQ1UsSUFBSSxDQUFDO1lBQ3ZCQyxPQUFPO1lBQ1BNLFNBQVNOLGlCQUFpQk8sUUFBUVAsTUFBTVEsT0FBTyxHQUFHQyxPQUFPVDtRQUMzRCxHQUFHO1lBQUVDLFFBQVE7UUFBSTtJQUNuQjtBQUNGIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vbXktdjAtcHJvamVjdC8uL2FwcC9hcGkvb3Bwb3J0dW5pdGllcy9yb3V0ZS50cz85NGNmIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IE5leHRSZXNwb25zZSB9IGZyb20gJ25leHQvc2VydmVyJztcblxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIEdFVChyZXF1ZXN0OiBSZXF1ZXN0KSB7XG4gIHRyeSB7XG4gICAgLy8gR2V0IHRoZSBhY2NvdW50IGV4ZWN1dGl2ZSBmcm9tIHRoZSBVUkwgcXVlcnkgcGFyYW1ldGVyc1xuICAgIGNvbnN0IHVybCA9IG5ldyBVUkwocmVxdWVzdC51cmwpO1xuICAgIGNvbnN0IGFjY291bnRFeGVjID0gdXJsLnNlYXJjaFBhcmFtcy5nZXQoJ2FjY291bnRFeGVjJyk7XG4gICAgXG4gICAgY29uc29sZS5sb2coXCJBUEkgcm91dGUgY2FsbGVkOiAvYXBpL29wcG9ydHVuaXRpZXNcIik7XG4gICAgY29uc29sZS5sb2coXCJBY2NvdW50IEV4ZWN1dGl2ZTpcIiwgYWNjb3VudEV4ZWMpO1xuICAgIFxuICAgIGlmICghYWNjb3VudEV4ZWMpIHtcbiAgICAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbih7IGVycm9yOiAnQWNjb3VudCBleGVjdXRpdmUgaXMgcmVxdWlyZWQnIH0sIHsgc3RhdHVzOiA0MDAgfSk7XG4gICAgfVxuICAgIFxuICAgIC8vIEdlbmVyYXRlIG1vY2sgb3Bwb3J0dW5pdGllcyBmb3IgdGhlIHNlbGVjdGVkIGFjY291bnQgZXhlY3V0aXZlXG4gICAgY29uc3QgbW9ja09wcG9ydHVuaXRpZXMgPSBbXG4gICAgICBgJHthY2NvdW50RXhlY30gLSBBY21lIENvcnBgLFxuICAgICAgYCR7YWNjb3VudEV4ZWN9IC0gR2xvYmV4IENvcnBvcmF0aW9uYCxcbiAgICAgIGAke2FjY291bnRFeGVjfSAtIEluaXRlY2hgLFxuICAgICAgYCR7YWNjb3VudEV4ZWN9IC0gVW1icmVsbGEgQ29ycG9yYXRpb25gLFxuICAgICAgYCR7YWNjb3VudEV4ZWN9IC0gU3RhcmsgSW5kdXN0cmllc2AsXG4gICAgXTtcbiAgICBcbiAgICBjb25zb2xlLmxvZyhgUmV0dXJuaW5nICR7bW9ja09wcG9ydHVuaXRpZXMubGVuZ3RofSBtb2NrIG9wcG9ydHVuaXRpZXNgKTtcbiAgICBcbiAgICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oeyBcbiAgICAgIG9wcG9ydHVuaXRpZXM6IG1vY2tPcHBvcnR1bml0aWVzLFxuICAgICAgaXNNb2NrOiB0cnVlXG4gICAgfSk7XG4gICAgXG4gIH0gY2F0Y2ggKGVycm9yKSB7XG4gICAgY29uc29sZS5lcnJvcignRXJyb3IgaW4gb3Bwb3J0dW5pdGllcyBBUEk6JywgZXJyb3IpO1xuICAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbih7IFxuICAgICAgZXJyb3I6ICdJbnRlcm5hbCBzZXJ2ZXIgZXJyb3InLFxuICAgICAgZGV0YWlsczogZXJyb3IgaW5zdGFuY2VvZiBFcnJvciA/IGVycm9yLm1lc3NhZ2UgOiBTdHJpbmcoZXJyb3IpXG4gICAgfSwgeyBzdGF0dXM6IDUwMCB9KTtcbiAgfVxufVxuXG4iXSwibmFtZXMiOlsiTmV4dFJlc3BvbnNlIiwiR0VUIiwicmVxdWVzdCIsInVybCIsIlVSTCIsImFjY291bnRFeGVjIiwic2VhcmNoUGFyYW1zIiwiZ2V0IiwiY29uc29sZSIsImxvZyIsImpzb24iLCJlcnJvciIsInN0YXR1cyIsIm1vY2tPcHBvcnR1bml0aWVzIiwibGVuZ3RoIiwib3Bwb3J0dW5pdGllcyIsImlzTW9jayIsImRldGFpbHMiLCJFcnJvciIsIm1lc3NhZ2UiLCJTdHJpbmciXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(rsc)/./app/api/opportunities/route.ts\n");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   GET: () => (/* binding */ GET)\n/* harmony export */ });\n/* harmony import */ var _supabase_supabase_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @supabase/supabase-js */ \"(rsc)/./node_modules/@supabase/supabase-js/dist/module/index.js\");\n\nconst supabase = (0,_supabase_supabase_js__WEBPACK_IMPORTED_MODULE_0__.createClient)(\"https://fjdxhzaowepxdnnffmyc.supabase.co\", process.env.SUPABASE_SERVICE_ROLE_KEY);\nasync function GET(request) {\n    const { searchParams } = new URL(request.url);\n    const owner = searchParams.get(\"owner\");\n    console.log(\"API Route - Starting request for owner:\", owner);\n    try {\n        // Test connection with a simple query\n        const { data: testData, error: testError } = await supabase.from(\"Salesforce Data\").select(\"opportunity_owner\").limit(1);\n        if (testError) {\n            console.error(\"Connection test error:\", testError);\n            throw new Error(`Connection test failed: ${testError.message}`);\n        }\n        console.log(\"Connection test successful, found test record:\", testData);\n        // Get opportunities for the specific owner\n        const { data, error } = await supabase.from(\"Salesforce Data\").select(`\n        opportunity_name,\n        opportunity_owner,\n        stage,\n        account_name\n      `).eq(\"opportunity_owner\", owner).neq(\"stage\", \"Closed Won\").neq(\"stage\", \"Closed Lost\");\n        if (error) {\n            console.error(\"Query error:\", error);\n            throw error;\n        }\n        console.log(\"Query results:\", {\n            owner,\n            recordsFound: data?.length || 0,\n            sampleRecord: data?.[0]\n        });\n        if (!data || data.length === 0) {\n            console.log(\"No opportunities found for owner:\", owner);\n            console.log(\"Query parameters:\", {\n                owner\n            });\n            return new Response(JSON.stringify([]), {\n                headers: {\n                    \"Content-Type\": \"application/json\"\n                }\n            });\n        }\n        return new Response(JSON.stringify(data), {\n            headers: {\n                \"Content-Type\": \"application/json\"\n            }\n        });\n    } catch (error) {\n        console.error(\"API Route Error:\", error);\n        const errorMessage = error instanceof Error ? error.message : \"Unknown error occurred while fetching opportunities\";\n        return new Response(JSON.stringify({\n            error: \"Error fetching opportunities\",\n            details: errorMessage,\n            timestamp: new Date().toISOString()\n        }), {\n            status: 500,\n            headers: {\n                \"Content-Type\": \"application/json\"\n            }\n        });\n    }\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9hcHAvYXBpL29wcG9ydHVuaXRpZXMvcm91dGUudHMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBb0Q7QUFFcEQsTUFBTUMsV0FBV0QsbUVBQVlBLENBQzNCRSwwQ0FBb0MsRUFDcENBLFFBQVFDLEdBQUcsQ0FBQ0UseUJBQXlCO0FBR2hDLGVBQWVDLElBQUlDLE9BQWdCO0lBQ3hDLE1BQU0sRUFBRUMsWUFBWSxFQUFFLEdBQUcsSUFBSUMsSUFBSUYsUUFBUUcsR0FBRztJQUM1QyxNQUFNQyxRQUFRSCxhQUFhSSxHQUFHLENBQUM7SUFFL0JDLFFBQVFDLEdBQUcsQ0FBQywyQ0FBMkNIO0lBRXZELElBQUk7UUFDRixzQ0FBc0M7UUFDdEMsTUFBTSxFQUFFSSxNQUFNQyxRQUFRLEVBQUVDLE9BQU9DLFNBQVMsRUFBRSxHQUFHLE1BQU1qQixTQUNoRGtCLElBQUksQ0FBQyxtQkFDTEMsTUFBTSxDQUFDLHFCQUNQQyxLQUFLLENBQUM7UUFFVCxJQUFJSCxXQUFXO1lBQ2JMLFFBQVFJLEtBQUssQ0FBQywwQkFBMEJDO1lBQ3hDLE1BQU0sSUFBSUksTUFBTSxDQUFDLHdCQUF3QixFQUFFSixVQUFVSyxPQUFPLENBQUMsQ0FBQztRQUNoRTtRQUVBVixRQUFRQyxHQUFHLENBQUMsa0RBQWtERTtRQUU5RCwyQ0FBMkM7UUFDM0MsTUFBTSxFQUFFRCxJQUFJLEVBQUVFLEtBQUssRUFBRSxHQUFHLE1BQU1oQixTQUMzQmtCLElBQUksQ0FBQyxtQkFDTEMsTUFBTSxDQUFDLENBQUM7Ozs7O01BS1QsQ0FBQyxFQUNBSSxFQUFFLENBQUMscUJBQXFCYixPQUN4QmMsR0FBRyxDQUFDLFNBQVMsY0FDYkEsR0FBRyxDQUFDLFNBQVM7UUFFaEIsSUFBSVIsT0FBTztZQUNUSixRQUFRSSxLQUFLLENBQUMsZ0JBQWdCQTtZQUM5QixNQUFNQTtRQUNSO1FBRUFKLFFBQVFDLEdBQUcsQ0FBQyxrQkFBa0I7WUFDNUJIO1lBQ0FlLGNBQWNYLE1BQU1ZLFVBQVU7WUFDOUJDLGNBQWNiLE1BQU0sQ0FBQyxFQUFFO1FBQ3pCO1FBRUEsSUFBSSxDQUFDQSxRQUFRQSxLQUFLWSxNQUFNLEtBQUssR0FBRztZQUM5QmQsUUFBUUMsR0FBRyxDQUFDLHFDQUFxQ0g7WUFDakRFLFFBQVFDLEdBQUcsQ0FBQyxxQkFBcUI7Z0JBQUVIO1lBQU07WUFDekMsT0FBTyxJQUFJa0IsU0FBU0MsS0FBS0MsU0FBUyxDQUFDLEVBQUUsR0FBRztnQkFDdENDLFNBQVM7b0JBQUUsZ0JBQWdCO2dCQUFtQjtZQUNoRDtRQUNGO1FBRUEsT0FBTyxJQUFJSCxTQUFTQyxLQUFLQyxTQUFTLENBQUNoQixPQUFPO1lBQ3hDaUIsU0FBUztnQkFBRSxnQkFBZ0I7WUFBbUI7UUFDaEQ7SUFDRixFQUFFLE9BQU9mLE9BQU87UUFDZEosUUFBUUksS0FBSyxDQUFDLG9CQUFvQkE7UUFDbEMsTUFBTWdCLGVBQWVoQixpQkFBaUJLLFFBQ3BDTCxNQUFNTSxPQUFPLEdBQ2I7UUFFRixPQUFPLElBQUlNLFNBQVNDLEtBQUtDLFNBQVMsQ0FBQztZQUNqQ2QsT0FBTztZQUNQaUIsU0FBU0Q7WUFDVEUsV0FBVyxJQUFJQyxPQUFPQyxXQUFXO1FBQ25DLElBQUk7WUFDRkMsUUFBUTtZQUNSTixTQUFTO2dCQUFFLGdCQUFnQjtZQUFtQjtRQUNoRDtJQUNGO0FBQ0YiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly9teS12MC1wcm9qZWN0Ly4vYXBwL2FwaS9vcHBvcnR1bml0aWVzL3JvdXRlLnRzPzk0Y2YiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgY3JlYXRlQ2xpZW50IH0gZnJvbSAnQHN1cGFiYXNlL3N1cGFiYXNlLWpzJ1xuXG5jb25zdCBzdXBhYmFzZSA9IGNyZWF0ZUNsaWVudChcbiAgcHJvY2Vzcy5lbnYuTkVYVF9QVUJMSUNfU1VQQUJBU0VfVVJMISxcbiAgcHJvY2Vzcy5lbnYuU1VQQUJBU0VfU0VSVklDRV9ST0xFX0tFWSFcbilcblxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIEdFVChyZXF1ZXN0OiBSZXF1ZXN0KSB7XG4gIGNvbnN0IHsgc2VhcmNoUGFyYW1zIH0gPSBuZXcgVVJMKHJlcXVlc3QudXJsKVxuICBjb25zdCBvd25lciA9IHNlYXJjaFBhcmFtcy5nZXQoJ293bmVyJylcblxuICBjb25zb2xlLmxvZygnQVBJIFJvdXRlIC0gU3RhcnRpbmcgcmVxdWVzdCBmb3Igb3duZXI6Jywgb3duZXIpXG5cbiAgdHJ5IHtcbiAgICAvLyBUZXN0IGNvbm5lY3Rpb24gd2l0aCBhIHNpbXBsZSBxdWVyeVxuICAgIGNvbnN0IHsgZGF0YTogdGVzdERhdGEsIGVycm9yOiB0ZXN0RXJyb3IgfSA9IGF3YWl0IHN1cGFiYXNlXG4gICAgICAuZnJvbSgnU2FsZXNmb3JjZSBEYXRhJylcbiAgICAgIC5zZWxlY3QoJ29wcG9ydHVuaXR5X293bmVyJylcbiAgICAgIC5saW1pdCgxKVxuXG4gICAgaWYgKHRlc3RFcnJvcikge1xuICAgICAgY29uc29sZS5lcnJvcignQ29ubmVjdGlvbiB0ZXN0IGVycm9yOicsIHRlc3RFcnJvcilcbiAgICAgIHRocm93IG5ldyBFcnJvcihgQ29ubmVjdGlvbiB0ZXN0IGZhaWxlZDogJHt0ZXN0RXJyb3IubWVzc2FnZX1gKVxuICAgIH1cblxuICAgIGNvbnNvbGUubG9nKCdDb25uZWN0aW9uIHRlc3Qgc3VjY2Vzc2Z1bCwgZm91bmQgdGVzdCByZWNvcmQ6JywgdGVzdERhdGEpXG5cbiAgICAvLyBHZXQgb3Bwb3J0dW5pdGllcyBmb3IgdGhlIHNwZWNpZmljIG93bmVyXG4gICAgY29uc3QgeyBkYXRhLCBlcnJvciB9ID0gYXdhaXQgc3VwYWJhc2VcbiAgICAgIC5mcm9tKCdTYWxlc2ZvcmNlIERhdGEnKVxuICAgICAgLnNlbGVjdChgXG4gICAgICAgIG9wcG9ydHVuaXR5X25hbWUsXG4gICAgICAgIG9wcG9ydHVuaXR5X293bmVyLFxuICAgICAgICBzdGFnZSxcbiAgICAgICAgYWNjb3VudF9uYW1lXG4gICAgICBgKVxuICAgICAgLmVxKCdvcHBvcnR1bml0eV9vd25lcicsIG93bmVyKVxuICAgICAgLm5lcSgnc3RhZ2UnLCAnQ2xvc2VkIFdvbicpXG4gICAgICAubmVxKCdzdGFnZScsICdDbG9zZWQgTG9zdCcpXG5cbiAgICBpZiAoZXJyb3IpIHtcbiAgICAgIGNvbnNvbGUuZXJyb3IoJ1F1ZXJ5IGVycm9yOicsIGVycm9yKVxuICAgICAgdGhyb3cgZXJyb3JcbiAgICB9XG5cbiAgICBjb25zb2xlLmxvZygnUXVlcnkgcmVzdWx0czonLCB7XG4gICAgICBvd25lcixcbiAgICAgIHJlY29yZHNGb3VuZDogZGF0YT8ubGVuZ3RoIHx8IDAsXG4gICAgICBzYW1wbGVSZWNvcmQ6IGRhdGE/LlswXVxuICAgIH0pXG5cbiAgICBpZiAoIWRhdGEgfHwgZGF0YS5sZW5ndGggPT09IDApIHtcbiAgICAgIGNvbnNvbGUubG9nKCdObyBvcHBvcnR1bml0aWVzIGZvdW5kIGZvciBvd25lcjonLCBvd25lcilcbiAgICAgIGNvbnNvbGUubG9nKCdRdWVyeSBwYXJhbWV0ZXJzOicsIHsgb3duZXIgfSlcbiAgICAgIHJldHVybiBuZXcgUmVzcG9uc2UoSlNPTi5zdHJpbmdpZnkoW10pLCB7XG4gICAgICAgIGhlYWRlcnM6IHsgJ0NvbnRlbnQtVHlwZSc6ICdhcHBsaWNhdGlvbi9qc29uJyB9LFxuICAgICAgfSlcbiAgICB9XG5cbiAgICByZXR1cm4gbmV3IFJlc3BvbnNlKEpTT04uc3RyaW5naWZ5KGRhdGEpLCB7XG4gICAgICBoZWFkZXJzOiB7ICdDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24vanNvbicgfSxcbiAgICB9KVxuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGNvbnNvbGUuZXJyb3IoJ0FQSSBSb3V0ZSBFcnJvcjonLCBlcnJvcilcbiAgICBjb25zdCBlcnJvck1lc3NhZ2UgPSBlcnJvciBpbnN0YW5jZW9mIEVycm9yID8gXG4gICAgICBlcnJvci5tZXNzYWdlIDogXG4gICAgICAnVW5rbm93biBlcnJvciBvY2N1cnJlZCB3aGlsZSBmZXRjaGluZyBvcHBvcnR1bml0aWVzJ1xuICAgIFxuICAgIHJldHVybiBuZXcgUmVzcG9uc2UoSlNPTi5zdHJpbmdpZnkoeyBcbiAgICAgIGVycm9yOiAnRXJyb3IgZmV0Y2hpbmcgb3Bwb3J0dW5pdGllcycsXG4gICAgICBkZXRhaWxzOiBlcnJvck1lc3NhZ2UsXG4gICAgICB0aW1lc3RhbXA6IG5ldyBEYXRlKCkudG9JU09TdHJpbmcoKVxuICAgIH0pLCB7IFxuICAgICAgc3RhdHVzOiA1MDAsXG4gICAgICBoZWFkZXJzOiB7ICdDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24vanNvbicgfVxuICAgIH0pXG4gIH1cbn1cblxuIl0sIm5hbWVzIjpbImNyZWF0ZUNsaWVudCIsInN1cGFiYXNlIiwicHJvY2VzcyIsImVudiIsIk5FWFRfUFVCTElDX1NVUEFCQVNFX1VSTCIsIlNVUEFCQVNFX1NFUlZJQ0VfUk9MRV9LRVkiLCJHRVQiLCJyZXF1ZXN0Iiwic2VhcmNoUGFyYW1zIiwiVVJMIiwidXJsIiwib3duZXIiLCJnZXQiLCJjb25zb2xlIiwibG9nIiwiZGF0YSIsInRlc3REYXRhIiwiZXJyb3IiLCJ0ZXN0RXJyb3IiLCJmcm9tIiwic2VsZWN0IiwibGltaXQiLCJFcnJvciIsIm1lc3NhZ2UiLCJlcSIsIm5lcSIsInJlY29yZHNGb3VuZCIsImxlbmd0aCIsInNhbXBsZVJlY29yZCIsIlJlc3BvbnNlIiwiSlNPTiIsInN0cmluZ2lmeSIsImhlYWRlcnMiLCJlcnJvck1lc3NhZ2UiLCJkZXRhaWxzIiwidGltZXN0YW1wIiwiRGF0ZSIsInRvSVNPU3RyaW5nIiwic3RhdHVzIl0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./app/api/opportunities/route.ts\n");
 
 /***/ })
 
@@ -60,7 +170,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 var __webpack_require__ = require("../../../webpack-runtime.js");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/next"], () => (__webpack_exec__("(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fopportunities%2Froute&page=%2Fapi%2Fopportunities%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fopportunities%2Froute.ts&appDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!")));
+var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/next","vendor-chunks/@supabase","vendor-chunks/tr46","vendor-chunks/whatwg-url","vendor-chunks/webidl-conversions"], () => (__webpack_exec__("(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fopportunities%2Froute&page=%2Fapi%2Fopportunities%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fopportunities%2Froute.ts&appDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Falexlewkowict%2FDesktop%2FUsageProposal&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!")));
 module.exports = __webpack_exports__;
 
 })();

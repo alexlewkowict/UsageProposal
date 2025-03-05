@@ -4,7 +4,5 @@
   "/auth/signin/page": "app/auth/signin/page.js",
   "/proposals/page": "app/proposals/page.js",
   "/api/account-executives/route": "app/api/account-executives/route.js",
-  "/api/opportunities/route": "app/api/opportunities/route.js",
-  "/api/account-executive-role/route": "app/api/account-executive-role/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js"
+  "/api/account-type/route": "app/api/account-type/route.js"
 }
