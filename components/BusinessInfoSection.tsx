@@ -233,45 +233,43 @@ export function BusinessInfoSection({
             placeholder="Search account executive..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400"
           />
         </div>
         
         {/* Executive tiles */}
         {fetchingAccountExecutives ? (
-          <div className="p-4 border rounded">
+          <div className="p-4 border rounded dark:border-gray-700 dark:bg-gray-800">
             <div className="animate-pulse flex space-x-4">
-              <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+              <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
               <div className="flex-1 space-y-2 py-1">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
               </div>
             </div>
-            <div className="mt-2 text-sm text-gray-500">Loading account executives...</div>
+            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading account executives...</div>
           </div>
         ) : formData.accountExec === "Alex Lewkowict" && !showSelection ? (
-          <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-4">
+              <div className="bg-red-100 dark:bg-red-900/30 h-12 w-12 rounded-full flex items-center justify-center text-red-500 dark:text-red-300">
                 AL
               </div>
               <div>
-                <div className="text-lg font-medium">Welcome, Alex Lewkowict!</div>
-                <div className="text-sm text-gray-600">You're logged in. Let's get started!</div>
+                <div className="font-medium dark:text-white">Welcome, Alex Lewkowict!</div>
               </div>
             </div>
-            <div className="mt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowSelection(true)}
-                className="w-full"
-              >
-                Not Me? Select Different Account Executive
-              </Button>
-            </div>
+            
+            <Button 
+              variant="secondary" 
+              className="w-full mt-4 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+              onClick={() => setShowSelection(true)}
+            >
+              Not Me? Select Different Account Executive
+            </Button>
           </div>
         ) : accountExecutives.length === 0 ? (
-          <div className="p-4 border border-red-300 bg-red-50 rounded text-red-700">
+          <div className="p-4 border border-red-300 dark:border-red-900 bg-red-50 dark:bg-red-900/20 rounded text-red-700 dark:text-red-400">
             Failed to load account executives. Please try again later.
           </div>
         ) : (
@@ -282,8 +280,10 @@ export function BusinessInfoSection({
                 className={`
                   p-4 border rounded-lg cursor-pointer transition-all
                   flex items-center space-x-3
-                  hover:bg-gray-50
-                  ${formData.accountExec === exec.full_name ? "border-primary border-2 bg-primary/5" : "border-gray-200"}
+                  hover:bg-gray-50 dark:hover:bg-gray-700
+                  ${formData.accountExec === exec.full_name 
+                    ? "border-primary border-2 bg-primary/5 dark:bg-primary/10" 
+                    : "border-gray-200 dark:border-gray-700 dark:bg-gray-800"}
                 `}
                 onClick={() => {
                   if (formData.accountExec !== exec.full_name) {
@@ -293,11 +293,11 @@ export function BusinessInfoSection({
                 }}
               >
                 <div 
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${exec.color || "bg-blue-200"}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${exec.color || "bg-blue-200"} ${exec.color ? exec.color.replace('bg-', 'dark:bg-').replace('-200', '-800') : 'dark:bg-blue-800'}`}
                 >
                   {exec.initials || exec.full_name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
-                <span className="font-medium">{exec.full_name}</span>
+                <span className="font-medium dark:text-white">{exec.full_name}</span>
               </div>
             ))}
           </div>

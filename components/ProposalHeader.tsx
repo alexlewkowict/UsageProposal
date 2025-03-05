@@ -129,51 +129,75 @@ export function ProposalHeader() {
             <nav className="hidden md:flex items-center gap-4">
               <Link 
                 href="/dashboard"
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/dashboard" 
-                    ? "text-gray-900 dark:text-white font-medium" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                }`}
+                className={`
+                  flex flex-col items-center justify-center space-y-2 p-2 rounded-lg transition-colors
+                  ${pathname === "/dashboard" 
+                    ? "bg-white dark:bg-white text-primary dark:text-primary" 
+                    : "text-gray-400 dark:text-gray-300 hover:text-primary dark:hover:text-white"}
+                `}
               >
-                <LayoutDashboard size={20} />
-                <span>Dashboard</span>
+                <div className={`
+                  w-12 h-12 rounded-full flex items-center justify-center
+                  ${pathname === "/dashboard" 
+                    ? "bg-primary/10 dark:bg-primary/20" 
+                    : "bg-gray-100 dark:bg-gray-700"}
+                `}>
+                  <LayoutDashboard className="h-6 w-6" />
+                </div>
+                <span className="text-xs font-medium">Dashboard</span>
               </Link>
               
               <Link 
                 href="/proposals"
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/proposals" 
-                    ? "text-gray-900 dark:text-white font-medium" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                }`}
+                className={`
+                  flex flex-col items-center justify-center space-y-2 p-2 rounded-lg transition-colors
+                  ${pathname === "/proposals" 
+                    ? "bg-white dark:bg-white text-primary dark:text-primary" 
+                    : "text-gray-400 dark:text-gray-300 hover:text-primary dark:hover:text-white"}
+                `}
               >
-                <FileText size={20} />
-                <span>My Proposals</span>
+                <div className={`
+                  w-12 h-12 rounded-full flex items-center justify-center
+                  ${pathname === "/proposals" 
+                    ? "bg-primary/10 dark:bg-primary/20" 
+                    : "bg-gray-100 dark:bg-gray-700"}
+                `}>
+                  <FileText className="h-6 w-6" />
+                </div>
+                <span className="text-xs font-medium">My Proposals</span>
               </Link>
               
               <Link 
                 href="/create"
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/create" 
-                    ? "text-gray-900 dark:text-white font-medium" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                }`}
+                className={`
+                  flex flex-col items-center justify-center space-y-2 p-2 rounded-lg transition-colors
+                  ${pathname === "/create" 
+                    ? "bg-white dark:bg-white text-primary dark:text-primary" 
+                    : "text-gray-400 dark:text-gray-300 hover:text-primary dark:hover:text-white"}
+                `}
               >
-                <svg 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="16" />
-                  <line x1="8" y1="12" x2="16" y2="12" />
-                </svg>
-                <span>Create</span>
+                <div className={`
+                  w-12 h-12 rounded-full flex items-center justify-center
+                  ${pathname === "/create" 
+                    ? "bg-primary/10 dark:bg-primary/20" 
+                    : "bg-gray-100 dark:bg-gray-700"}
+                `}>
+                  <svg 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                </div>
+                <span className="text-xs font-medium">Create</span>
               </Link>
             </nav>
             

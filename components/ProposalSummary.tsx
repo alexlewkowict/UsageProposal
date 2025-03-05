@@ -412,7 +412,7 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
   } : {};
 
   return (
-    <Card style={expandedStyles} className="sticky top-4">
+    <Card style={expandedStyles} className="sticky top-4 dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-950 dark:border-gray-800 dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
       <CardHeader className="relative">
         <CardTitle>
           Proposal Summary
@@ -429,19 +429,19 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-950">
         {/* New header design */}
         <div className="mb-8">
-          <div className="text-gray-600 mb-1">Prepared for</div>
+          <div className="text-gray-600 dark:text-gray-400 mb-1">Prepared for</div>
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-3xl font-bold">{formData.friendlyBusinessName || "Client Name"}</h2>
+              <h2 className="text-3xl font-bold dark:text-white">{formData.friendlyBusinessName || "Client Name"}</h2>
               {accountType && (
-                <div className="text-gray-500">{accountType}</div>
+                <div className="text-gray-500 dark:text-gray-400">{accountType}</div>
               )}
             </div>
             {accountType && (
-              <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full border border-blue-100">
+              <div className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-4 py-2 rounded-full border border-blue-100 dark:border-blue-800">
                 {accountType} Partner
               </div>
             )}
@@ -451,11 +451,11 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
         {/* Agreement Terms section */}
         {(currentStep === 1 || highestStepReached >= 1) && (
           <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Agreement Terms</h3>
+            <h3 className="text-xl font-semibold mb-4 dark:text-white">Agreement Terms</h3>
             <div className="grid grid-cols-2 gap-4">
               {/* Contract Term Tile */}
-              <div className="bg-white border rounded-lg p-4 flex flex-col items-center justify-center">
-                <div className="text-gray-500 mb-2">
+              <div className="bg-white dark:bg-gray-800/60 border dark:border-gray-700 rounded-lg p-4 flex flex-col items-center justify-center">
+                <div className="text-gray-500 dark:text-gray-400 mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -463,19 +463,19 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
                 </div>
-                <div className="text-lg font-medium">{formData.contractTerm || 24} Months</div>
+                <div className="text-lg font-medium dark:text-white">{formData.contractTerm || 24} Months</div>
               </div>
               
               {/* Billing Frequency Tile */}
-              <div className="bg-white border rounded-lg p-4 flex flex-col items-center justify-center">
-                <div className="text-gray-500 mb-2">
+              <div className="bg-white dark:bg-gray-800/60 border dark:border-gray-700 rounded-lg p-4 flex flex-col items-center justify-center">
+                <div className="text-gray-500 dark:text-gray-400 mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
                     <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
                     <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
                   </svg>
                 </div>
-                <div className="text-lg font-medium">
+                <div className="text-lg font-medium dark:text-white">
                   {formData.billingFrequency ? 
                     formData.billingFrequency.charAt(0).toUpperCase() + formData.billingFrequency.slice(1) : 
                     "Quarterly"}
@@ -487,14 +487,14 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
         
         {/* Store Connections - only show if we've reached or passed this step */}
         {(currentStep === 2 || highestStepReached >= 2) && formData.storeConnections > 0 && (
-          <div className="bg-white border rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b">
-              <h3 className="text-lg font-semibold">Store Connections</h3>
+          <div className="bg-white dark:bg-gray-800/60 border dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold dark:text-white">Store Connections</h3>
             </div>
             
             <div className="p-4 space-y-4">
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
@@ -502,33 +502,33 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
                     <rect x="3" y="14" width="7" height="7"></rect>
                   </svg>
                 </div>
-                <label htmlFor="total-stores" className="flex-1">Total Stores</label>
-                <div id="total-stores" className="text-xl font-bold">{formData.storeConnections}</div>
+                <label htmlFor="total-stores" className="flex-1 dark:text-white">Total Stores</label>
+                <div id="total-stores" className="text-xl font-bold dark:text-white">{formData.storeConnections}</div>
               </div>
               
               {formData.applyDiscountToStoreConnections && formData.saasFeeDiscount > 0 && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="19" y1="5" x2="5" y2="19"></line>
                       <circle cx="6.5" cy="6.5" r="2.5"></circle>
                       <circle cx="17.5" cy="17.5" r="2.5"></circle>
                     </svg>
                   </div>
-                  <div className="flex-1">Discount Applied</div>
-                  <div className="text-xl font-bold text-green-600">{formData.saasFeeDiscount}%</div>
+                  <div className="flex-1 dark:text-white">Discount Applied</div>
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">{formData.saasFeeDiscount}%</div>
                 </div>
               )}
               
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
                 </div>
-                <div className="flex-1">Annual Cost</div>
-                <div className="text-xl font-bold">${formatNumber(formData.storeConnectionsCost || 0)}</div>
+                <div className="flex-1 dark:text-white">Annual Cost</div>
+                <div className="text-xl font-bold dark:text-white">${formatNumber(formData.storeConnectionsCost || 0)}</div>
               </div>
             </div>
           </div>
@@ -536,76 +536,76 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
         
         {/* Integrations - only show if we've reached or passed this step */}
         {(currentStep === 3 || highestStepReached >= 3) && (formData.spsIntegration.enabled || formData.crstlIntegration.enabled) && (
-          <div className="bg-white border rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b">
-              <h3 className="text-lg font-semibold">Integrations</h3>
+          <div className="bg-white dark:bg-gray-800/60 border dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold dark:text-white">Integrations</h3>
             </div>
             
             <div className="p-4 space-y-4">
               {formData.spsIntegration.enabled && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                       <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                       <line x1="12" y1="22.08" x2="12" y2="12"></line>
                     </svg>
                   </div>
-                  <div className="flex-1">SPS Commerce</div>
-                  <div className="text-xl font-bold">{formData.spsIntegration.retailerCount} Retailers</div>
+                  <div className="flex-1 dark:text-white">SPS Commerce</div>
+                  <div className="text-xl font-bold dark:text-white">{formData.spsIntegration.retailerCount} Retailers</div>
                 </div>
               )}
               
               {formData.crstlIntegration.enabled && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                       <polyline points="2 17 12 22 22 17"></polyline>
                       <polyline points="2 12 12 17 22 12"></polyline>
                     </svg>
                   </div>
-                  <div className="flex-1">Crstl</div>
-                  <div className="text-xl font-bold">{formData.crstlIntegration.retailerCount} Retailers</div>
+                  <div className="flex-1 dark:text-white">Crstl</div>
+                  <div className="text-xl font-bold dark:text-white">{formData.crstlIntegration.retailerCount} Retailers</div>
                 </div>
               )}
               
               {/* Add discount indicator if applied */}
               {formData.applyDiscountToIntegrations && formData.saasFeeDiscount > 0 && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="19" y1="5" x2="5" y2="19"></line>
                       <circle cx="6.5" cy="6.5" r="2.5"></circle>
                       <circle cx="17.5" cy="17.5" r="2.5"></circle>
                     </svg>
                   </div>
-                  <div className="flex-1">Discount Applied</div>
-                  <div className="text-xl font-bold text-green-600">{formData.saasFeeDiscount}%</div>
+                  <div className="flex-1 dark:text-white">Discount Applied</div>
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">{formData.saasFeeDiscount}%</div>
                 </div>
               )}
               
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="4" width="20" height="5" rx="2"></rect>
                     <path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"></path>
                     <path d="M10 13h4"></path>
                   </svg>
                 </div>
-                <div className="flex-1">Setup Cost</div>
-                <div className="text-xl font-bold">${formatNumber(integrationCosts.setupCost)}</div>
+                <div className="flex-1 dark:text-white">Setup Cost</div>
+                <div className="text-xl font-bold dark:text-white">${formatNumber(integrationCosts.setupCost)}</div>
               </div>
               
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
                 </div>
-                <div className="flex-1">Annual Cost</div>
-                <div className="text-xl font-bold">${formatNumber(integrationCosts.annualCost)}</div>
+                <div className="flex-1 dark:text-white">Annual Cost</div>
+                <div className="text-xl font-bold dark:text-white">${formatNumber(integrationCosts.annualCost)}</div>
               </div>
             </div>
           </div>
@@ -615,90 +615,90 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
         {(currentStep === ATTAINABLE_AUTOMATION_STEP || highestStepReached >= ATTAINABLE_AUTOMATION_STEP) && 
           (formData.attainableAutomation.pickToLight.enabled || 
            formData.attainableAutomation.packToLight.enabled) && (
-          <div className="bg-white border rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b">
-              <h3 className="text-lg font-semibold">Attainable Automation</h3>
+          <div className="bg-white dark:bg-gray-800/60 border dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold dark:text-white">Attainable Automation</h3>
             </div>
             
             <div className="p-4 space-y-4">
               {formData.attainableAutomation.pickToLight.enabled && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
                       <line x1="12" y1="18" x2="12" y2="18.01"></line>
                     </svg>
                   </div>
-                  <div className="flex-1">Pick to Light & Receive to Light</div>
-                  <div className="text-xl font-bold">{formData.attainableAutomation.pickToLight.connections} Connections</div>
+                  <div className="flex-1 dark:text-white">Pick to Light & Receive to Light</div>
+                  <div className="text-xl font-bold dark:text-white">{formData.attainableAutomation.pickToLight.connections} Connections</div>
                 </div>
               )}
               
               {formData.attainableAutomation.packToLight.enabled && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                       <line x1="8" y1="21" x2="16" y2="21"></line>
                       <line x1="12" y1="17" x2="12" y2="21"></line>
                     </svg>
                   </div>
-                  <div className="flex-1">Pack to Light</div>
-                  <div className="text-xl font-bold">{formData.attainableAutomation.packToLight.connections} Connections</div>
+                  <div className="flex-1 dark:text-white">Pack to Light</div>
+                  <div className="text-xl font-bold dark:text-white">{formData.attainableAutomation.packToLight.connections} Connections</div>
                 </div>
               )}
               
               {/* Add discount indicator if applied */}
               {formData.applyDiscountToAutomation && formData.saasFeeDiscount > 0 && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="19" y1="5" x2="5" y2="19"></line>
                       <circle cx="6.5" cy="6.5" r="2.5"></circle>
                       <circle cx="17.5" cy="17.5" r="2.5"></circle>
                     </svg>
                   </div>
-                  <div className="flex-1">Discount Applied</div>
-                  <div className="text-xl font-bold text-green-600">{formData.saasFeeDiscount}%</div>
+                  <div className="flex-1 dark:text-white">Discount Applied</div>
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">{formData.saasFeeDiscount}%</div>
                 </div>
               )}
               
               {/* Setup Cost - simplified format */}
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="4" width="20" height="5" rx="2"></rect>
                     <path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"></path>
                     <path d="M10 13h4"></path>
                   </svg>
                 </div>
-                <div className="flex-1">Setup Cost</div>
-                <div className="text-xl font-bold">${formatNumber(formData.attainableAutomation.remoteOnboardingFee)}</div>
+                <div className="flex-1 dark:text-white">Setup Cost</div>
+                <div className="text-xl font-bold dark:text-white">${formatNumber(formData.attainableAutomation.remoteOnboardingFee)}</div>
               </div>
               
               {/* Annual Cost */}
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
                 </div>
-                <div className="flex-1">Annual Cost</div>
-                <div className="text-xl font-bold">${formatNumber(calculateAutomationCosts())}</div>
+                <div className="flex-1 dark:text-white">Annual Cost</div>
+                <div className="text-xl font-bold dark:text-white">${formatNumber(calculateAutomationCosts())}</div>
               </div>
               
               {/* Only show Onsite Support if days > 0 */}
               {formData.attainableAutomation.onsiteSupportDays > 0 && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                       <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
                   </div>
-                  <div className="flex-1">Onsite Support</div>
-                  <div className="text-xl font-bold">{formData.attainableAutomation.onsiteSupportDays} days</div>
+                  <div className="flex-1 dark:text-white">Onsite Support</div>
+                  <div className="text-xl font-bold dark:text-white">{formData.attainableAutomation.onsiteSupportDays} days</div>
                 </div>
               )}
             </div>
@@ -707,56 +707,56 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
         
         {/* Implementation - only show if we've reached or passed this step */}
         {(currentStep === 6 || highestStepReached >= 6) && formData.implementationPackage && (
-          <div className="bg-white border rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b">
-              <h3 className="text-lg font-semibold">Implementation</h3>
+          <div className="bg-white dark:bg-gray-800/60 border dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold dark:text-white">Implementation</h3>
             </div>
             
             <div className="p-4 space-y-4">
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                   </svg>
                 </div>
-                <div className="flex-1">Package</div>
-                <div className="text-xl font-bold">{getImplementationPackageName(formData.implementationPackage)}</div>
+                <div className="flex-1 dark:text-white">Package</div>
+                <div className="text-xl font-bold dark:text-white">{getImplementationPackageName(formData.implementationPackage)}</div>
               </div>
               
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-100 p-2 rounded-full">
+                <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="4" width="20" height="5" rx="2"></rect>
                     <path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"></path>
                     <path d="M10 13h4"></path>
                   </svg>
                 </div>
-                <div className="flex-1">Onboarding Fee</div>
-                <div className="text-xl font-bold">${formatNumber(parseFloat(formData.onboardingFee || 0))}</div>
+                <div className="flex-1 dark:text-white">Onboarding Fee</div>
+                <div className="text-xl font-bold dark:text-white">${formatNumber(parseFloat(formData.onboardingFee || 0))}</div>
               </div>
               
               {formData.virtualTrainingHours > 0 && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path>
                     </svg>
                   </div>
-                  <div className="flex-1">Virtual Training</div>
-                  <div className="text-xl font-bold">{formData.virtualTrainingHours} hours</div>
+                  <div className="flex-1 dark:text-white">Virtual Training</div>
+                  <div className="text-xl font-bold dark:text-white">{formData.virtualTrainingHours} hours</div>
                 </div>
               )}
               
               {formData.onsiteSupportDays > 0 && (
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-100 p-2 rounded-full">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-2 rounded-full dark:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                       <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
                   </div>
-                  <div className="flex-1">Onsite Support</div>
-                  <div className="text-xl font-bold">{formData.onsiteSupportDays} days</div>
+                  <div className="flex-1 dark:text-white">Onsite Support</div>
+                  <div className="text-xl font-bold dark:text-white">{formData.onsiteSupportDays} days</div>
                 </div>
               )}
             </div>
@@ -765,16 +765,16 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
         
         {/* Fee Calculation Breakdown */}
         {(currentStep === 2 || highestStepReached >= 2) && (
-          <div className="bg-blue-50 p-6 rounded-md mt-4">
-            <h3 className="text-xl font-semibold text-blue-900 mb-4">Fee Calculation Breakdown</h3>
+          <div className="bg-blue-50 dark:bg-blue-950/40 p-6 rounded-md mt-4 dark:border dark:border-blue-900">
+            <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-400 mb-4">Fee Calculation Breakdown</h3>
             
             {formData.saasFeeDiscount > 0 && (
-              <div className="bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-md mb-6 inline-block">
+              <div className="bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-medium py-2 px-4 rounded-md mb-6 inline-block">
                 {formData.saasFeeDiscount}% Discount Applied
               </div>
             )}
             
-            {/* Display tier breakdown in the improved format - without Store Connections */}
+            {/* Update tier breakdown items */}
             {formData.calculatedTiers && formData.calculatedTiers.length > 0 ? (
               <>
                 {formData.calculatedTiers.map((tier, index) => {
@@ -782,12 +782,12 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
                     return (
                       <div key={index} className="mb-4">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold">Base fee (up to {formatNumber(tier.unitsInTier)} units)</span>
-                          <span className="font-bold">${formatNumber(formData.saasFeeDiscount > 0 ? (tier.discountedFee || 0) : (tier.originalFee || 0))}</span>
+                          <span className="font-semibold dark:text-white">Base fee (up to {formatNumber(tier.unitsInTier)} units)</span>
+                          <span className="font-bold dark:text-white">${formatNumber(formData.saasFeeDiscount > 0 ? (tier.discountedFee || 0) : (tier.originalFee || 0))}</span>
                         </div>
                         {formData.saasFeeDiscount > 0 && (
-                          <div className="text-gray-500 text-sm">
-                            ${formatNumber(tier.originalFee || 0)} → <span className="text-blue-600 font-medium">${formatNumber(tier.discountedFee || 0)}</span> after discount
+                          <div className="text-gray-500 dark:text-gray-400 text-sm">
+                            ${formatNumber(tier.originalFee || 0)} → <span className="text-blue-600 dark:text-blue-400 font-medium">${formatNumber(tier.discountedFee || 0)}</span> after discount
                           </div>
                         )}
                       </div>
@@ -796,12 +796,12 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
                     return (
                       <div key={index} className="mb-4">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold">{formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0}</span>
-                          <span className="font-bold">${formatNumber(tier.tierTotal)}</span>
+                          <span className="font-semibold dark:text-white">{formatNumber(tier.unitsInTier)} units at ${tier.originalRate?.toFixed(3) || 0}</span>
+                          <span className="font-bold dark:text-white">${formatNumber(tier.tierTotal)}</span>
                         </div>
                         {formData.saasFeeDiscount > 0 && (
-                          <div className="text-gray-500 text-sm">
-                            → <span className="text-blue-600 font-medium">${tier.discountedRate?.toFixed(3) || 0}</span> after discount
+                          <div className="text-gray-500 dark:text-gray-400 text-sm">
+                            → <span className="text-blue-600 dark:text-blue-400 font-medium">${tier.discountedRate?.toFixed(3) || 0}</span> after discount
                           </div>
                         )}
                       </div>
@@ -809,28 +809,28 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
                   }
                 })}
                 
-                <div className="border-t border-blue-200 pt-4 mt-4">
+                <div className="border-t border-blue-200 dark:border-blue-800 pt-4 mt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-blue-900">Total Annual Commitment</span>
-                    <span className="text-xl font-bold text-blue-600">
+                    <span className="text-lg font-bold text-blue-900 dark:text-blue-400">Total Annual Commitment</span>
+                    <span className="text-xl font-bold text-blue-600 dark:text-blue-300">
                       ${formatNumber((formData.calculatedTiers || []).reduce((sum, tier) => sum + tier.tierTotal, 0))}
                     </span>
                   </div>
                 </div>
               </>
             ) : (
-              <p>No pricing tiers available</p>
+              <p className="dark:text-gray-400">No pricing tiers available</p>
             )}
           </div>
         )}
 
         {/* Investment Summary */}
-        <div className="bg-green-50 p-6 rounded-md mt-4">
-          <h3 className="text-xl font-semibold text-green-900 mb-4">Investment Summary</h3>
+        <div className="bg-green-50 dark:bg-green-950/40 p-6 rounded-md mt-4 dark:border dark:border-green-900 dark:shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+          <h3 className="text-xl font-semibold text-green-900 dark:text-emerald-400 mb-4">Investment Summary</h3>
           
           <div className="flex justify-between items-center mb-3">
-            <span className="text-lg font-bold text-green-900">Total Annual Investment</span>
-            <span className="text-xl font-bold text-green-600">
+            <span className="text-lg font-bold text-green-900 dark:text-emerald-400">Total Annual Investment</span>
+            <span className="text-xl font-bold text-green-600 dark:text-emerald-300">
               ${formatNumber(
                 (formData.calculatedTiers || []).reduce((sum, tier) => sum + tier.tierTotal, 0) + 
                 (formData.storeConnectionsCost || 0) + 
@@ -841,8 +841,8 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-lg font-bold text-green-900">Total Upfront Cost</span>
-            <span className="text-xl font-bold text-green-600">
+            <span className="text-lg font-bold text-green-900 dark:text-emerald-400">Total Upfront Cost</span>
+            <span className="text-xl font-bold text-green-600 dark:text-emerald-300">
               ${formatNumber(
                 (integrationCosts.setupCost || 0) + 
                 (parseFloat(formData.onboardingFee || 0)) +
@@ -856,10 +856,10 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
 
         {/* Business Information */}
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-700 mb-2">Prepared By</h3>
+          <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Prepared By</h3>
           
           {formData.accountExec && (
-            <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg border border-gray-200 dark:border-gray-700">
               {/* Account Executive Tile */}
               <div className="flex items-center space-x-3">
                 {(() => {
@@ -868,15 +868,18 @@ export function ProposalSummary({ formData, currentStep, isExpanded = false, onE
                   const initials = ae ? ae.initials : formData.accountExec.split(' ').map((part: string) => part[0]).join('').toUpperCase().slice(0, 2);
                   const color = ae ? ae.color : "bg-blue-200";
                   
+                  // Add a dark mode variant for the avatar background
+                  const darkModeColor = color.replace('bg-', 'dark:bg-').replace('-200', '-800');
+                  
                   return (
                     <>
-                      <div className={`${color} h-10 w-10 rounded-full flex items-center justify-center font-bold text-gray-700`}>
+                      <div className={`${color} ${darkModeColor} h-10 w-10 rounded-full flex items-center justify-center font-bold text-gray-700 dark:text-gray-200`}>
                         {initials}
                       </div>
                       <div>
-                        <div className="font-medium">{formData.accountExec}</div>
+                        <div className="font-medium dark:text-white">{formData.accountExec}</div>
                         {accountExecutiveRole && (
-                          <div className="text-sm text-gray-500">{accountExecutiveRole}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{accountExecutiveRole}</div>
                         )}
                       </div>
                     </>
