@@ -1,8 +1,8 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { FileText, Package, Zap, Lightbulb, Box, Truck } from "lucide-react"
 import { useAccountExecutive } from "@/hooks/useAccountExecutive"
-import { ACCOUNT_EXECUTIVES } from "@/data/account-executives"
+import { getAccountExecutives, AccountExecutive } from "@/services/account-executives"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 
 interface ProposalOptionsSectionProps {
@@ -28,10 +28,27 @@ export function ProposalOptionsSection({
   handleInputChange,
 }: ProposalOptionsSectionProps) {
   const autoSelectedAccountExec = useAccountExecutive();
+  const [accountExecutives, setAccountExecutives] = useState<AccountExecutive[]>([]);
+  
+  // Fetch account executives
+  useEffect(() => {
+    async function fetchAccountExecutives() {
+      console.log("Fetching account executives...");
+      const data = await getAccountExecutives();
+      console.log(`Fetched ${data.length} account executives:`, data.map(ae => ae.full_name).join(", "));
+      setAccountExecutives(data);
+    }
+    
+    fetchAccountExecutives();
+  }, []);
   
   // Use the auto-selected account exec when the component mounts
   useEffect(() => {
+    console.log("Auto-selected account exec:", autoSelectedAccountExec);
+    console.log("Current form data account exec:", formData.accountExec);
+    
     if (autoSelectedAccountExec && !formData.accountExec) {
+      console.log("Setting account exec to:", autoSelectedAccountExec);
       handleInputChange("accountExec", autoSelectedAccountExec);
     }
   }, [autoSelectedAccountExec, formData.accountExec, handleInputChange]);
@@ -94,11 +111,15 @@ export function ProposalOptionsSection({
             <SelectValue placeholder="Select Account Executive" />
           </SelectTrigger>
           <SelectContent>
-            {ACCOUNT_EXECUTIVES.map((exec) => (
-              <SelectItem key={exec.name} value={exec.name}>
-                {exec.name}
-              </SelectItem>
-            ))}
+            {accountExecutives.length === 0 ? (
+              <SelectItem value="loading" disabled>Loading account executives...</SelectItem>
+            ) : (
+              accountExecutives.map((exec) => (
+                <SelectItem key={exec.id} value={exec.full_name}>
+                  {exec.full_name}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
         {autoSelectedAccountExec && formData.accountExec !== autoSelectedAccountExec && (
@@ -106,6 +127,9 @@ export function ProposalOptionsSection({
             Suggested: {autoSelectedAccountExec} (based on your Google account)
           </p>
         )}
+        <div className="text-xs text-gray-500 mt-1">
+          {accountExecutives.length} account executives available
+        </div>
       </div>
     </div>
   )
