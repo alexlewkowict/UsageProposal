@@ -249,14 +249,21 @@ export function BusinessInfoSection({
             </div>
             <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading account executives...</div>
           </div>
-        ) : formData.accountExec === "Alex Lewkowict" && !showSelection ? (
+        ) : accountExecutives.find(exec => exec.full_name === formData.accountExec) && !showSelection ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-4">
-              <div className="bg-red-100 dark:bg-red-900/30 h-12 w-12 rounded-full flex items-center justify-center text-red-500 dark:text-red-300">
-                AL
+              <div className={`
+                h-12 w-12 rounded-full flex items-center justify-center
+                ${getAccountExecutiveDetails(formData.accountExec).color} 
+                ${getAccountExecutiveDetails(formData.accountExec).color?.replace('bg-', 'dark:bg-').replace('-200', '-800')}
+                text-gray-700 dark:text-gray-200
+              `}>
+                {getAccountExecutiveDetails(formData.accountExec).initials}
               </div>
               <div>
-                <div className="font-medium dark:text-white">Welcome, Alex Lewkowict!</div>
+                <div className="font-medium dark:text-white">
+                  Welcome, {formData.accountExec}!
+                </div>
               </div>
             </div>
             
@@ -289,6 +296,7 @@ export function BusinessInfoSection({
                   if (formData.accountExec !== exec.full_name) {
                     console.log(`Selecting account executive: ${exec.full_name}`);
                     handleInputChange("accountExec", exec.full_name);
+                    setShowSelection(false);
                   }
                 }}
               >
